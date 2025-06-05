@@ -16,4 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
 app.include_router(audit_router, prefix="/api")
+
+@app.get("/")
+async def root():
+    return {"message": "Backend is running"}
