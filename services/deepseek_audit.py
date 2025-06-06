@@ -2,8 +2,8 @@ import httpx
 import os
 from datetime import datetime, timedelta
 
-DEESEEK_API_URL = os.getenv("DEESEEK_API_URL")
-DEESEEK_API_KEY = os.getenv("DEESEEK_API_KEY")
+DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 SYSTEM_PROMPT = """
 You are a social media analytics expert. Given Facebook Insights data for a business page, provide:
@@ -70,9 +70,9 @@ async def generate_audit(page_id: str, page_token: str):
 
         async with httpx.AsyncClient() as client:
             res = await client.post(
-                DEESEEK_API_URL,
+                DEEPSEEK_API_URL,
                 headers={
-                    "Authorization": f"Bearer {DEESEEK_API_KEY}",
+                    "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
