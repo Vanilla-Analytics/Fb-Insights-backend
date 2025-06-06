@@ -22,7 +22,6 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
         "metric": ",".join([
             "page_impressions",            
             "page_engaged_users",
-            "page_actions_post_reactions_like_total",
             "page_fans",
             "page_views_total"
         ]),
@@ -33,6 +32,8 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(base_url, params=params)
+        print("🔎 Metrics sent:", params["metric"])
+
         print("🔍 Facebook Insights API Raw Response:")
         print(resp.text)  # Debugging line to see the raw response
         try:
