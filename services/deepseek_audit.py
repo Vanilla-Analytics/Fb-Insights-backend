@@ -21,9 +21,10 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     params = {
         "metric": ",".join([
             "page_impressions",            
-            "page_actions_post_reactions_like_total",
             "page_engaged_users",
-            "page_total_actions"
+            "page_actions_post_reactions_like_total",
+            "page_fans",
+            "page_views_total"
         ]),
         "since": since,
         "until": until,
