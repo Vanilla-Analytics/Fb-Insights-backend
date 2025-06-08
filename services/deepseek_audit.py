@@ -14,7 +14,7 @@ Make the output concise, readable, and insightful.
 """
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
-    base_url = f"https://graph.facebook.com/v18.0/{page_id}/insights"
+    base_url = f"https://graph.facebook.com/v23.0/{page_id}/insights"
     since = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
     until = datetime.now().strftime("%Y-%m-%d")
 
