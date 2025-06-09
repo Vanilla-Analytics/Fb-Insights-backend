@@ -20,7 +20,11 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
 
     params = {
         "metric": ",".join([
-            "page_total_actions",
+            "page_impressions",
+            "page_engaged_users",
+            "page_views_total",
+            "page_post_engagements"
+            
         ]),
         "since": since,
         "until": until,
@@ -44,8 +48,13 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
 async def fetch_ad_insights(page_token: str):
     url = f"https://graph.facebook.com/v18.0/me/adaccounts"
     async with httpx.AsyncClient() as client:
-        acc_resp = await client.get(url, params={"access_token": page_token})
-        acc_resp.raise_for_status()
+        try:
+            # Fetch ad accounts associated with the page token
+            acc_resp = await client.get(url, params={"access_token": page_token})
+            acc_resp.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            print("Could not fetch ad accounts — skipping ad insights.")
+            return []
         accounts = acc_resp.json().get("data", [])
 
         insights_data = []
