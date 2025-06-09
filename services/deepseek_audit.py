@@ -1,6 +1,7 @@
 import httpx
 import os
 from datetime import datetime, timedelta
+import traceback
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -108,4 +109,7 @@ async def generate_audit(page_id: str, page_token: str):
             res.raise_for_status()
             return res.json()["choices"][0]["message"]["content"]
     except Exception as e:
-        return f"Audit generation failed: {str(e)}"
+        print("❌ Exception Traceback:")
+        traceback.print_exc()
+        return f"Audit generation failed: {str(e) or repr(e)}"
+        #return f"Audit generation failed: {str(e)}"
