@@ -2,6 +2,10 @@ import httpx
 import os
 from datetime import datetime, timedelta
 import traceback
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+import io
+from fastapi.responses import StreamingResponse
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -70,7 +74,7 @@ async def fetch_ad_insights(page_token: str):
         for acc in accounts:
             ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
             ad_params = {
-                "fields": "campaign_name,spend,impressions,clicks,actions",
+                "fields": "campaign_name,spend,impressions,clicks,cpc,ctr",
                 "date_preset": "last_60_days",
                 "access_token": page_token
             }
@@ -113,3 +117,28 @@ async def generate_audit(page_id: str, page_token: str):
         traceback.print_exc()
         return f"Audit generation failed: {str(e) or repr(e)}"
         #return f"Audit generation failed: {str(e)}"
+
+def generate_pdf_report(content: str) -> StreamingResponse:
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    x, y = 50, height - 50
+
+    for line in content.splitlines():
+        line = line.replace("**", "").replace("#", "").replace("*", "").strip()
+        if line.lower().startswith("facebook") or line.endswith(":"):
+            p.setFont("Helvetica-Bold", 12)
+        else:
+            p.setFont("Helvetica", 11)
+
+        p.drawString(x, y, line)
+        y -= 18
+        if y < 50:
+            p.showPage()
+            y = height - 50
+
+    p.save()
+    buffer.seek(0)
+    return StreamingResponse(buffer, media_type="application/pdf", headers={
+        "Content-Disposition": "attachment; filename=audit_report.pdf"
+    })
