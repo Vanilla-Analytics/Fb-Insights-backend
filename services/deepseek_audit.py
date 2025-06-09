@@ -18,18 +18,25 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     since = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
     until = datetime.now().strftime("%Y-%m-%d")
 
-    params = {
-        "metric": ",".join([
-            "page_impressions",
-            "page_engaged_users",
-            "page_views_total",
-            "page_post_engagements"
+    # params = {
+    #     "metric": ",".join([
+    #         "page_impressions",
+    #         "page_engaged_users",
+    #         "page_views_total",
+    #         "page_post_engagements"
             
-        ]),
-        "since": since,
-        "until": until,
-        "access_token": page_token
+    #     ]),
+    #     "since": since,
+    #     "until": until,
+    #     "access_token": page_token
+    # }
+    params = {
+    "metric": "page_impressions",  # safest metric
+    "since": since,
+    "until": until,
+    "access_token": page_token
     }
+
 
     async with httpx.AsyncClient() as client:
         print("📡 Request URL:", client.build_request("GET", base_url, params=params).url)
