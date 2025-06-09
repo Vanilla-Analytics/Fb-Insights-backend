@@ -91,7 +91,7 @@ async def generate_audit(page_id: str, page_token: str):
 
         prompt = f"Analyze the following Facebook data:\n{combined_data}"
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             res = await client.post(
                 DEEPSEEK_API_URL,
                 headers={
