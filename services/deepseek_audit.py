@@ -32,6 +32,7 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     }
 
     async with httpx.AsyncClient() as client:
+        print("📡 Request URL:", client.build_request("GET", base_url, params=params).url)
         resp = await client.get(base_url, params=params)
         print("🔎 Metrics sent:", params["metric"])
 
