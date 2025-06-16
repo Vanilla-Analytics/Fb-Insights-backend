@@ -4,7 +4,7 @@ import requests
 from services.deepseek_audit import generate_audit
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
-from services.deepseek_audit import generate_audit, generate_pdf_report
+import traceback
 
 router = APIRouter()
 
@@ -12,21 +12,29 @@ class AuditRequest(BaseModel):
     access_token: str
     page_id: str
 
-
-
-# @router.post("/audit")
-# async def get_audit(request: AuditRequest):
-#     try:
-#         audit_report = await generate_audit(request.page_id, request.access_token)
-#         return JSONResponse(content={"report": audit_report})
-#     except Exception as e:
-#         return JSONResponse(content={"error": str(e)}, status_code=500)
-
 @router.post("/audit")
 async def get_audit(request: AuditRequest):
     try:
-        audit_report = await generate_audit(request.page_id, request.access_token)
-        return generate_pdf_report(audit_report)
+        print(f"🔄 Starting audit for page_id: {request.page_id}")
+        
+        # Validate input
+        if not request.access_token or not request.page_id:
+            return JSONResponse(
+                content={"error": "access_token and page_id are required"}, 
+                status_code=400
+            )
+        
+        # Generate audit and return PDF
+        pdf_response = await generate_audit(request.page_id, request.access_token)
+        print("✅ Audit completed successfully")
+        return pdf_response
+        
+    except ValueError as ve:
+        error_msg = f"Validation error: {str(ve)}"
+        print(f"❌ {error_msg}")
+        return JSONResponse(content={"error": error_msg}, status_code=400)
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
+        error_msg = f"Internal server error: {str(e)}"
+        print(f"❌ {error_msg}")
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        return JSONResponse(content={"error": error_msg}, status_code=500)
