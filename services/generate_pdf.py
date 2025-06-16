@@ -96,6 +96,9 @@ import io
 import os
 from fastapi.responses import StreamingResponse
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 # === Custom Page Size and Margins ===
 PAGE_WIDTH = 1000
 PAGE_HEIGHT = 600
