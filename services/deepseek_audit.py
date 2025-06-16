@@ -1,10 +1,9 @@
 # services/deepseek_audit.py
-# services/deepseek_audit.py
 import httpx
 import os
 from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
-from services.prompts import EXECUTIVE_SUMMARY_PROMPT
+from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
 from services.generate_pdf import generate_pdf_report
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
@@ -66,6 +65,38 @@ async def fetch_ad_insights(page_token: str):
         return []
 
 
+async def generate_llm_content(prompt: str, data: dict) -> str:
+    """Generate content using DeepSeek LLM"""
+    try:
+        data_prompt = f"Analyze the following Facebook data:\n{data}"
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            res = await client.post(
+                DEEPSEEK_API_URL,
+                headers={
+                    "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek-chat",
+                    "messages": [
+                        {"role": "system", "content": prompt},
+                        {"role": "user", "content": data_prompt}
+                    ]
+                }
+            )
+            res.raise_for_status()
+            
+            response_data = res.json()
+            if "choices" not in response_data or not response_data["choices"]:
+                raise ValueError("Invalid response from DeepSeek API")
+                
+            return response_data["choices"][0]["message"]["content"]
+    except Exception as e:
+        print(f"❌ Error generating LLM content: {str(e)}")
+        return f"Error generating content: {str(e)}"
+
+
 async def generate_audit(page_id: str, page_token: str):
     """Generate audit report and return PDF"""
     try:
@@ -85,37 +116,31 @@ async def generate_audit(page_id: str, page_token: str):
             "ad_insights": ad_data
         }
 
-        # Call LLM for analysis
-        print("🤖 Generating analysis with DeepSeek...")
-        prompt = f"Analyze the following Facebook data:\n{combined_data}"
-        
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            res = await client.post(
-                DEEPSEEK_API_URL,
-                headers={
-                    "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [
-                        {"role": "system", "content": EXECUTIVE_SUMMARY_PROMPT},
-                        {"role": "user", "content": prompt}
-                    ]
-                }
-            )
-            res.raise_for_status()
-            
-            response_data = res.json()
-            if "choices" not in response_data or not response_data["choices"]:
-                raise ValueError("Invalid response from DeepSeek API")
-                
-            summary = response_data["choices"][0]["message"]["content"]
-            print("✅ Summary generated successfully")
+        # Generate Executive Summary
+        print("🤖 Generating Executive Summary...")
+        executive_summary = await generate_llm_content(EXECUTIVE_SUMMARY_PROMPT, combined_data)
+        print("✅ Executive Summary generated successfully")
+
+        # Generate Account Naming & Structure analysis
+        print("🤖 Generating Account Naming & Structure analysis...")
+        account_structure = await generate_llm_content(ACCOUNT_NAMING_STRUCTURE_PROMPT, combined_data)
+        print("✅ Account Naming & Structure analysis generated successfully")
+
+        # Prepare sections for PDF
+        sections = [
+            {
+                "title": "EXECUTIVE SUMMARY",
+                "content": executive_summary
+            },
+            {
+                "title": "ACCOUNT NAMING & STRUCTURE",
+                "content": account_structure
+            }
+        ]
 
         # Generate PDF
         print("📄 Generating PDF report...")
-        pdf_response = generate_pdf_report("EXECUTIVE SUMMARY", summary)
+        pdf_response = generate_pdf_report(sections)
         print("✅ PDF generated successfully")
         
         return pdf_response
