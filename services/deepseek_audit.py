@@ -124,8 +124,6 @@ async def generate_audit(page_id: str, page_token: str):
         return f"Audit generation failed: {str(e) or repr(e)}"
         #return f"Audit generation failed: {str(e)}"
 
-
-
 def generate_pdf_report(content: str) -> StreamingResponse:
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
@@ -133,25 +131,36 @@ def generate_pdf_report(content: str) -> StreamingResponse:
     margin = 50
     y = height - margin
 
-    # Dimensions
-    line_x = margin + 50
-    text_start_x = line_x + 20
+    # === DESIGN LAYOUT VARIABLES ===
+    icon_path = "target_icon.png"  # Replace with path to your real icon
     icon_size = 40
+    icon_x = margin
+    icon_y = y - icon_size
 
-    # === DRAW ICON (placeholder circle instead of image) ===
-    icon_center_x = margin + icon_size // 2
-    icon_center_y = y - icon_size // 2 + 10
-    p.setFillColorRGB(0.8, 1, 0.6)  # Light green
-    p.circle(icon_center_x, icon_center_y, icon_size // 2, fill=True, stroke=False)
+    line_x = icon_x + icon_size + 10
+    line_y = y - icon_size + 5
+    line_height = icon_size
+    line_width = 5
+
+    text_x = line_x + 10
+    text_width = width - text_x - margin
+
+    # === DRAW ICON (Image) ===
+    try:
+        p.drawImage(icon_path, icon_x, icon_y, width=icon_size, height=icon_size, mask='auto')
+    except:
+        # fallback if image not found
+        p.setFillColorRGB(0.8, 1, 0.6)  # Light green
+        p.circle(icon_x + icon_size // 2, icon_y + icon_size // 2, icon_size // 2, fill=True, stroke=False)
 
     # === DRAW BLUE VERTICAL LINE ===
     p.setFillColor(colors.blue)
-    p.rect(line_x, y - 60, 4, 50, fill=True, stroke=False)
+    p.rect(line_x, line_y, line_width, line_height, fill=True, stroke=False)
 
     # === TITLE ===
     p.setFont("Helvetica-Bold", 18)
     p.setFillColor(colors.black)
-    p.drawString(text_start_x, y, "EXECUTIVE SUMMARY")
+    p.drawString(text_x, y, "EXECUTIVE SUMMARY")
     y -= 30
 
     # === PARAGRAPH TEXT ===
@@ -159,7 +168,6 @@ def generate_pdf_report(content: str) -> StreamingResponse:
     lines = content.splitlines()
     i = 0
 
-    # Collect the summary paragraph
     while i < len(lines):
         if "EXECUTIVE SUMMARY" in lines[i].upper():
             i += 1
@@ -169,30 +177,36 @@ def generate_pdf_report(content: str) -> StreamingResponse:
             break
         i += 1
 
-    # Wrap paragraph and print
-    wrapped_lines = simpleSplit(summary_paragraph.strip(), "Helvetica", 11, width - text_start_x - margin)
+    # Wrap and render
+    wrapped_lines = simpleSplit(summary_paragraph.strip(), "Helvetica", 11, text_width)
     p.setFont("Helvetica", 11)
     for line in wrapped_lines:
-        p.drawString(text_start_x, y, line)
+        p.drawString(text_x, y, line)
         y -= 16
         if y < 50:
             p.showPage()
             y = height - margin
 
-    # === Continue Rest of the Audit Content ===
+    # === SECTION SEPARATOR ===
+    y -= 20
     p.setFont("Helvetica-Bold", 13)
-    p.drawString(margin, y - 20, "DETAILED AUDIT")
-    y -= 40
+    p.drawString(margin, y, "DETAILED AUDIT")
+    y -= 25
     p.setFont("Helvetica", 11)
 
+    # === REST OF THE CONTENT ===
     while i < len(lines):
-        line = lines[i].strip()
-        clean_line = line.replace("**", "").replace("#", "").replace("*", "")
-        p.drawString(margin, y, clean_line)
-        y -= 18
-        if y < 50:
-            p.showPage()
-            y = height - margin
+        clean_line = lines[i].replace("**", "").replace("#", "").replace("*", "").strip()
+        if not clean_line:
+            i += 1
+            continue
+        wrapped = simpleSplit(clean_line, "Helvetica", 11, width - 2 * margin)
+        for line in wrapped:
+            p.drawString(margin, y, line)
+            y -= 16
+            if y < 50:
+                p.showPage()
+                y = height - margin
         i += 1
 
     p.save()
