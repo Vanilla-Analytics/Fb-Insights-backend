@@ -76,6 +76,8 @@ async def generate_audit(page_id: str, page_token: str):
         )
         res.raise_for_status()
         summary = res.json()["choices"][0]["message"]["content"]
+        print("✅ Summary is type:", type(summary))
+
 
     # Call new layout PDF generator
     return generate_pdf_report("EXECUTIVE SUMMARY", summary)
