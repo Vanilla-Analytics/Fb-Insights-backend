@@ -48,7 +48,7 @@ async def fetch_ad_insights(page_token: str):
         return insights_data
 
 
-async def generate_audit_report(page_id: str, page_token: str):
+async def generate_audit(page_id: str, page_token: str):
     page_data = await fetch_facebook_insights(page_id, page_token)
     ad_data = await fetch_ad_insights(page_token)
 
