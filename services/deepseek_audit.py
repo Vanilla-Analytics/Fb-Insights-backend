@@ -124,21 +124,50 @@ def generate_pdf_report(content: str) -> StreamingResponse:
     width, height = A4
     x, y = 50, height - 50
 
-    for line in content.splitlines():
-        line = line.replace("**", "").replace("#", "").replace("*", "").strip()
-        if line.lower().startswith("facebook") or line.endswith(":"):
-            p.setFont("Helvetica-Bold", 12)
-        else:
-            p.setFont("Helvetica", 11)
+    lines = content.splitlines()
 
-        p.drawString(x, y, line)
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+
+        # Detect EXECUTIVE SUMMARY and combine following lines into one paragraph
+        if "EXECUTIVE SUMMARY" in line.upper():
+            p.setFont("Helvetica-Bold", 13)
+            p.drawString(x, y, "EXECUTIVE SUMMARY")
+            y -= 22
+
+            i += 1
+            summary_paragraph = ""
+            while i < len(lines) and not lines[i].strip().startswith("1."):
+                summary_paragraph += lines[i].strip() + " "
+                i += 1
+
+            # Wrap paragraph into multiple lines if too long
+            from reportlab.lib.utils import simpleSplit
+            wrapped_lines = simpleSplit(summary_paragraph.strip(), "Helvetica", 11, width - 100)
+            p.setFont("Helvetica", 11)
+            for wrap_line in wrapped_lines:
+                p.drawString(x, y, wrap_line)
+                y -= 18
+                if y < 50:
+                    p.showPage()
+                    y = height - 50
+            continue
+
+        # Render the rest normally
+        clean_line = line.replace("**", "").replace("#", "").replace("*", "").strip()
+        p.setFont("Helvetica-Bold", 12 if clean_line.endswith(":") else 11)
+        p.drawString(x, y, clean_line)
         y -= 18
         if y < 50:
             p.showPage()
             y = height - 50
+
+        i += 1
 
     p.save()
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="application/pdf", headers={
         "Content-Disposition": "attachment; filename=audit_report.pdf"
     })
+
