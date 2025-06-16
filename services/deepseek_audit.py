@@ -6,6 +6,12 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import io
 from fastapi.responses import StreamingResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.utils import simpleSplit
+import io
+from fastapi.responses import StreamingResponse
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -118,51 +124,75 @@ async def generate_audit(page_id: str, page_token: str):
         return f"Audit generation failed: {str(e) or repr(e)}"
         #return f"Audit generation failed: {str(e)}"
 
+
+
 def generate_pdf_report(content: str) -> StreamingResponse:
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
-    x, y = 50, height - 50
+    margin = 50
+    y = height - margin
 
+    # Dimensions
+    line_x = margin + 50
+    text_start_x = line_x + 20
+    icon_size = 40
+
+    # === DRAW ICON (placeholder circle instead of image) ===
+    icon_center_x = margin + icon_size // 2
+    icon_center_y = y - icon_size // 2 + 10
+    p.setFillColorRGB(0.8, 1, 0.6)  # Light green
+    p.circle(icon_center_x, icon_center_y, icon_size // 2, fill=True, stroke=False)
+
+    # === DRAW BLUE VERTICAL LINE ===
+    p.setFillColor(colors.blue)
+    p.rect(line_x, y - 60, 4, 50, fill=True, stroke=False)
+
+    # === TITLE ===
+    p.setFont("Helvetica-Bold", 18)
+    p.setFillColor(colors.black)
+    p.drawString(text_start_x, y, "EXECUTIVE SUMMARY")
+    y -= 30
+
+    # === PARAGRAPH TEXT ===
+    summary_paragraph = ""
     lines = content.splitlines()
-
     i = 0
+
+    # Collect the summary paragraph
     while i < len(lines):
-        line = lines[i].strip()
-
-        # Detect EXECUTIVE SUMMARY and combine following lines into one paragraph
-        if "EXECUTIVE SUMMARY" in line.upper():
-            p.setFont("Helvetica-Bold", 13)
-            p.drawString(x, y, "EXECUTIVE SUMMARY")
-            y -= 22
-
+        if "EXECUTIVE SUMMARY" in lines[i].upper():
             i += 1
-            summary_paragraph = ""
             while i < len(lines) and not lines[i].strip().startswith("1."):
                 summary_paragraph += lines[i].strip() + " "
                 i += 1
+            break
+        i += 1
 
-            # Wrap paragraph into multiple lines if too long
-            from reportlab.lib.utils import simpleSplit
-            wrapped_lines = simpleSplit(summary_paragraph.strip(), "Helvetica", 11, width - 100)
-            p.setFont("Helvetica", 11)
-            for wrap_line in wrapped_lines:
-                p.drawString(x, y, wrap_line)
-                y -= 18
-                if y < 50:
-                    p.showPage()
-                    y = height - 50
-            continue
+    # Wrap paragraph and print
+    wrapped_lines = simpleSplit(summary_paragraph.strip(), "Helvetica", 11, width - text_start_x - margin)
+    p.setFont("Helvetica", 11)
+    for line in wrapped_lines:
+        p.drawString(text_start_x, y, line)
+        y -= 16
+        if y < 50:
+            p.showPage()
+            y = height - margin
 
-        # Render the rest normally
-        clean_line = line.replace("**", "").replace("#", "").replace("*", "").strip()
-        p.setFont("Helvetica-Bold", 12 if clean_line.endswith(":") else 11)
-        p.drawString(x, y, clean_line)
+    # === Continue Rest of the Audit Content ===
+    p.setFont("Helvetica-Bold", 13)
+    p.drawString(margin, y - 20, "DETAILED AUDIT")
+    y -= 40
+    p.setFont("Helvetica", 11)
+
+    while i < len(lines):
+        line = lines[i].strip()
+        clean_line = line.replace("**", "").replace("#", "").replace("*", "")
+        p.drawString(margin, y, clean_line)
         y -= 18
         if y < 50:
             p.showPage()
-            y = height - 50
-
+            y = height - margin
         i += 1
 
     p.save()
@@ -170,4 +200,3 @@ def generate_pdf_report(content: str) -> StreamingResponse:
     return StreamingResponse(buffer, media_type="application/pdf", headers={
         "Content-Disposition": "attachment; filename=audit_report.pdf"
     })
-
