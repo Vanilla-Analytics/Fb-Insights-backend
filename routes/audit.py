@@ -4,7 +4,7 @@ import requests
 from services.deepseek_audit import generate_audit
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
-from services.deepseek_audit import generate_audit, generate_pdf_report
+from services.deepseek_audit import generate_audit_report as generate_audit, generate_pdf_report
 
 router = APIRouter()
 
