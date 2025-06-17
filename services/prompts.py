@@ -87,7 +87,7 @@ Cover these key elements:
 4. Attribution/technical gaps: Any signs of improper attribution windows, missing events, or platform-specific breakdown issues (e.g., missing mobile app data or placement-specific tracking).
 5. Recommendations: Highlight any specific technical gaps or areas that require setup correction or refinement.
 
-Format it like the paragraph below. Use the same tone, structure, and depth. Label the paragraph with **Observation:**
+Format it all in one paragraph like the paragraph below. Use the same tone, structure, and depth. length of the paragraph in 75-77 words , without using examples and dont use '*'. Label the paragraph with **Observation:**
 
 Observation:
 The account appears to have conversion tracking in place, with consistent reporting on key KPIs such as purchases, revenue, ROAS, and CPA across campaigns, ad sets, ads, demographics, platforms, and placements. Metrics like purchase conversion value and frequency are also tracked, indicating pixel or API-based event tracking is active. However, some entries show null values for purchases or revenue despite significant spend and impressions, which may indicate tracking gaps for specific placements or objectives. Overall, tracking is mostly functional, but there may be issues with event configuration or attribution windows in certain areas that warrant further audit.

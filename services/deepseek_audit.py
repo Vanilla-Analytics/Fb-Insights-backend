@@ -165,7 +165,7 @@ async def generate_audit(page_id: str, page_token: str):
             {
                 "title": "RESULTS SETUP",
                 "content": results_setup
-         }
+            }
         ]
 
         # Generate PDF
