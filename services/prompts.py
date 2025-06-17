@@ -15,7 +15,7 @@ The paragraph must cover the following points (if data is available):
 7. Tracking & data health: Highlight gaps in conversion tracking or inconsistencies in labeling/data quality.
 8. Strategic recommendations: Suggest clear actions to improve structure, rotation, naming, or testing cadence.
 
-Ensure the summary is insightful, concise, and flows naturally. Write only the EXECUTIVE SUMMARY paragraph — no bullet points, no headings, and no section breakdowns.
+Ensure the summary is insightful, concise, and flows naturally. Write only the EXECUTIVE SUMMARY paragraph in 82-85 words — no bullet points, no headings, and no section breakdowns.
 
 Avoid stating "no data available" — if data is missing, just omit that point gracefully from the paragraph.
 """
@@ -37,7 +37,7 @@ The paragraph should analyze and cover the following aspects:
 
 6. **Actionable Recommendations**: Suggest specific improvements to standardize naming conventions, improve organization, or enhance reporting capabilities.
 
-Write a comprehensive analysis paragraph that flows naturally and provides specific insights based on the actual campaign and ad set names visible in the data. Focus on being constructive and actionable rather than just descriptive.
+Write a comprehensive analysis paragraph in 82-85 words that flows naturally and provides specific insights based on the actual campaign and ad set names visible in the data. Focus on being constructive and actionable rather than just descriptive.
 
 Avoid generic statements - base your analysis on the specific naming patterns and structures you observe in the provided data.
 """
@@ -54,7 +54,7 @@ Cover these key points:
 5. Impact of testing structure on delivery, conversion, and learning.
 6. Recommendations: how to improve iteration speed, creative variety, and testing structure (e.g., separating prospecting/retargeting).
 
-Write in a natural, data-driven tone. Match the style and length of this example:
+Write in a natural, data-driven tone. Match the style and length in 82-85 words:
 
 "The account shows a moderate level of testing across audiences, creatives, and placements, with efforts to experiment using different formats (video, image), hooks (offers, product demos), and influencers. However, high ad frequencies—often exceeding 30—paired with declining CTRs and stagnant conversion volumes suggest a lack of regular creative refresh and insufficient rotation. While new variants are being introduced, the pace and depth of testing are not keeping up with delivery cycles, leading to creative fatigue. To sustain performance, testing needs to be more structured, with faster iterations and clearer separation between prospecting and retargeting variants."
 """
