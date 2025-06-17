@@ -120,15 +120,15 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             for j, line in enumerate(title_lines):
                 c.drawString(title_x, title_start_y - j * 22, line)
 
-            # Draw blue vertical divider line
-            c.setStrokeColor(colors.HexColor("#007bff"))  # Blue color
-            c.setLineWidth(6)
-            c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
-
 
             # === RIGHT SECTION (Content) ===
             text_x = left_section_width + 20
             text_width = PAGE_WIDTH - text_x - RIGHT_MARGIN
+
+            # Draw blue vertical divider line
+            c.setStrokeColor(colors.HexColor("#007bff"))  # Blue color
+            c.setLineWidth(6)
+            c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
             
             # Calculate content dimensions
             content_lines = content.strip().split('\n')
