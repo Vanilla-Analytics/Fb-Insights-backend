@@ -235,6 +235,30 @@ async def generate_audit(page_id: str, page_token: str):
             "page_insights": page_data,
             "ad_insights": ad_data
         }
+        ad_insights_df = pd.DataFrame(ad_data)
+        # Safely add missing fields
+        if 'purchase_value' not in ad_insights_df.columns:
+            ad_insights_df['purchase_value'] = ad_insights_df.get('conversion_value', 0)  # or 0 if nothing
+
+        if 'purchases' not in ad_insights_df.columns:
+            ad_insights_df['purchases'] = ad_insights_df.get('conversions', 0)
+
+        if 'clicks' not in ad_insights_df.columns:
+            ad_insights_df['clicks'] = 1  # prevent divide by zero
+
+        if 'spend' not in ad_insights_df.columns:
+            ad_insights_df['spend'] = 1
+
+        if 'cpc' not in ad_insights_df.columns:
+            ad_insights_df['cpc'] = ad_insights_df['spend'] / ad_insights_df['clicks']
+
+        if 'ctr' not in ad_insights_df.columns:
+            ad_insights_df['ctr'] = 0.01
+
+# Derived fields
+        ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend']
+        ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
+        ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
 
         # Generate Executive Summary
         print("🤖 Generating Executive Summary...")
@@ -257,7 +281,7 @@ async def generate_audit(page_id: str, page_token: str):
         print("🤖 Generating Results Setup section...")
         results_setup = await generate_llm_content(RESULTS_SETUP_PROMPT, combined_data)
         print("✅ Results Setup generated successfully")
-        ad_insights_df = pd.DataFrame(ad_data)
+        
         key_metrics = generate_key_metrics_section(ad_insights_df)
         key_metrics
 
