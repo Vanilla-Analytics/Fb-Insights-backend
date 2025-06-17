@@ -224,13 +224,6 @@ async def generate_audit(page_id: str, page_token: str):
         ad_data = await fetch_ad_insights(page_token)
         ad_insights_df = pd.DataFrame(ad_data)
 
-        # Calculate any missing derived metrics
-        ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend']
-        ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases']
-        ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks']
-        ad_insights_df['date'] = pd.to_datetime(ad_insights_df.get('date', pd.Timestamp.now()))  # ensure 'date' column
-
-
         combined_data = {
             "page_insights": page_data,
             "ad_insights": ad_data
@@ -254,11 +247,11 @@ async def generate_audit(page_id: str, page_token: str):
 
         if 'ctr' not in ad_insights_df.columns:
             ad_insights_df['ctr'] = 0.01
-
-# Derived fields
         ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend']
         ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
         ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
+        if 'date' not in ad_insights_df.columns:
+            ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
 
         # Generate Executive Summary
         print("🤖 Generating Executive Summary...")
