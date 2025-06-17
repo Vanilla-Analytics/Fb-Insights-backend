@@ -76,3 +76,19 @@ Format your response to match this natural, insight-rich paragraph style and len
 Remarketing efforts are present in the account and identifiable through a few consistent naming patterns. Terms like “Remarketing,” “RT,” “Website Visitor,” “Exclude Purchase,” and “Customer & Purchase” appear across campaign and ad set names, suggesting audience segmentation based on prior engagement or site behavior. Additionally, ad sets like “Monthly User” and those excluding purchasers further hint at BOF targeting. While explicit “REM” tags are limited, these patterns indicate that remarketing is being done, though the structure could benefit from more consistent naming for clearer identification and reporting."
 """
 
+RESULTS_SETUP_PROMPT = """
+You are a Meta Ads performance expert conducting a technical audit of results tracking. Based on the provided Facebook Ads and Insights data, write a paragraph for the section titled RESULTS SETUP.
+
+Cover these key elements:
+
+1. Conversion tracking presence: Is it configured (via Pixel or Conversion API)? Are metrics like purchases, ROAS, CPA, revenue, or conversion value consistently available?
+2. Data availability: Are there null or missing values for purchases/revenue despite spend/impressions?
+3. Tracking quality: Do key KPIs appear across most campaigns/ad sets? Is event tracking capturing the full funnel?
+4. Attribution/technical gaps: Any signs of improper attribution windows, missing events, or platform-specific breakdown issues (e.g., missing mobile app data or placement-specific tracking).
+5. Recommendations: Highlight any specific technical gaps or areas that require setup correction or refinement.
+
+Format it like the paragraph below. Use the same tone, structure, and depth. Label the paragraph with **Observation:**
+
+Observation:
+The account appears to have conversion tracking in place, with consistent reporting on key KPIs such as purchases, revenue, ROAS, and CPA across campaigns, ad sets, ads, demographics, platforms, and placements. Metrics like purchase conversion value and frequency are also tracked, indicating pixel or API-based event tracking is active. However, some entries show null values for purchases or revenue despite significant spend and impressions, which may indicate tracking gaps for specific placements or objectives. Overall, tracking is mostly functional, but there may be issues with event configuration or attribution windows in certain areas that warrant further audit.
+"""
