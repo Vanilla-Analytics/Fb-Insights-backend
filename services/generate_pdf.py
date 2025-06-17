@@ -23,6 +23,27 @@ LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
 
 LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
 
+import re
+
+def parse_bold_segments(text):
+    """
+    Convert markdown-style bold (**text**) to tuples of (text, is_bold)
+    Example: "This is **bold** text" → [('This is ', False), ('bold', True), (' text', False)]
+    """
+    segments = []
+    parts = re.split(r'(\*\*.*?\*\*)', text)
+    for part in parts:
+        if part.startswith('**') and part.endswith('**'):
+            segments.append((part[2:-2], True))  # remove **
+        else:
+            segments.append((part, False))
+    return segments
+
+def clean_text(text):
+    """
+    Removes e.g., eg., etc. and trims whitespace
+    """
+    return re.sub(r'\b(e\.g\.,?|eg\.?)\b', '', text, flags=re.IGNORECASE).strip()
 
 def draw_header(c):
     logo_y = LOGO_Y_OFFSET
@@ -144,13 +165,21 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                 if paragraph.strip():
                     wrapped_lines = simpleSplit(paragraph.strip(), "Helvetica", 16, text_width)
                     for line in wrapped_lines:
+
                         if text_y < BOTTOM_MARGIN + 30:
                             c.showPage()
                             draw_header(c)
-                            # Recalculate center position for new page
                             text_y = text_start_y
-                        c.drawString(text_x, text_y, line)
-                        text_y -= 20
+
+                        x_cursor = text_x
+                        for seg_text, is_bold in parse_bold_segments(line):
+                            font_name = "Helvetica-Bold" if is_bold else "Helvetica"
+                            c.setFont(font_name, 16)
+                            c.drawString(x_cursor, text_y, seg_text)
+                            x_cursor += c.stringWidth(seg_text, font_name, 16)
+
+                        text_y -= 20  # Adjust spacing for new font size
+
                 else:
                     text_y -= 8
 
