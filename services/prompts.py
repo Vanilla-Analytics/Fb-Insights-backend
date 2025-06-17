@@ -41,3 +41,20 @@ Write a comprehensive analysis paragraph that flows naturally and provides speci
 
 Avoid generic statements - base your analysis on the specific naming patterns and structures you observe in the provided data.
 """
+
+TESTING_ACTIVITY_PROMPT = """
+You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the data, generate a TESTING ACTIVITY analysis in one detailed paragraph.
+
+Cover these key points:
+
+1. The level of testing across creatives, audiences, placements, and formats (e.g., video, image).
+2. Types of experimentation: use of hooks (offers, product demos), influencers, format variety, or dynamic creatives.
+3. Signs of creative fatigue: high frequency, falling CTR/conversions, or lack of rotation.
+4. Rate and depth of testing: whether creative testing is fast and regular or stagnant.
+5. Impact of testing structure on delivery, conversion, and learning.
+6. Recommendations: how to improve iteration speed, creative variety, and testing structure (e.g., separating prospecting/retargeting).
+
+Write in a natural, data-driven tone. Match the style and length of this example:
+
+"The account shows a moderate level of testing across audiences, creatives, and placements, with efforts to experiment using different formats (video, image), hooks (offers, product demos), and influencers. However, high ad frequencies—often exceeding 30—paired with declining CTRs and stagnant conversion volumes suggest a lack of regular creative refresh and insufficient rotation. While new variants are being introduced, the pace and depth of testing are not keeping up with delivery cycles, leading to creative fatigue. To sustain performance, testing needs to be more structured, with faster iterations and clearer separation between prospecting and retargeting variants."
+"""

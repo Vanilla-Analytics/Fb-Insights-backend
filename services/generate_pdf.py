@@ -64,7 +64,7 @@ def calculate_content_height(content_lines, font_name, font_size, text_width):
     for paragraph in content_lines:
         if paragraph.strip():
             wrapped_lines = simpleSplit(paragraph.strip(), font_name, font_size, text_width)
-            total_height += len(wrapped_lines) * 16  # 16 is line spacing
+            total_height += len(wrapped_lines) * 22  # 16 is line spacing
         else:
             total_height += 8  # paragraph break spacing
     return total_height
@@ -120,6 +120,12 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             for j, line in enumerate(title_lines):
                 c.drawString(title_x, title_start_y - j * 22, line)
 
+            # Draw blue vertical divider line
+            c.setStrokeColor(colors.HexColor("#007bff"))  # Blue color
+            c.setLineWidth(6)
+            c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
+
+
             # === RIGHT SECTION (Content) ===
             text_x = left_section_width + 20
             text_width = PAGE_WIDTH - text_x - RIGHT_MARGIN
@@ -132,11 +138,11 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             text_start_y = BOTTOM_MARGIN + (available_height - content_height) / 2 + content_height
             text_y = text_start_y
             
-            c.setFont("Helvetica", 12)
+            c.setFont("Helvetica", 16)
 
             for paragraph in content_lines:
                 if paragraph.strip():
-                    wrapped_lines = simpleSplit(paragraph.strip(), "Helvetica", 12, text_width)
+                    wrapped_lines = simpleSplit(paragraph.strip(), "Helvetica", 16, text_width)
                     for line in wrapped_lines:
                         if text_y < BOTTOM_MARGIN + 30:
                             c.showPage()
@@ -144,7 +150,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             # Recalculate center position for new page
                             text_y = text_start_y
                         c.drawString(text_x, text_y, line)
-                        text_y -= 16
+                        text_y -= 20
                 else:
                     text_y -= 8
 

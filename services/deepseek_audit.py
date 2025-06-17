@@ -4,6 +4,8 @@ import os
 from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
+from services.prompts import TESTING_ACTIVITY_PROMPT
+
 from services.generate_pdf import generate_pdf_report
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
@@ -46,7 +48,7 @@ async def fetch_ad_insights(page_token: str):
                 try:
                     ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
                     ad_params = {
-                        "fields": "campaign_name,spend,impressions,clicks,cpc,ctr",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "date_preset": "last_60_days",
                         "access_token": page_token
                     }
@@ -126,6 +128,11 @@ async def generate_audit(page_id: str, page_token: str):
         account_structure = await generate_llm_content(ACCOUNT_NAMING_STRUCTURE_PROMPT, combined_data)
         print("✅ Account Naming & Structure analysis generated successfully")
 
+        print("🤖 Generating Testing Activity section...")
+        testing_activity = await generate_llm_content(TESTING_ACTIVITY_PROMPT, combined_data)
+        print("✅ Testing Activity generated successfully")
+
+
         # Prepare sections for PDF
         sections = [
             {
@@ -135,6 +142,10 @@ async def generate_audit(page_id: str, page_token: str):
             {
                 "title": "ACCOUNT NAMING & STRUCTURE",
                 "content": account_structure
+            },
+            {
+                "title": "TESTING ACTIVITY",
+                "content": testing_activity
             }
         ]
 
