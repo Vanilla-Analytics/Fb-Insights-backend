@@ -6,6 +6,8 @@ from reportlab.lib.utils import simpleSplit
 import io
 import os
 from fastapi.responses import StreamingResponse
+from reportlab.lib.utils import ImageReader
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -114,6 +116,15 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             
             if not content or not content.strip():
                 content = "No content available for this section."
+            if isinstance(section.get("charts", []), list):
+                chart_y = BOTTOM_MARGIN + 40
+                for chart_title, chart_buf in section["charts"]:
+                    try:
+                        img = ImageReader(chart_buf)
+                        c.drawImage(img, LEFT_MARGIN + 300, chart_y, width=500, height=240, preserveAspectRatio=True)
+                        chart_y += 260
+                    except Exception as e:
+                        print(f"⚠️ Could not render chart '{chart_title}': {str(e)}")
 
             # Draw header for each page
             draw_header(c)

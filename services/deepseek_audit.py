@@ -3,6 +3,10 @@ import httpx
 import os
 from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
+import matplotlib.pyplot as plt
+import pandas as pd
+from io import BytesIO
+import base64
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
 from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
@@ -12,6 +16,110 @@ from services.generate_pdf import generate_pdf_report
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+
+def generate_chart_image(fig):
+    buf = BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    encoded = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close(fig)
+    buf = BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+
+
+def generate_key_metrics_section(ad_insights_df):
+    metrics_summary = {
+        "Amount Spent": f"₹{ad_insights_df['spend'].sum():,.2f}",
+        "Purchases": int(ad_insights_df['purchases'].sum()),
+        "Purchase Value": f"₹{ad_insights_df['purchase_value'].sum():,.2f}",
+        "ROAS": round(ad_insights_df['roas'].mean(), 2),
+        "CPA": f"₹{ad_insights_df['cpa'].mean():.2f}",
+        "Cost/Result": f"₹{ad_insights_df['cpa'].mean():.2f}",
+        "Impressions": int(ad_insights_df['impressions'].sum()),
+        "CPM": f"₹{(ad_insights_df['spend'].sum() / ad_insights_df['impressions'].sum() * 1000):.2f}",
+        "Link Clicks": int(ad_insights_df['clicks'].sum()),
+        "Link CPC": f"₹{ad_insights_df['cpc'].mean():.2f}",
+        "CTR (link)": f"{ad_insights_df['ctr'].mean():.2%}"
+    }
+
+    summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
+
+    # Charts
+    chart_imgs = []
+
+    # Chart 1: Amount Spent vs Purchase Conversion Value
+    fig1, ax1 = plt.subplots()
+    ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
+    ax2 = ax1.twinx()
+    ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
+    ax1.set_ylabel("Purchase Value")
+    ax2.set_ylabel("Amount Spent")
+    ax1.set_title("Amount Spent vs Purchase Conversion Value")
+
+    chart_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
+
+
+    # Chart 2: Purchases vs ROAS
+    fig2, ax3 = plt.subplots()
+    ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
+    ax4 = ax3.twinx()
+    ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
+    ax3.set_ylabel("Purchases")
+    ax4.set_ylabel("ROAS")  
+    ax3.set_title("Purchases vs ROAS")
+    chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
+
+
+
+    # Chart 3: CPA vs Link CPC (Dual Y-Axis)
+    fig3, ax5 = plt.subplots()
+    ax5.plot(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
+    ax6 = ax5.twinx()
+    ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link CPC')
+    ax5.set_ylabel("CPA")
+    ax6.set_ylabel("Link CPC")
+    ax5.set_title("CPA vs Link CPC")
+    chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
+    
+
+
+    # Chart 4: Click to Conversion vs CTR
+    fig4, ax7 = plt.subplots()
+    ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
+    ax8 = ax7.twinx()
+    ax8.plot(ad_insights_df['date'], ad_insights_df['ctr'], color='darkblue', label='CTR')
+    ax7.set_ylabel("Click to Conversion")
+    ax8.set_ylabel("CTR")
+    ax7.set_title("Click to Conversion vs CTR")
+    chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
+
+    # Table summary
+    table_html = ad_insights_df.to_html(index=False, border=0)
+
+    # Combined content
+    content = f"""
+
+    **Key Metrics**
+
+    {summary_text}
+
+    **Last 30 Days Trend Section**
+
+    The following section presents daily trend of the Key Metrics Identified in the previous section. This helps the business analyse the daily variance in the business KPIs and also helps in correlating how one metric affects the others.
+
+    {''.join(chart_imgs)}
+
+    {table_html}
+    """
+
+    return {
+        "title": "KEY METRICS",
+        "content": content,
+        "charts": chart_imgs
+    }
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
@@ -114,6 +222,14 @@ async def generate_audit(page_id: str, page_token: str):
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(page_token)
+        ad_insights_df = pd.DataFrame(ad_data)
+
+        # Calculate any missing derived metrics
+        ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend']
+        ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases']
+        ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks']
+        ad_insights_df['date'] = pd.to_datetime(ad_insights_df.get('date', pd.Timestamp.now()))  # ensure 'date' column
+
 
         combined_data = {
             "page_insights": page_data,
@@ -141,6 +257,9 @@ async def generate_audit(page_id: str, page_token: str):
         print("🤖 Generating Results Setup section...")
         results_setup = await generate_llm_content(RESULTS_SETUP_PROMPT, combined_data)
         print("✅ Results Setup generated successfully")
+        ad_insights_df = pd.DataFrame(ad_data)
+        key_metrics = generate_key_metrics_section(ad_insights_df)
+        key_metrics
 
 
 
