@@ -70,7 +70,7 @@ Your analysis should cover the following:
 4. Consistency: Evaluate whether remarketing campaigns/ad sets follow consistent naming patterns for easy identification and reporting.
 5. Recommendations: Suggest improvements if remarketing structure appears inconsistent, unclear, or insufficiently labeled.
 
-Format your response to match this natural, insight-rich paragraph style and length in 74-75 words:
+Format your response to match this natural, insight-rich paragraph style and length strictly in 74-75 words:
 
 "Observation:  
 Remarketing efforts are present in the account and identifiable through a few consistent naming patterns. Terms like “Remarketing,” “RT,” “Website Visitor,” “Exclude Purchase,” and “Customer & Purchase” appear across campaign and ad set names, suggesting audience segmentation based on prior engagement or site behavior. Additionally, ad sets like “Monthly User” and those excluding purchasers further hint at BOF targeting. While explicit “REM” tags are limited, these patterns indicate that remarketing is being done, though the structure could benefit from more consistent naming for clearer identification and reporting."

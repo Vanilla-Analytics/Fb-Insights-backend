@@ -14,8 +14,8 @@ PAGE_WIDTH = 1000
 PAGE_HEIGHT = 500
 LEFT_MARGIN = inch
 RIGHT_MARGIN = inch
-TOP_MARGIN = 0.6 * inch
-BOTTOM_MARGIN = 0.6 * inch
+TOP_MARGIN = 1.2 * inch
+BOTTOM_MARGIN = inch
 
 LOGO_WIDTH = 240
 LOGO_HEIGHT = 45
@@ -156,7 +156,9 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             content_height = calculate_content_height(content_lines, "Helvetica", 12, text_width)
             
             # Center the content vertically
-            text_start_y = BOTTOM_MARGIN + (available_height - content_height) / 2 + content_height
+            #text_start_y = BOTTOM_MARGIN + (available_height - content_height) / 2 + content_height
+            text_start_y = PAGE_HEIGHT - TOP_MARGIN - 30  # Push content closer to top
+
             text_y = text_start_y
             
             c.setFont("Helvetica", 16)
@@ -178,7 +180,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             c.drawString(x_cursor, text_y, seg_text)
                             x_cursor += c.stringWidth(seg_text, font_name, 16)
 
-                        text_y -= 20  # Adjust spacing for new font size
+                        text_y -= 22  # Adjust spacing for new font size
 
                 else:
                     text_y -= 8
