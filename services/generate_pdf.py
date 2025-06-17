@@ -14,8 +14,8 @@ PAGE_WIDTH = 1000
 PAGE_HEIGHT = 500
 LEFT_MARGIN = inch
 RIGHT_MARGIN = inch
-TOP_MARGIN = 1.2 * inch
-BOTTOM_MARGIN = inch
+TOP_MARGIN = 0.6 * inch
+BOTTOM_MARGIN = 0.6 * inch
 
 LOGO_WIDTH = 240
 LOGO_HEIGHT = 45
@@ -119,7 +119,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             draw_header(c)
 
             # === Calculate available space ===
-            available_height = PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN - 60  # 60 for some padding
+            available_height = PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN - 40  # 40 for some padding
 
             # === LEFT SECTION (Heading) ===
             left_section_width = PAGE_WIDTH * 0.4
