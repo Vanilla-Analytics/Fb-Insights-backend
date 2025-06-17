@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
 from services.prompts import TESTING_ACTIVITY_PROMPT
+from services.prompts import REMARKETING_ACTIVITY_PROMPT
 
 from services.generate_pdf import generate_pdf_report
 
@@ -132,6 +133,10 @@ async def generate_audit(page_id: str, page_token: str):
         testing_activity = await generate_llm_content(TESTING_ACTIVITY_PROMPT, combined_data)
         print("✅ Testing Activity generated successfully")
 
+        print("🤖 Generating Remarketing Activity section...")
+        remarketing_activity = await generate_llm_content(REMARKETING_ACTIVITY_PROMPT, combined_data)
+        print("✅ Remarketing Activity generated successfully")
+
 
         # Prepare sections for PDF
         sections = [
@@ -146,6 +151,10 @@ async def generate_audit(page_id: str, page_token: str):
             {
                 "title": "TESTING ACTIVITY",
                 "content": testing_activity
+            },
+            {
+                "title": "REMARKETING ACTIVITY",
+                "content": remarketing_activity
             }
         ]
 

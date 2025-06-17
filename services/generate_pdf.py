@@ -127,7 +127,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
 
             # Draw blue vertical divider line
             c.setStrokeColor(colors.HexColor("#007bff"))  # Blue color
-            c.setLineWidth(6)
+            c.setLineWidth(8)
             c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
             
             # Calculate content dimensions

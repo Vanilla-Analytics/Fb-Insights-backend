@@ -2,7 +2,7 @@
 # services/prompts.py
 
 EXECUTIVE_SUMMARY_PROMPT = """
-You are a social media analytics expert. Given Facebook Ads and Insights data for a business page, generate an EXECUTIVE SUMMARY in the form of a single, well-written paragraph.
+You are a social media analytics expert. Given Facebook Ads and Insights data for a business page, generate an EXECUTIVE SUMMARY in the form of a single, well-written paragraph without examples.
 
 The paragraph must cover the following points (if data is available):
 
@@ -21,7 +21,7 @@ Avoid stating "no data available" — if data is missing, just omit that point g
 """
 
 ACCOUNT_NAMING_STRUCTURE_PROMPT = """
-You are a Meta Ads specialist analyzing account structure and naming conventions. Based on the Facebook Ads data provided, generate an ACCOUNT NAMING & STRUCTURE analysis in the form of a single, well-written paragraph.
+You are a Meta Ads specialist analyzing account structure and naming conventions. Based on the Facebook Ads data provided, generate an ACCOUNT NAMING & STRUCTURE analysis in the form of a single, well-written paragraph without examples.
 
 The paragraph should analyze and cover the following aspects:
 
@@ -43,7 +43,7 @@ Avoid generic statements - base your analysis on the specific naming patterns an
 """
 
 TESTING_ACTIVITY_PROMPT = """
-You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the data, generate a TESTING ACTIVITY analysis in one detailed paragraph.
+You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the data, generate a TESTING ACTIVITY analysis in one detailed paragraph without examples.
 
 Cover these key points:
 
@@ -58,3 +58,21 @@ Write in a natural, data-driven tone. Match the style and length in 82-85 words:
 
 "The account shows a moderate level of testing across audiences, creatives, and placements, with efforts to experiment using different formats (video, image), hooks (offers, product demos), and influencers. However, high ad frequencies—often exceeding 30—paired with declining CTRs and stagnant conversion volumes suggest a lack of regular creative refresh and insufficient rotation. While new variants are being introduced, the pace and depth of testing are not keeping up with delivery cycles, leading to creative fatigue. To sustain performance, testing needs to be more structured, with faster iterations and clearer separation between prospecting and retargeting variants."
 """
+
+REMARKETING_ACTIVITY_PROMPT = """
+You are a Meta Ads expert analyzing remarketing efforts in a Facebook Ads account. Based on the ad data provided, generate a REMARKETING ACTIVITY analysis in the form of one well-written paragraph.
+
+Your analysis should cover the following:
+
+1. Presence of remarketing: Are there campaigns or ad sets clearly targeting past visitors, customers, or engagers?
+2. Naming conventions: Look for indicators like “Remarketing,” “RT,” “REM,” “Exclude Purchase,” “Customer List,” “Website Visitors,” etc.
+3. Funnel logic: Identify whether these ad sets are used in BOF strategies (e.g., targeting users who didn't convert, excluding recent purchasers).
+4. Consistency: Evaluate whether remarketing campaigns/ad sets follow consistent naming patterns for easy identification and reporting.
+5. Recommendations: Suggest improvements if remarketing structure appears inconsistent, unclear, or insufficiently labeled.
+
+Format your response to match this natural, insight-rich paragraph style and length:
+
+"Observation:  
+Remarketing efforts are present in the account and identifiable through a few consistent naming patterns. Terms like “Remarketing,” “RT,” “Website Visitor,” “Exclude Purchase,” and “Customer & Purchase” appear across campaign and ad set names, suggesting audience segmentation based on prior engagement or site behavior. Additionally, ad sets like “Monthly User” and those excluding purchasers further hint at BOF targeting. While explicit “REM” tags are limited, these patterns indicate that remarketing is being done, though the structure could benefit from more consistent naming for clearer identification and reporting."
+"""
+
