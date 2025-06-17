@@ -2,7 +2,7 @@
 # services/prompts.py
 
 EXECUTIVE_SUMMARY_PROMPT = """
-You are a social media analytics expert. Given Facebook Ads and Insights data for a business page, generate an EXECUTIVE SUMMARY in the form of a single, well-written paragraph without examples.
+You are a social media analytics expert. Given Facebook Ads and Insights data for a business page, generate an EXECUTIVE SUMMARY in the form of a single, well-written paragraph without using examples and dont use '*'.
 
 The paragraph must cover the following points (if data is available):
 
@@ -21,7 +21,7 @@ Avoid stating "no data available" — if data is missing, just omit that point g
 """
 
 ACCOUNT_NAMING_STRUCTURE_PROMPT = """
-You are a Meta Ads specialist analyzing account structure and naming conventions. Based on the Facebook Ads data provided, generate an ACCOUNT NAMING & STRUCTURE analysis in the form of a single, well-written paragraph without examples.
+You are a Meta Ads specialist analyzing account structure and naming conventions. Based on the Facebook Ads data provided, generate an ACCOUNT NAMING & STRUCTURE analysis in the form of a single, well-written paragraph without using examples and dont use '*'.
 
 The paragraph should analyze and cover the following aspects:
 
@@ -43,7 +43,7 @@ Avoid generic statements - base your analysis on the specific naming patterns an
 """
 
 TESTING_ACTIVITY_PROMPT = """
-You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the data, generate a TESTING ACTIVITY analysis in one detailed paragraph without examples.
+You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the data, generate a TESTING ACTIVITY analysis in one detailed paragraph without using examples and dont use '*'.
 
 Cover these key points:
 
@@ -60,7 +60,7 @@ Write in a natural, data-driven tone. Match the style and length in 82-85 words:
 """
 
 REMARKETING_ACTIVITY_PROMPT = """
-You are a Meta Ads expert analyzing remarketing efforts in a Facebook Ads account. Based on the ad data provided, generate a REMARKETING ACTIVITY analysis in the form of one well-written paragraph.
+You are a Meta Ads expert analyzing remarketing efforts in a Facebook Ads account. Based on the ad data provided, generate a REMARKETING ACTIVITY analysis in the form of one well-written paragraph without using examples and dont use '*'.
 
 Your analysis should cover the following:
 
