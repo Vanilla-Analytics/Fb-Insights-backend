@@ -296,10 +296,6 @@ async def generate_audit(page_id: str, page_token: str):
         print("🤖 Generating Results Setup section...")
         results_setup = await generate_llm_content(RESULTS_SETUP_PROMPT, combined_data)
         print("✅ Results Setup generated successfully")
-    
-        key_metrics
-
-
 
         # Prepare sections for PDF
         sections = [
@@ -322,7 +318,8 @@ async def generate_audit(page_id: str, page_token: str):
             {
                 "title": "RESULTS SETUP",
                 "content": results_setup
-            }
+            },
+            key_metrics
         ]
 
         # Generate PDF
