@@ -301,15 +301,18 @@ async def generate_audit(page_id: str, page_token: str):
         sections = [
             {
                 "title": "EXECUTIVE SUMMARY",
-                "content": executive_summary
+                "content": executive_summary,
+                "charts": []
             },
             {
                 "title": "ACCOUNT NAMING & STRUCTURE",
-                "content": account_structure
+                "content": account_structure,
+                "charts": []
             },
             {
                 "title": "TESTING ACTIVITY",
-                "content": testing_activity
+                "content": testing_activity,
+                "charts": []
             },
             {
                 "title": "REMARKETING ACTIVITY",
@@ -317,7 +320,8 @@ async def generate_audit(page_id: str, page_token: str):
             },
             {
                 "title": "RESULTS SETUP",
-                "content": results_setup
+                "content": results_setup,
+                "charts": []
             },
             key_metrics
         ]

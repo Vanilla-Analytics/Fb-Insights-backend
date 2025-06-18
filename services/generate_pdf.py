@@ -118,7 +118,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                 content = "No content available for this section."
             if isinstance(section.get("charts", []), list):
                 chart_y = BOTTOM_MARGIN + 40
-                for chart_title, chart_buf in section["charts"]:
+                for chart_title, chart_buf in section.get("charts",[]):
                     try:
                         img = ImageReader(chart_buf)
                         c.drawImage(img, LEFT_MARGIN + 300, chart_y, width=500, height=240, preserveAspectRatio=True)
