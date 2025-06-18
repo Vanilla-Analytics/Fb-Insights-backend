@@ -229,6 +229,8 @@ async def generate_audit(page_id: str, page_token: str):
             "ad_insights": ad_data
         }
         ad_insights_df = pd.DataFrame(ad_data)
+        print("🔎 Columns in ad_insights_df:", ad_insights_df.columns.tolist())
+
         # Safely add missing fields
         if 'purchase_value' not in ad_insights_df.columns:
             ad_insights_df['purchase_value'] = ad_insights_df.get('conversion_value', 0)  # or 0 if nothing
@@ -252,7 +254,8 @@ async def generate_audit(page_id: str, page_token: str):
         ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
         if 'date' not in ad_insights_df.columns:
             ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
-
+        
+        key_metrics = generate_key_metrics_section(ad_insights_df)
         # Generate Executive Summary
         print("🤖 Generating Executive Summary...")
         executive_summary = await generate_llm_content(EXECUTIVE_SUMMARY_PROMPT, combined_data)
@@ -274,8 +277,7 @@ async def generate_audit(page_id: str, page_token: str):
         print("🤖 Generating Results Setup section...")
         results_setup = await generate_llm_content(RESULTS_SETUP_PROMPT, combined_data)
         print("✅ Results Setup generated successfully")
-        
-        key_metrics = generate_key_metrics_section(ad_insights_df)
+    
         key_metrics
 
 
