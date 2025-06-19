@@ -217,7 +217,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
         return f"Error generating content: {str(e)}"
 
 
-async def generate_audit(page_id: str, page_token: str):
+async def generate_audit(page_id: str,user_token: str, page_token: str):
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
@@ -229,7 +229,7 @@ async def generate_audit(page_id: str, page_token: str):
         # Fetch data from Facebook
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
-        ad_data = await fetch_ad_insights(page_token)
+        ad_data = await fetch_ad_insights(user_token)
         ad_insights_df = pd.DataFrame(ad_data)
 
         combined_data = {

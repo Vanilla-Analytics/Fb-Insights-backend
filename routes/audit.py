@@ -28,6 +28,7 @@ async def get_audit(request: AuditRequest):
         # Generate audit and return PDF
         pdf_response = await generate_audit(
             page_id=request.page_id,
+            user_token=request.user_access_token,
             page_token=request.page_access_token
         )
         print("✅ Audit completed successfully")
