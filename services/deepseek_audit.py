@@ -242,41 +242,28 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         ad_insights_df = pd.DataFrame(ad_data)
         print("🔎 Columns in ad_insights_df:", ad_insights_df.columns.tolist())
 
-        # Only run fallback logic if ad_insights_df is not empty
-        if not ad_insights_df.empty:
-           
-            if 'purchase_value' not in ad_insights_df.columns:
-                ad_insights_df['purchase_value'] = ad_insights_df.get('conversion_value', 0)
+        # Ensure fallback/derived fields exist
+        if 'purchase_value' not in ad_insights_df.columns:
+            ad_insights_df['purchase_value'] = ad_insights_df.get('conversion_value', 0)
 
-            if 'purchases' not in ad_insights_df.columns:
-                ad_insights_df['purchases'] = ad_insights_df.get('conversions', 0)
+        if 'purchases' not in ad_insights_df.columns:
+            ad_insights_df['purchases'] = ad_insights_df.get('conversions', 0)
 
-            if 'clicks' not in ad_insights_df.columns:
-                ad_insights_df['clicks'] = 1
+        if 'clicks' not in ad_insights_df.columns:
+            ad_insights_df['clicks'] = 1
 
-            if 'spend' not in ad_insights_df.columns:
-                ad_insights_df['spend'] = 1
+        if 'spend' not in ad_insights_df.columns:
+            ad_insights_df['spend'] = 1
 
-            if 'cpc' not in ad_insights_df.columns:
-                ad_insights_df['cpc'] = ad_insights_df['spend'] / ad_insights_df['clicks']
-
-            if 'ctr' not in ad_insights_df.columns:
-                ad_insights_df['ctr'] = 0.01
-
-            if 'impressions' not in ad_insights_df.columns:
-                ad_insights_df['impressions'] = 1000
-
-            ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend']
-            ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
-            ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
-            
-            numeric_fields = [
+# ✅ Convert all key fields to numeric
+        numeric_fields = [
             'spend', 'impressions', 'clicks', 'purchases', 'purchase_value','conversion_value', 'conversions', 'cpc', 'ctr'
-            ]
+        ]
 
-            for col in numeric_fields:
-                if col in ad_insights_df.columns:
-                    ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
+        for col in numeric_fields:
+            if col in ad_insights_df.columns:
+                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
+
             if 'date' not in ad_insights_df.columns:
                 ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
         else:
