@@ -174,6 +174,8 @@ async def fetch_ad_insights(page_token: str):
 
                     else:
                         print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
+                        print(f"🔍 Response status: {insights_resp.status_code}")
+                        print(f"🔍 Response content: {insights_resp.text}")
                 except Exception as e:
                     print(f"⚠️ Warning: Error fetching insights for account {acc.get('id', 'unknown')}: {str(e)}")
                     continue
