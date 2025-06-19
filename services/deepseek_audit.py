@@ -264,10 +264,16 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             if col in ad_insights_df.columns:
                 ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
 
+
             if 'date' not in ad_insights_df.columns:
                 ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
         else:
             print("⚠️ ad_insights_df is empty — skipping Key Metrics generation")
+
+        # ✅ Then add this
+        ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend'].replace(0, 1)
+        ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
+        ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
 
         #----------------------------------------------------------------------------------------------------
         #key_metrics = generate_key_metrics_section(ad_insights_df)
