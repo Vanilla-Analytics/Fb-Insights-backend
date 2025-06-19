@@ -110,8 +110,6 @@ def generate_key_metrics_section(ad_insights_df):
 
     The following section presents daily trend of the Key Metrics Identified in the previous section. This helps the business analyse the daily variance in the business KPIs and also helps in correlating how one metric affects the others.
 
-    {''.join(chart_imgs)}
-
     {table_html}
     """
 
