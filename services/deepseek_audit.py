@@ -151,6 +151,10 @@ async def fetch_ad_insights(page_token: str):
         async with httpx.AsyncClient() as client:
             acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
+            if acc_resp.status_code != 200:
+                print("⚠️ Facebook API Error:", acc_resp.text)
+                acc_resp.raise_for_status()
+
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
 
