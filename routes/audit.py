@@ -9,7 +9,8 @@ import traceback
 router = APIRouter()
 
 class AuditRequest(BaseModel):
-    access_token: str
+    user_access_token: str
+    page_access_token: str
     page_id: str
 
 @router.post("/audit")
@@ -18,14 +19,17 @@ async def get_audit(request: AuditRequest):
         print(f"🔄 Starting audit for page_id: {request.page_id}")
         
         # Validate input
-        if not request.access_token or not request.page_id:
+        if not request.user_access_token or not request.page_access_token or not request.page_id:
             return JSONResponse(
-                content={"error": "access_token and page_id are required"}, 
+                content={"error": "user_access_token, page_access_token, and page_id are required"}, 
                 status_code=400
             )
         
         # Generate audit and return PDF
-        pdf_response = await generate_audit(request.page_id, request.access_token)
+        pdf_response = await generate_audit(
+            page_id=request.page_id,
+            page_token=request.page_access_token
+        )
         print("✅ Audit completed successfully")
         return pdf_response
         
