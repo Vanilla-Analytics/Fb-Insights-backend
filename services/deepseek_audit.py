@@ -152,6 +152,7 @@ async def fetch_ad_insights(page_token: str):
             acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
             accounts = acc_resp.json().get("data", [])
+            print("📡 Ad Accounts fetched:", accounts)
 
             insights_data = []
             for acc in accounts:
@@ -165,6 +166,8 @@ async def fetch_ad_insights(page_token: str):
                     insights_resp = await client.get(ad_url, params=ad_params)
                     if insights_resp.status_code == 200:
                         insights_data.extend(insights_resp.json().get("data", []))
+                        print(f"📊 Insights from account {acc['id']}:", insights_resp.json().get("data", []))
+
                     else:
                         print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
                 except Exception as e:
