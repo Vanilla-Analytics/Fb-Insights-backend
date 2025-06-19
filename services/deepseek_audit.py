@@ -181,6 +181,7 @@ async def fetch_ad_insights(page_token: str):
             return insights_data
     except Exception as e:
         print(f"❌ Error fetching ad insights: {str(e)}")
+        print(f"🔍 Response: {acc_resp.text}")
         return []
 
 
