@@ -234,6 +234,15 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(user_token)
         ad_insights_df = pd.DataFrame(ad_data)
+        # Ensure all numeric fields are actually numeric
+        numeric_fields = [
+            'spend', 'impressions', 'clicks', 'purchases', 'purchase_value','conversion_value', 'conversions', 'cpc', 'ctr'
+        ]
+
+        for col in numeric_fields:
+            if col in ad_insights_df.columns:
+                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
+
 
         combined_data = {
             "page_insights": page_data,
