@@ -83,11 +83,11 @@ def draw_footer_cta(c):
 #         c.drawString(x + 10, card_y - 36, str(value))
 #         c.setFont("Helvetica-Bold", 14)
 def draw_metrics_grid(c, metrics, start_y):
-    card_width = 260
+    card_width = 180
     card_height = 60
-    padding_x = 30
+    padding_x = 20
     padding_y = 20
-    cols = 3
+    cols = 4
     x_start = LEFT_MARGIN
     y = start_y
     c.setFont("Helvetica-Bold", 14)
@@ -134,7 +134,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                     # Page 1: Key Metrics Header & Cards
                     c.setFont("Helvetica-Bold", 24)
                     c.setFillColor(colors.black)
-                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Key Metrics")
+                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 60, "Key Metrics")
 
 
                     metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
@@ -168,9 +168,21 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         draw_header(c)
                         try:
                             c.setFont("Helvetica-Bold", 14)
-                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Amount Spent vs Purchase Conversion Value")
+                            #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Amount Spent vs Purchase Conversion Value")
                             img1 = ImageReader(charts[0][1])
-                            c.drawImage(img1, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
+                            # c.drawImage(img1, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
+                            # Page 3: Chart 1 — Heading + Centered Chart
+                            chart_title = "Amount Spent vs Purchase Conversion Value"
+                            c.setFont("Helvetica-Bold", 16)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, chart_title)
+
+                            chart_width = 800
+                            chart_height = 300
+                            chart_x = (PAGE_WIDTH - chart_width) / 2
+                            chart_y = BOTTOM_MARGIN + 60
+
+                            c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
                         except Exception as e:
                             print(f"⚠️ Chart 1 render error: {str(e)}")  
 
@@ -180,9 +192,21 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         draw_header(c)
                         try:
                             c.setFont("Helvetica-Bold", 14)
-                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
+                            #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
                             img2 = ImageReader(charts[1][1])
-                            c.drawImage(img2, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
+                            #c.drawImage(img2, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
+                            # Page 4: Chart 2 — Heading + Centered Chart
+                            chart_title = "Purchases vs ROAS"
+                            c.setFont("Helvetica-Bold", 16)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, chart_title)
+
+                            chart_width = 700
+                            chart_height = 300
+                            chart_x = (PAGE_WIDTH - chart_width) / 2
+                            chart_y = BOTTOM_MARGIN + 60
+
+                            c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
                         except Exception as e:
                             print(f"⚠️ Chart 2 render error: {str(e)}")                
                     

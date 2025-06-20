@@ -162,8 +162,8 @@ async def fetch_ad_insights(page_token: str):
                     ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
                     ad_params = {
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        #"date_preset": "last_60_days",
-                        "date_preset":"maximum",
+                        "date_preset": "last_60_days",
+                        #"date_preset":"maximum",
                         "access_token": page_token
                     }
                     insights_resp = await client.get(ad_url, params=ad_params)
