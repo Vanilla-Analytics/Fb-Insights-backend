@@ -2,93 +2,81 @@
 # services/prompts.py
 
 EXECUTIVE_SUMMARY_PROMPT = """
-You are a social media analytics expert. Given Facebook Ads and Insights data for a business page, generate an EXECUTIVE SUMMARY in the form of a single, well-written paragraph without using examples and dont use '*'.
+You are a Meta Ads audit expert. Based on Facebook Ads and Insights data, generate an EXECUTIVE SUMMARY of 100–120 words summarizing the account's overall performance.
 
-The paragraph must cover the following points (if data is available):
+Include:
+1. Total ad spend, impressions, clicks, CTR, CPC
+2. Key performance insights: weak CTR, high CPC, or audience fatigue
+3. Recommendations: improve targeting, creative testing, scheduling
+4. Avoid listing numbers as bullets—write a structured, well-flowing paragraph
+5. Do not include “no data available” — if missing, skip that part
+6. Avoid using asterisks or markdown formatting.
 
-1. Overall performance: ROAS (Return on Ad Spend), total purchases/conversions.
-2. Platform insights: Which platform and content formats (e.g., Reels, Stories) are driving results.
-3. Campaign structure: Funnel segmentation, audience types (lookalikes, interest-based), and geographies (e.g., high-AOV locations).
-4. Creative performance: Which creatives (video, influencer, offer-based) are most effective.
-5. Fatigue and CTR trends: Mention if high ad frequency or declining CTR/conversions is visible.
-6. Remarketing: Whether it's active, well-structured, or inconsistently labeled.
-7. Tracking & data health: Highlight gaps in conversion tracking or inconsistencies in labeling/data quality.
-8. Strategic recommendations: Suggest clear actions to improve structure, rotation, naming, or testing cadence.
-
-Ensure the summary is insightful, concise, and flows naturally. Write only the EXECUTIVE SUMMARY paragraph in 74-75 words — no bullet points, no headings, and no section breakdowns.
-
-Avoid stating "no data available" — if data is missing, just omit that point gracefully from the paragraph.
+Ensure the summary reflects the data insights and includes performance commentary and improvement actions.
 """
 
 ACCOUNT_NAMING_STRUCTURE_PROMPT = """
-You are a Meta Ads specialist analyzing account structure and naming conventions. Based on the Facebook Ads data provided, generate an ACCOUNT NAMING & STRUCTURE analysis in the form of a single, well-written paragraph without using examples and dont use '*'.
+You are a Meta Ads specialist analyzing account structure and naming conventions. Based on the Facebook Ads data provided, generate a paragraph (100–120 words) analyzing the ACCOUNT NAMING & STRUCTURE.
 
-The paragraph should analyze and cover the following aspects:
+Your paragraph should:
+1. Identify funnel stages (TOF/MOF/BOF), campaign types (ASC/Manual), and audience segments (Lookalike, Interest-based, AOV cities)
+2. Note if the structure supports scalable testing and clear reporting
+3. Highlight any inconsistencies (e.g., variation in descriptor placement)
+4. End with a clear recommendation to improve standardization or clarity
+5. Avoid examples, markdown, or bullet points
 
-1. **Naming Convention Analysis**: Evaluate the consistency and clarity of campaign, ad set, and ad names. Look for patterns in how funnel stages (TOF/MOF/BOF), campaign types (ASC/Manual), audience segments (Lookalike/Interest-based/Geographic), and creative identifiers are structured.
-
-2. **Organizational Structure**: Assess how campaigns are organized by funnel stage, audience type, geography, or product/service. Comment on whether the structure supports easy scaling and performance analysis.
-
-3. **Consistency Issues**: Identify any inconsistencies in naming patterns, placement of descriptors, abbreviations, or terminology that could affect reporting clarity and account management efficiency.
-
-4. **Scalability Assessment**: Evaluate whether the current structure and naming supports growth, A/B testing, and clear performance attribution across different elements.
-
-5. **Best Practice Alignment**: Compare the current approach to Meta Ads best practices for account organization and provide insights on areas for improvement.
-
-6. **Actionable Recommendations**: Suggest specific improvements to standardize naming conventions, improve organization, or enhance reporting capabilities.
-
-Write a comprehensive analysis paragraph in 74-75 words that flows naturally and provides specific insights based on the actual campaign and ad set names visible in the data. Focus on being constructive and actionable rather than just descriptive.
-
-Avoid generic statements - base your analysis on the specific naming patterns and structures you observe in the provided data.
+Write a natural, audit-style paragraph that flows well and mirrors how a performance strategist would document this in a formal report. Do not include a heading or labels like “Observation.”
 """
 
 TESTING_ACTIVITY_PROMPT = """
-You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the data, generate a TESTING ACTIVITY analysis in one detailed paragraph without using examples and dont use '*'.
+You are a Meta Ads expert analyzing creative and testing practices in a Facebook Ads account. Based on the provided Facebook Ads data, generate the TESTING ACTIVITY section in a single professional paragraph labeled “Observation:”.
 
-Cover these key points:
+Your response must:
 
-1. The level of testing across creatives, audiences, placements, and formats (e.g., video, image).
-2. Types of experimentation: use of hooks (offers, product demos), influencers, format variety, or dynamic creatives.
-3. Signs of creative fatigue: high frequency, falling CTR/conversions, or lack of rotation.
-4. Rate and depth of testing: whether creative testing is fast and regular or stagnant.
-5. Impact of testing structure on delivery, conversion, and learning.
-6. Recommendations: how to improve iteration speed, creative variety, and testing structure (e.g., separating prospecting/retargeting).
+- Begin with **Observation:** (no asterisks or markdown)
+- Be **structured in 110–130 words**
+- Use an analytical tone suitable for an audit report
+- Cover these points where possible:
+    1. Level of testing (creatives, audiences, placements, formats)
+    2. Hooks used (offers, product demos, influencer content)
+    3. Signs of fatigue (high frequency, dropping CTR/conversions)
+    4. Testing cadence and structure
+    5. Recommendations for faster iterations and better variant separation
 
-Write in a natural, data-driven tone. Match the style and length in 74-75 words:
-
-"The account shows a moderate level of testing across audiences, creatives, and placements, with efforts to experiment using different formats (video, image), hooks (offers, product demos), and influencers. However, high ad frequencies—often exceeding 30—paired with declining CTRs and stagnant conversion volumes suggest a lack of regular creative refresh and insufficient rotation. While new variants are being introduced, the pace and depth of testing are not keeping up with delivery cycles, leading to creative fatigue. To sustain performance, testing needs to be more structured, with faster iterations and clearer separation between prospecting and retargeting variants."
+Do not use bullet points or formatting — just write one paragraph. If data is unavailable for certain points, omit them naturally. Ensure clarity, depth, and actionable insight in your wording.
 """
 
 REMARKETING_ACTIVITY_PROMPT = """
-You are a Meta Ads expert analyzing remarketing efforts in a Facebook Ads account. Based on the ad data provided, generate a REMARKETING ACTIVITY analysis in the form of one well-written paragraph without using examples and dont use '*'.
+You are a Meta Ads expert analyzing remarketing efforts in a Facebook Ads account. Based on the ad data provided, generate a REMARKETING ACTIVITY analysis in the form of one well-written paragraph.
 
-Your analysis should cover the following:
+Your paragraph must:
+1. Start with “Observation:”
+2. Be 75–80 words
+3. Mention the presence of remarketing terms like “Remarketing,” “RT,” “Website Visitor,” “Exclude Purchase,” etc.
+4. Cover funnel logic (e.g., BOF targeting, excluding converters)
+5. Highlight if naming is consistent or inconsistent
+6. Provide a constructive recommendation if needed
+7. Avoid using markdown, asterisks, or headings
 
-1. Presence of remarketing: Are there campaigns or ad sets clearly targeting past visitors, customers, or engagers?
-2. Naming conventions: Look for indicators like “Remarketing,” “RT,” “REM,” “Exclude Purchase,” “Customer List,” “Website Visitors,” etc.
-3. Funnel logic: Identify whether these ad sets are used in BOF strategies (e.g., targeting users who didn't convert, excluding recent purchasers).
-4. Consistency: Evaluate whether remarketing campaigns/ad sets follow consistent naming patterns for easy identification and reporting.
-5. Recommendations: Suggest improvements if remarketing structure appears inconsistent, unclear, or insufficiently labeled.
-
-Format your response to match this natural, insight-rich paragraph style and length strictly in 74-75 words:
-
-"Observation:  
-Remarketing efforts are present in the account and identifiable through a few consistent naming patterns. Terms like “Remarketing,” “RT,” “Website Visitor,” “Exclude Purchase,” and “Customer & Purchase” appear across campaign and ad set names, suggesting audience segmentation based on prior engagement or site behavior. Additionally, ad sets like “Monthly User” and those excluding purchasers further hint at BOF targeting. While explicit “REM” tags are limited, these patterns indicate that remarketing is being done, though the structure could benefit from more consistent naming for clearer identification and reporting."
+Use a clean, audit-style tone. Do not use bullet points or lists. Write only the paragraph — no section labels or formatting.
 """
 
 RESULTS_SETUP_PROMPT = """
 You are a Meta Ads performance expert conducting a technical audit of results tracking. Based on the provided Facebook Ads and Insights data, write a paragraph for the section titled RESULTS SETUP.
 
-Cover these key elements:
+Your paragraph must:
 
-1. Conversion tracking presence: Is it configured (via Pixel or Conversion API)? Are metrics like purchases, ROAS, CPA, revenue, or conversion value consistently available?
-2. Data availability: Are there null or missing values for purchases/revenue despite spend/impressions?
-3. Tracking quality: Do key KPIs appear across most campaigns/ad sets? Is event tracking capturing the full funnel?
-4. Attribution/technical gaps: Any signs of improper attribution windows, missing events, or platform-specific breakdown issues (e.g., missing mobile app data or placement-specific tracking).
-5. Recommendations: Highlight any specific technical gaps or areas that require setup correction or refinement.
+1. Start with the word "Observation:"
+2. Describe whether conversion tracking is present and active
+3. Mention the availability of purchases, ROAS, CPA, and revenue across campaigns/ad sets
+4. Comment on any missing/null values and what they might imply
+5. Conclude with a high-level audit summary (e.g., “mostly functional, but some issues may require further audit”)
+6. Use professional language — no bullets, markdown, or asterisks
+7. Strictly write a single paragraph in 75–80 words
 
-Format it all in one paragraph like the paragraph below. Use the same tone, structure, and depth. length of the paragraph in 75-77 words , without using examples and dont use '*'. Label the paragraph with **Observation:**
+Avoid saying “no data available.” Omit points gracefully if data is missing.
 
-Observation:
-The account appears to have conversion tracking in place, with consistent reporting on key KPIs such as purchases, revenue, ROAS, and CPA across campaigns, ad sets, ads, demographics, platforms, and placements. Metrics like purchase conversion value and frequency are also tracked, indicating pixel or API-based event tracking is active. However, some entries show null values for purchases or revenue despite significant spend and impressions, which may indicate tracking gaps for specific placements or objectives. Overall, tracking is mostly functional, but there may be issues with event configuration or attribution windows in certain areas that warrant further audit.
+Example structure to follow:
+Observation: [describe what is tracked]. [mention gaps if any]. [conclude with audit recommendation].
 """
+

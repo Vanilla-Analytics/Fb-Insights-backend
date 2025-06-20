@@ -127,10 +127,13 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                 title_lines = simpleSplit(section_title, "Helvetica-Bold", 20, title_width)
                 title_y = PAGE_HEIGHT - TOP_MARGIN - 20
                 c.setFillColor(colors.black)
-                c.setFont("Helvetica-Bold", 20)
+                c.setFont("Helvetica-Bold", 22)
+                title_line_height = 24
+                title_block_height = title_line_height * len(title_lines)
+                title_y_start = BOTTOM_MARGIN + (PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN + title_block_height) / 2 - title_line_height
                 for line in title_lines:
-                    c.drawString(LEFT_MARGIN + 10, title_y, line)
-                    title_y -= 24
+                    c.drawString(LEFT_MARGIN + 10, title_y_start, line)
+                    title_y_start -= title_line_height
 
                 text_x = left_section_width + 20
                 text_width = PAGE_WIDTH - text_x - RIGHT_MARGIN
@@ -138,14 +141,17 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                 c.setLineWidth(8)
                 c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
 
-                text_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                #text_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                text_y = PAGE_HEIGHT - 40  # Reduces top margin
+
                 c.setFont("Helvetica", 14)
                 content_lines = content.strip().split('\n')
                 for paragraph in content_lines:
                     if paragraph.strip():
                         wrapped_lines = simpleSplit(paragraph.strip(), "Helvetica", 14, text_width)
                         for line in wrapped_lines:
-                            if text_y < BOTTOM_MARGIN + 30:
+                            #if text_y < BOTTOM_MARGIN + 30:
+                            if text_y < 40:
                                 c.showPage()
                                 draw_header(c)
                                 text_y = PAGE_HEIGHT - TOP_MARGIN - 30
