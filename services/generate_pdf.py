@@ -93,23 +93,31 @@ def draw_metrics_grid(c, metrics, start_y):
     c.setFont("Helvetica-Bold", 14)
 
     for i, (label, value) in enumerate(metrics.items()):
-        col = i % cols
-        row = i // cols
-        x = x_start + col * (card_width + padding_x)
-        y_offset = row * (card_height + padding_y)
-        card_y = y - y_offset
+                if "<" in label or "<" in value:
+                    continue  # Skip HTML remnants
 
-        # Draw card
-        c.setFillColor(colors.HexColor("#e1fbd2"))  # soft green background
-        c.roundRect(x, card_y - card_height, card_width, card_height, 10, fill=1, stroke=0)
+                # Clean "■" or bullets from value
+                value_cleaned = str(value).replace("■", "").strip()
 
-        # Centered metric title and value
-        c.setFillColor(colors.HexColor("#222222"))
-        c.setFont("Helvetica-Bold", 12)
-        c.drawCentredString(x + card_width / 2, card_y - 18, label)
+                col = i % cols
+                row = i // cols
+                x = x_start + col * (card_width + padding_x)
+                y_offset = row * (card_height + padding_y)
+                card_y = y - y_offset
 
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(x + card_width / 2, card_y - 38, str(value))
+                # Draw card
+                c.setFillColor(colors.HexColor("#e1fbd2"))  # soft green background
+                c.roundRect(x, card_y - card_height, card_width, card_height, 10, fill=1, stroke=0)
+
+                # Centered metric title and value
+                c.setFillColor(colors.HexColor("#222222"))
+                c.setFont("Helvetica-Bold", 12)
+                c.drawCentredString(x + card_width / 2, card_y - 18, label.strip())
+
+                c.setFont("Helvetica", 12)
+                c.drawCentredString(x + card_width / 2, card_y - 38, value_cleaned)
+
+        
 
 def generate_pdf_report(sections: list) -> StreamingResponse:
     try:
@@ -126,7 +134,8 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                     # Page 1: Key Metrics Header & Cards
                     c.setFont("Helvetica-Bold", 24)
                     c.setFillColor(colors.black)
-                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - 60, "Key Metrics")
+                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Key Metrics")
+
 
                     metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                     metrics = dict(line.split(":", 1) for line in metric_lines)
@@ -137,7 +146,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                     draw_header(c)
 
                     c.setFont("Helvetica-Bold", 20)
-                    c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 80, "Last 30 Days\nTrend Section")
+                    c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Last 30 Days Trend Section")
 
                     paragraph = (
                         "The following section presents daily trend of the Key Metrics Identified in the previous section. "
@@ -147,7 +156,8 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                     c.setFont("Helvetica", 12)
                     text_width = PAGE_WIDTH / 2
                     lines = simpleSplit(paragraph, "Helvetica", 12, text_width)
-                    text_y = PAGE_HEIGHT - 80
+                    text_y = PAGE_HEIGHT - TOP_MARGIN - 60
+
                     for line in lines:
                         c.drawRightString(PAGE_WIDTH - RIGHT_MARGIN, text_y, line)
                         text_y -= 16
@@ -158,9 +168,9 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         draw_header(c)
                         try:
                             c.setFont("Helvetica-Bold", 14)
-                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 50, "Amount Spent vs Purchase Conversion Value")
+                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Amount Spent vs Purchase Conversion Value")
                             img1 = ImageReader(charts[0][1])
-                            c.drawImage(img1, LEFT_MARGIN, BOTTOM_MARGIN + 50, width=900, height=200, preserveAspectRatio=True)
+                            c.drawImage(img1, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
                         except Exception as e:
                             print(f"⚠️ Chart 1 render error: {str(e)}")  
 
@@ -170,9 +180,9 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         draw_header(c)
                         try:
                             c.setFont("Helvetica-Bold", 14)
-                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 50, "Purchases vs ROAS")
+                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
                             img2 = ImageReader(charts[1][1])
-                            c.drawImage(img2, LEFT_MARGIN, BOTTOM_MARGIN + 50, width=900, height=200, preserveAspectRatio=True)
+                            c.drawImage(img2, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
                         except Exception as e:
                             print(f"⚠️ Chart 2 render error: {str(e)}")                
                     
