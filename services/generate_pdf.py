@@ -123,36 +123,59 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
             draw_header(c)
 
             if section_title.strip().upper() == "KEY METRICS":
-                    
-                    # Section Title
+                    # Page 1: Key Metrics Header & Cards
                     c.setFont("Helvetica-Bold", 24)
                     c.setFillColor(colors.black)
-                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 10, "Key Metrics")
+                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - 60, "Key Metrics")
 
-                    c.setFont("Helvetica", 12)
-                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Performance overview of your campaign across key indicators.")
-
-                    # Parse metrics from content string
                     metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                     metrics = dict(line.split(":", 1) for line in metric_lines)
+                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 100) 
 
-                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - TOP_MARGIN - 60)
+                    # Page 2: Trend Heading & Paragraph
+                    c.showPage()
+                    draw_header(c)
 
-                    # Trend Section Title
                     c.setFont("Helvetica-Bold", 20)
-                    c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 260, "Last 30 Days\nTrend Section")
+                    c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 80, "Last 30 Days\nTrend Section")
 
+                    paragraph = (
+                        "The following section presents daily trend of the Key Metrics Identified in the previous section. "
+                        "This helps the business analyse the daily variance in the business KPIs and also helps in correlating "
+                        "how one metric affects the others."
+                    )
                     c.setFont("Helvetica", 12)
-                    c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 300, "The following section presents daily trend of the Key Metrics to help analyze business KPIs.")
+                    text_width = PAGE_WIDTH / 2
+                    lines = simpleSplit(paragraph, "Helvetica", 12, text_width)
+                    text_y = PAGE_HEIGHT - 80
+                    for line in lines:
+                        c.drawRightString(PAGE_WIDTH - RIGHT_MARGIN, text_y, line)
+                        text_y -= 16
 
-                    chart_y = BOTTOM_MARGIN + 100
-                    for chart_title, chart_buf in charts:
+                    # Page 3: Chart 1 — Amount Spent vs Purchase Conversion Value
+                    if charts:
+                        c.showPage()
+                        draw_header(c)
                         try:
-                            img = ImageReader(chart_buf)
-                            c.drawImage(img, LEFT_MARGIN + 40, chart_y, width=860, height=180, preserveAspectRatio=True)
-                            chart_y += 200
+                            c.setFont("Helvetica-Bold", 14)
+                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 50, "Amount Spent vs Purchase Conversion Value")
+                            img1 = ImageReader(charts[0][1])
+                            c.drawImage(img1, LEFT_MARGIN, BOTTOM_MARGIN + 50, width=900, height=200, preserveAspectRatio=True)
                         except Exception as e:
-                            print(f"⚠️ Could not render chart '{chart_title}': {str(e)}")
+                            print(f"⚠️ Chart 1 render error: {str(e)}")  
+
+                    # Page 4: Chart 2 — Purchases vs ROAS
+                    if len(charts) > 1:
+                        c.showPage()
+                        draw_header(c)
+                        try:
+                            c.setFont("Helvetica-Bold", 14)
+                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 50, "Purchases vs ROAS")
+                            img2 = ImageReader(charts[1][1])
+                            c.drawImage(img2, LEFT_MARGIN, BOTTOM_MARGIN + 50, width=900, height=200, preserveAspectRatio=True)
+                        except Exception as e:
+                            print(f"⚠️ Chart 2 render error: {str(e)}")                
+                    
             else:
                 # Default layout
                 left_section_width = PAGE_WIDTH * 0.4
