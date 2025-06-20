@@ -139,7 +139,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
 
                     metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                     metrics = dict(line.split(":", 1) for line in metric_lines)
-                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 100) 
+                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 160) 
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
@@ -174,9 +174,9 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             # Page 3: Chart 1 — Heading + Centered Chart
                             chart_title = "Amount Spent vs Purchase Conversion Value"
                             c.setFont("Helvetica-Bold", 16)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, chart_title)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
 
-                            chart_width = 800
+                            chart_width = 1000
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 60
@@ -198,9 +198,9 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             # Page 4: Chart 2 — Heading + Centered Chart
                             chart_title = "Purchases vs ROAS"
                             c.setFont("Helvetica-Bold", 16)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, chart_title)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
 
-                            chart_width = 700
+                            chart_width = 1000
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 60
