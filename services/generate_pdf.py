@@ -142,7 +142,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                 c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
 
                 #text_y = PAGE_HEIGHT - TOP_MARGIN - 30
-                text_y = PAGE_HEIGHT - 40  # Reduces top margin
+                text_y = PAGE_HEIGHT - 70  # Reduces top margin
 
                 c.setFont("Helvetica", 14)
                 content_lines = content.strip().split('\n')
