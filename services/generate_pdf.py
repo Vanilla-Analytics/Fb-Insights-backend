@@ -12,7 +12,7 @@ import re
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PAGE_WIDTH = 1000
-PAGE_HEIGHT = 500
+PAGE_HEIGHT = 600
 LEFT_MARGIN = inch
 RIGHT_MARGIN = inch
 TOP_MARGIN = 1.2 * inch
@@ -166,25 +166,37 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
 
                     # Page 3: Chart 1 — Amount Spent vs Purchase Conversion Value
                     if charts:
-                        c.showPage()
-                        draw_header(c)
+                        #c.showPage()
+                        #draw_header(c)
                         try:
-                            c.setFont("Helvetica-Bold", 14)
-                            #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Amount Spent vs Purchase Conversion Value")
-                            img1 = ImageReader(charts[0][1])
-                            # c.drawImage(img1, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
-                            # Page 3: Chart 1 — Heading + Centered Chart
                             chart_title = "Amount Spent vs Purchase Conversion Value"
                             c.setFont("Helvetica-Bold", 16)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
+                            c.drawCentredString(PAGE_WIDTH / 2, text_y - 30, chart_title)
 
-                            #chart_width = 1000
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = BOTTOM_MARGIN + 60
+                            chart_y = text_y - 320  # Reserve space below paragraph
 
+                            img1 = ImageReader(charts[0][1])
                             c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                            # c.setFont("Helvetica-Bold", 14)
+                            # #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Amount Spent vs Purchase Conversion Value")
+                            # # c.drawImage(img1, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
+                            # # Page 3: Chart 1 — Heading + Centered Chart
+                            # chart_title = "Amount Spent vs Purchase Conversion Value"
+                            # c.setFont("Helvetica-Bold", 16)
+                            # c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
+                            # img1 = ImageReader(charts[0][1])
+
+                            # #chart_width = 1000
+                            # chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
+                            # chart_height = 300
+                            # chart_x = (PAGE_WIDTH - chart_width) / 2
+                            # chart_y = BOTTOM_MARGIN + 60
+
+                            # c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
                         except Exception as e:
                             print(f"⚠️ Chart 1 render error: {str(e)}")  
