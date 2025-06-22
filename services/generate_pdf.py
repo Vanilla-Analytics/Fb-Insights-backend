@@ -139,7 +139,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
 
                     metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                     metrics = dict(line.split(":", 1) for line in metric_lines)
-                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 160) 
+                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 180) 
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
@@ -154,12 +154,14 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         "how one metric affects the others."
                     )
                     c.setFont("Helvetica", 12)
-                    text_width = PAGE_WIDTH / 2
+                    #text_width = PAGE_WIDTH / 2
+                    text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
                     lines = simpleSplit(paragraph, "Helvetica", 12, text_width)
                     text_y = PAGE_HEIGHT - TOP_MARGIN - 60
 
                     for line in lines:
-                        c.drawRightString(PAGE_WIDTH - RIGHT_MARGIN, text_y, line)
+                        #c.drawRightString(PAGE_WIDTH - RIGHT_MARGIN, text_y, line)
+                        c.drawString(LEFT_MARGIN, text_y, line)
                         text_y -= 16
 
                     # Page 3: Chart 1 — Amount Spent vs Purchase Conversion Value
@@ -176,7 +178,8 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             c.setFont("Helvetica-Bold", 16)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
 
-                            chart_width = 1000
+                            #chart_width = 1000
+                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 60
