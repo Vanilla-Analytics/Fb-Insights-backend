@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from io import BytesIO
 import base64
+from matplotlib.ticker import MaxNLocator
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
 from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
@@ -51,13 +52,24 @@ def generate_key_metrics_section(ad_insights_df):
     chart_imgs = []
 
     # Chart 1: Amount Spent vs Purchase Conversion Value
-    fig1, ax1 = plt.subplots()
+    # fig1, ax1 = plt.subplots()
+    # ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
+    # ax2 = ax1.twinx()
+    # ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
+    # ax1.set_ylabel("Purchase Value")
+    # ax2.set_ylabel("Amount Spent")
+    # ax1.set_title("Amount Spent vs Purchase Conversion Value")
+
+    fig1, ax1 = plt.subplots(figsize=(12, 4))  # Wider chart
     ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
+
     ax2 = ax1.twinx()
     ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
-    ax1.set_ylabel("Purchase Value")
-    ax2.set_ylabel("Amount Spent")
+
     ax1.set_title("Amount Spent vs Purchase Conversion Value")
+    ax1.xaxis.set_major_locator(MaxNLocator(nbins=10))  # Limit number of X-axis labels
+    fig1.autofmt_xdate(rotation=45)  # Rotate X-axis dates to avoid overlap
+
 
     chart_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
 

@@ -171,12 +171,12 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         try:
                             chart_title = "Amount Spent vs Purchase Conversion Value"
                             c.setFont("Helvetica-Bold", 16)
-                            c.drawCentredString(PAGE_WIDTH / 2, text_y - 30, chart_title)
+                            c.drawCentredString(PAGE_WIDTH / 2, text_y - 10, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = text_y - 320  # Reserve space below paragraph
+                            chart_y = text_y - 300  # Reserve space below paragraph
 
                             img1 = ImageReader(charts[0][1])
                             c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
