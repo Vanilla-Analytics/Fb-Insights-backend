@@ -177,27 +177,11 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = title_y - chart_height - 20 
+                            chart_y = title_y - chart_height - 30 
 
                             img1 = ImageReader(charts[0][1])
                             c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                            # c.setFont("Helvetica-Bold", 14)
-                            # #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Amount Spent vs Purchase Conversion Value")
-                            # # c.drawImage(img1, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
-                            # # Page 3: Chart 1 — Heading + Centered Chart
-                            # chart_title = "Amount Spent vs Purchase Conversion Value"
-                            # c.setFont("Helvetica-Bold", 16)
-                            # c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
-                            # img1 = ImageReader(charts[0][1])
-
-                            # #chart_width = 1000
-                            # chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            # chart_height = 300
-                            # chart_x = (PAGE_WIDTH - chart_width) / 2
-                            # chart_y = BOTTOM_MARGIN + 60
-
-                            # c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
                         except Exception as e:
                             print(f"⚠️ Chart 1 render error: {str(e)}")  
@@ -207,24 +191,76 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         c.showPage()
                         draw_header(c)
                         try:
-                            c.setFont("Helvetica-Bold", 14)
-                            #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
-                            img2 = ImageReader(charts[1][1])
-                            #c.drawImage(img2, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
-                            # Page 4: Chart 2 — Heading + Centered Chart
                             chart_title = "Purchases vs ROAS"
                             c.setFont("Helvetica-Bold", 16)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
+                            title_y = text_y - 10
+                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
-                            chart_width = 1000
+                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
+                            chart_height = 300
+                            chart_x = (PAGE_WIDTH - chart_width) / 2
+                            chart_y = title_y - chart_height - 30 
+
+                            img2 = ImageReader(charts[0][1])
+                            c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                            # c.setFont("Helvetica-Bold", 14)
+                            # #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
+                            # img2 = ImageReader(charts[1][1])
+                            # #c.drawImage(img2, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
+                            # # Page 4: Chart 2 — Heading + Centered Chart
+                            # chart_title = "Purchases vs ROAS"
+                            # c.setFont("Helvetica-Bold", 16)
+                            # c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
+
+                            # chart_width = 1000
+                            # chart_height = 300
+                            # chart_x = (PAGE_WIDTH - chart_width) / 2
+                            # chart_y = BOTTOM_MARGIN + 60
+
+                            # c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                        except Exception as e:
+                            print(f"⚠️ Chart 2 render error: {str(e)}")  
+
+                    if len(charts) > 2:
+                        c.showPage()
+                        draw_header(c)
+                        try:
+                            chart_title = "CPA vs Link CPC"
+                            c.setFont("Helvetica-Bold", 16)
+                            title_y = PAGE_HEIGHT - TOP_MARGIN - 80
+                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+
+                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 60
 
-                            c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
+                            img3 = ImageReader(charts[2][1])
+                            c.drawImage(img3, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
                         except Exception as e:
-                            print(f"⚠️ Chart 2 render error: {str(e)}")                
+                            print(f"⚠️ Chart 3 render error: {str(e)}")
+
+                    if len(charts) > 3:
+                        c.showPage()
+                        draw_header(c)
+                        try:
+                            chart_title = "Click to Conversion vs CTR"
+                            c.setFont("Helvetica-Bold", 16)
+                            title_y = PAGE_HEIGHT - TOP_MARGIN - 80
+                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+
+                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
+                            chart_height = 300
+                            chart_x = (PAGE_WIDTH - chart_width) / 2
+                            chart_y = BOTTOM_MARGIN + 60
+
+                            img4 = ImageReader(charts[3][1])
+                            c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                        except Exception as e:
+                            print(f"⚠️ Chart 4 render error: {str(e)}")
+
+              
                     
             else:
                 # Default layout

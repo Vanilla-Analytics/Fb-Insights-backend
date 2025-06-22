@@ -51,15 +51,6 @@ def generate_key_metrics_section(ad_insights_df):
     # Charts
     chart_imgs = []
 
-    # Chart 1: Amount Spent vs Purchase Conversion Value
-    # fig1, ax1 = plt.subplots()
-    # ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
-    # ax2 = ax1.twinx()
-    # ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
-    # ax1.set_ylabel("Purchase Value")
-    # ax2.set_ylabel("Amount Spent")
-    # ax1.set_title("Amount Spent vs Purchase Conversion Value")
-
     fig1, ax1 = plt.subplots(figsize=(12, 4))  # Wider chart
     ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
 
@@ -75,38 +66,44 @@ def generate_key_metrics_section(ad_insights_df):
 
 
     # Chart 2: Purchases vs ROAS
-    fig2, ax3 = plt.subplots()
+    fig2, ax3 = plt.subplots(figsize=(12, 4))
     ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
     ax4 = ax3.twinx()
     ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
-    ax3.set_ylabel("Purchases")
-    ax4.set_ylabel("ROAS")  
     ax3.set_title("Purchases vs ROAS")
+    ax3.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    # ax3.set_ylabel("Purchases")
+    # ax4.set_ylabel("ROAS")  
+
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
 
-
-
     # Chart 3: CPA vs Link CPC (Dual Y-Axis)
-    fig3, ax5 = plt.subplots()
-    ax5.plot(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
+    fig3, ax5 = plt.subplots(figsize=(12, 4))
+    ax5.bar(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
+    #ax5.plot(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
     ax6 = ax5.twinx()
     ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link CPC')
-    ax5.set_ylabel("CPA")
-    ax6.set_ylabel("Link CPC")
     ax5.set_title("CPA vs Link CPC")
-    chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
+    ax5.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    # ax5.set_ylabel("CPA")
+    # ax6.set_ylabel("Link CPC")
+    # ax5.set_title("CPA vs Link CPC")
+    # chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
     
 
 
     # Chart 4: Click to Conversion vs CTR
-    fig4, ax7 = plt.subplots()
-    ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
+    fig4, ax7 = plt.subplots(figsize=(12, 4))
+    #ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
+    ax7.bar(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
     ax8 = ax7.twinx()
     ax8.plot(ad_insights_df['date'], ad_insights_df['ctr'], color='darkblue', label='CTR')
-    ax7.set_ylabel("Click to Conversion")
-    ax8.set_ylabel("CTR")
     ax7.set_title("Click to Conversion vs CTR")
-    chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
+    ax7.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    # ax7.set_ylabel("Click to Conversion")
+    # ax8.set_ylabel("CTR")
+    # ax7.set_title("Click to Conversion vs CTR")
+    # chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
 
     # Table summary
     table_html = ad_insights_df.to_html(index=False, border=0)
