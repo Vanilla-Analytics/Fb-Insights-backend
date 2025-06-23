@@ -344,7 +344,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         # table_y = max(BOTTOM_MARGIN + 60, PAGE_HEIGHT / 2 - estimated_height / 2)
 
                         # Reserve fixed margin from top
-                        max_table_height = PAGE_HEIGHT - TOP_MARGIN - 130  # Header space
+                        max_table_height = PAGE_HEIGHT - TOP_MARGIN - 160  # Header space
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
                         table_y = max(min_table_y, max_table_height - estimated_height)

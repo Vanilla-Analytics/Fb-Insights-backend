@@ -21,15 +21,21 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def generate_chart_image(fig):
     buf = BytesIO()
-    fig.savefig(buf, format='png', bbox_inches='tight')
-    buf.seek(0)
-    encoded = base64.b64encode(buf.read()).decode('utf-8')
-    plt.close(fig)
-    buf = BytesIO()
-    fig.savefig(buf, format='png', bbox_inches='tight')
+    fig.tight_layout()
+    fig.savefig(buf, format='png', dpi=150)  # Removed bbox_inches
     buf.seek(0)
     plt.close(fig)
     return buf
+    # buf = BytesIO()
+    # fig.savefig(buf, format='png', bbox_inches='tight')
+    # buf.seek(0)
+    # encoded = base64.b64encode(buf.read()).decode('utf-8')
+    # plt.close(fig)
+    # buf = BytesIO()
+    # fig.savefig(buf, format='png', bbox_inches='tight')
+    # buf.seek(0)
+    # plt.close(fig)
+    # return buf
 
 
 def generate_key_metrics_section(ad_insights_df):
