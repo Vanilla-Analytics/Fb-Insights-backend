@@ -372,7 +372,10 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 'cpc': 'mean',
                 'ctr': 'mean'
             }).reset_index()
-
+            
+            # ✅ Ensure these are numeric before groupby
+            ad_insights_df['cpc'] = pd.to_numeric(ad_insights_df['cpc'], errors='coerce')
+            ad_insights_df['ctr'] = pd.to_numeric(ad_insights_df['ctr'], errors='coerce')
             # Derived metrics
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
             grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
