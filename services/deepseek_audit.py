@@ -8,6 +8,7 @@ import pandas as pd
 from io import BytesIO
 import base64
 from matplotlib.ticker import MaxNLocator
+import matplotlib.dates as mdates
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
 from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
@@ -55,18 +56,60 @@ def generate_key_metrics_section(ad_insights_df):
     # Charts
     chart_imgs = []
 
-    fig1, ax1 = plt.subplots(figsize=(12, 4))  # Wider chart
-    ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
+    # fig1, ax1 = plt.subplots(figsize=(12, 4))  # Wider chart
+    # ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
 
+    # ax2 = ax1.twinx()
+    # ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
+
+    # ax1.set_title("Amount Spent vs Purchase Conversion Value")
+    # ax1.xaxis.set_major_locator(MaxNLocator(nbins=10))  # Limit number of X-axis labels
+    # fig1.autofmt_xdate(rotation=45)  # Rotate X-axis dates to avoid overlap
+
+    #chart_imgs = []
+
+    # Chart 1: Amount Spent vs Purchase Conversion Value
+    
+    fig1, ax1 = plt.subplots(figsize=(12, 4))
+
+    # Green bars = purchase value
+    bars = ax1.bar(
+        ad_insights_df["date"],
+        ad_insights_df["purchase_value"],
+        color="#C1FF72",
+        label="Purchases conversion value",
+    )
+
+    ax1.set_ylabel("Purchase Conversion Value", color="#6C9A27")
+    ax1.tick_params(axis="y", labelcolor="#6C9A27")
+
+    # Pink line = amount spent
     ax2 = ax1.twinx()
-    ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
+    line = ax2.plot(
+        ad_insights_df["date"],
+        ad_insights_df["spend"],
+        color="magenta",
+        marker="o",
+        label="Amount Spent",
+    )
+    ax2.set_ylabel("Amount Spent", color="magenta")
+    ax2.tick_params(axis="y", labelcolor="magenta")
 
-    ax1.set_title("Amount Spent vs Purchase Conversion Value")
-    ax1.xaxis.set_major_locator(MaxNLocator(nbins=10))  # Limit number of X-axis labels
-    fig1.autofmt_xdate(rotation=45)  # Rotate X-axis dates to avoid overlap
+    # X-axis date formatting
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
+    fig1.autofmt_xdate()
 
+    # Legend
+    lines_labels = [bars, line[0]]
+    labels = [l.get_label() for l in lines_labels]
+    ax1.legend(lines_labels, labels, loc="upper center", frameon=False, ncol=2)
 
+    plt.tight_layout()
     chart_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
+
+
+
+    #chart_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
 
 
     # Chart 2: Purchases vs ROAS
