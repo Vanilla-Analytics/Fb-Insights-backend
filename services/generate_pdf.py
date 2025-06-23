@@ -294,7 +294,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                             f"{row['roas']:.2f}",
                         ])
 
-                    # Limit row count if needed (for fitting one page), or use page breaks
+                        # Limit row count if needed (for fitting one page), or use page breaks
                         summary_table = Table(table_data[:30], repeatRows=1, colWidths=[90]*10)
                         summary_table.setStyle(TableStyle([
 
@@ -308,8 +308,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
 
-
-              
+                    else:
+                        c.showPage()
+                        draw_header(c)
+                        c.setFont("Helvetica-Bold", 16)
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
+                        c.setFont("Helvetica", 12)
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠ No ad data available to display the summary table.")              
                     
             else:
                 # Default layout
