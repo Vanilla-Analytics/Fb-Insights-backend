@@ -7,6 +7,8 @@ import io
 import os
 from fastapi.responses import StreamingResponse
 from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
 import re
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -264,6 +266,53 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
                         except Exception as e:
                             print(f"⚠️ Chart 4 render error: {str(e)}")
+
+                    
+                    # New Page: Full Table Summary
+                    c.showPage()
+                    draw_header(c)
+                    c.setFont("Helvetica-Bold", 16)
+                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
+
+                    # Extract data from content section (or receive df separately)
+                    import pandas as pd
+                    from io import StringIO
+
+                    # Simulate parsing or pass df directly via section
+                    from services.deepseek_audit import ad_insights_df  # Only if accessible
+
+                    # Recreate the needed columns
+                    table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions",
+                        "CTR", "Link clicks", "Click To Conversion", "ROAS"]]
+
+                    for _, row in ad_insights_df.iterrows():
+                        table_data.append([
+                        pd.to_datetime(row['date']).strftime("%d %b %Y"),
+                        f"${row['spend']:,.2f}",
+                        int(row['purchases']),
+                        f"${row['purchase_value']:,.2f}",
+                        f"${row['cpa']:,.2f}",
+                        f"{int(row['impressions']):,}",
+                        f"{row['ctr']:.2%}",
+                        int(row['clicks']),
+                        f"{row['click_to_conversion']:.2%}",
+                        f"{row['roas']:.2f}",
+                    ])
+
+                    # Limit row count if needed (for fitting one page), or use page breaks
+                    summary_table = Table(table_data[:30], repeatRows=1, colWidths=[90]*10)
+                    summary_table.setStyle(TableStyle([
+
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 8),
+                        ("ALIGN", (0, 0), (-1, -1), "CENTER")
+                    ]))
+
+                    summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                    summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
+
 
               
                     
