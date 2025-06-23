@@ -294,15 +294,13 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
 
 
-            if 'date' not in ad_insights_df.columns:
-                if 'date_start' in ad_insights_df.columns:
-                    try:
-                        ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
-                    except Exception as e:
-                        print(f"⚠️ Failed to convert 'date_start': {e}")
-                        ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
-                else:
-                    ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
+            if 'date_start' in ad_insights_df.columns:
+                ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)  # ensure string
+                ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
+                ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()]  # drop NaT rows
+            else:
+                ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
+
             print("✅ Sample dates:", ad_insights_df['date'].head())
 
 
