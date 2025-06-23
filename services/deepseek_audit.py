@@ -21,29 +21,30 @@ DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def generate_chart_1(ad_insights_df):
-    fig, ax1 = plt.subplots(figsize=(18, 6))  # Wider chart
+
+    fig, ax1 = plt.subplots(figsize=(18, 6), dpi=200)  # Wider chart with high resolution
 
     # Fill missing values
     ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
     ad_insights_df['spend'] = ad_insights_df['spend'].fillna(0)
 
-    # ✅ Green bars for Purchase Conversion Value (Left Y-Axis)
-    ax1.bar(
+    # ✅ Green bars (not lines or dashes)
+    bars = ax1.bar(
         ad_insights_df["date"],
         ad_insights_df["purchase_value"],
-        color="#B2FF59",               # Bright light green
-        edgecolor="#76FF03",           # Outline green
-        width=0.8,
-        label="Purchase Conversion Value",
-        zorder=1
+        color="#B2FF59",              # Bright green
+        edgecolor="#76FF03",          # Slightly darker edge
+        width=0.6,
+        zorder=2,
+        label="Purchase Conversion Value"
     )
-    ax1.set_axisbelow(True)  # Grid and bars under line
 
     ax1.set_ylabel("Purchase Conversion Value", color="#4CAF50", fontsize=12)
     ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=12, width=1.2)
+    ax1.set_axisbelow(True)  # Put grid behind bars
     ax1.spines['left'].set_linewidth(1.2)
 
-    # ✅ Magenta line for Amount Spent (Right Y-Axis)
+    # ✅ Magenta line (Amount Spent)
     ax2 = ax1.twinx()
     ax2.plot(
         ad_insights_df["date"],
@@ -51,17 +52,19 @@ def generate_chart_1(ad_insights_df):
         color="magenta",
         marker="o",
         label="Amount Spent",
-        linewidth=2.5
+        linewidth=2.5,
+        zorder=3
     )
+
     ax2.set_ylabel("Amount Spent", color="magenta", fontsize=12)
-    ax2.tick_params(axis='y', labelcolor="magenta", labelsize=10)
+    ax2.tick_params(axis='y', labelcolor="magenta", labelsize=12)
     ax2.spines['right'].set_linewidth(1.2)
 
     # Axis scaling
     ax1.set_ylim(0, ad_insights_df['purchase_value'].max() * 1.2)
     ax2.set_ylim(0, ad_insights_df['spend'].max() * 1.2)
 
-    # ✅ Format X-axis as proper date
+    # X-axis formatting
     ax1.set_xticks(ad_insights_df["date"])
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax1.tick_params(axis='x', rotation=45, labelsize=10)
