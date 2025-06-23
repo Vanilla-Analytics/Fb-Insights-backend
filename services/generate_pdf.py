@@ -173,7 +173,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             chart_title = charts[0][0]
                             c.setFont("Helvetica-Bold", 16)
                             title_y = text_y - 10
-                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+                            #c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 280
