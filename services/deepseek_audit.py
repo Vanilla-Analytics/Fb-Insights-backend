@@ -359,10 +359,10 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             if col in ad_insights_df.columns:
                 ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
             
-            if 'date_start' in ad_insights_df.columns:
-                print("📋 Checking date_start content:", ad_insights_df['date_start'].head(3))
-            else:
-                print("⚠️ 'date_start' column is missing entirely.")
+        if 'date_start' in ad_insights_df.columns:
+            print("📋 Checking date_start content:", ad_insights_df['date_start'].head(3))
+        else:
+            print("⚠️ 'date_start' column is missing entirely.")
 
 #----------------------------------------------------------------------------------------
           # ✅ Make sure 'date_start' exists and convert to datetime
