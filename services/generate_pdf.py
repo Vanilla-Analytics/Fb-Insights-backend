@@ -273,8 +273,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                     if ad_insights_df is not None and not ad_insights_df.empty:
                         c.showPage()
                         draw_header(c)
+                        # c.setFont("Helvetica-Bold", 16)
+                        # c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 50, "Campaign Performance Summary")
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 100
                         c.setFont("Helvetica-Bold", 16)
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 50, "Campaign Performance Summary")
+                        c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Summary")
 
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
@@ -308,7 +311,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
 
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         #summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
-                        summary_table.drawOn(c, LEFT_MARGIN, 170) 
+                        # summary_table.drawOn(c, LEFT_MARGIN, 170)
+                        table_y = title_y - 30 - (len(table_data[:30]) * 15)  # spacing based on row height
+                        table_y = max(BOTTOM_MARGIN + 40, table_y)  # safety floor
+                        summary_table.drawOn(c, LEFT_MARGIN, table_y) 
+
 
                     else:
                         c.showPage()
