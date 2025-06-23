@@ -32,7 +32,9 @@ def generate_chart_1(ad_insights_df):
     ax1.bar(
         ad_insights_df["date"],
         ad_insights_df["purchase_value"],
-        color="#B2FF59",  # Light green
+        color="#4CAF50",  # ✅ darker green for visibility
+        edgecolor="black",  # ✅ optional border for better contrast
+        linewidth=0.5,
         label="Purchase Conversion Value"
     )
     ax1.set_ylabel("Purchase Conversion Value", color="#6B8E23", fontsize=12)
@@ -74,7 +76,7 @@ def generate_chart_1(ad_insights_df):
 def generate_chart_image(fig):
     buf = BytesIO()
     fig.tight_layout()
-    fig.savefig(buf, format='png', dpi=150)  # Removed bbox_inches
+    fig.savefig(buf, format='png', dpi=200)  # Removed bbox_inches
     buf.seek(0)
     plt.close(fig)
     return buf
