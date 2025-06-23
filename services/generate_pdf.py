@@ -343,13 +343,21 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         # summary_table.drawOn(c, LEFT_MARGIN, table_y) 
 
                         # Calculate safe Y position: between footer & title
-                        table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100  # space below title
-                        table_min_y = BOTTOM_MARGIN + 60
+                        # table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100  # space below title
+                        # table_min_y = BOTTOM_MARGIN + 60
+                        # estimated_height = 15 * len(table_data[:30])
+                        # table_y = table_max_height - estimated_height
+
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 100
+                        table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100
                         estimated_height = 15 * len(table_data[:30])
                         table_y = table_max_height - estimated_height
 
+
                         # Clamp to minimum margin
-                        table_y = max(table_min_y, table_y)
+                        #table_y = max(table_min_y, table_y)
+                        table_y = max(BOTTOM_MARGIN + 60, PAGE_HEIGHT / 2 - estimated_height / 2)
+
 
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
