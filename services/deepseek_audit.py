@@ -18,6 +18,46 @@ from services.generate_pdf import generate_pdf_report
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+import matplotlib.pyplot as plt
+
+def generate_chart_1(ad_insights_df):
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+
+    # Fix 1: Avoid NaNs (replace with 0)
+    ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
+    ad_insights_df['spend'] = ad_insights_df['spend'].fillna(0)
+
+    # Fix 2: Create bar plot for purchase value
+    ax1.bar(
+        ad_insights_df["date"],
+        ad_insights_df["purchase_value"],
+        color="#C1FF72",
+        label="Purchases conversion value"
+    )
+    ax1.set_ylabel("Purchase Conversion Value", color="#6B8E23")
+    ax1.tick_params(axis='y', labelcolor="#6B8E23")
+
+    # Fix 3: Add second Y-axis for amount spent
+    ax2 = ax1.twinx()
+    ax2.plot(
+        ad_insights_df["date"],
+        ad_insights_df["spend"],
+        color="magenta",
+        marker="o",
+        label="Amount Spent"
+    )
+    ax2.set_ylabel("Amount Spent", color="magenta")
+    ax2.tick_params(axis='y', labelcolor="magenta")
+
+    # Fix 4: Tweak axis limits (optional but cleaner)
+    ax1.set_ylim(0, ad_insights_df['purchase_value'].max() * 1.2)
+    ax2.set_ylim(0, ad_insights_df['spend'].max() * 1.2)
+
+    # Fix 5: Rotate x-labels and format layout
+    plt.xticks(rotation=45)
+    fig.tight_layout()
+    return fig
+
 
 def generate_chart_image(fig):
     buf = BytesIO()
@@ -76,42 +116,8 @@ def generate_key_metrics_section(ad_insights_df):
 
     # Chart 1: Amount Spent vs Purchase Conversion Value
     
-    fig1, ax1 = plt.subplots(figsize=(12, 4))
-
-    # Green bars = purchase value
-    bars = ax1.bar(
-        ad_insights_df["date"],
-        ad_insights_df["purchase_value"],
-        color="#C1FF72",
-        label="Purchases conversion value",
-    )
-
-    ax1.set_ylabel("Purchase Conversion Value", color="#6C9A27")
-    ax1.tick_params(axis="y", labelcolor="#6C9A27")
-
-    # Pink line = amount spent
-    ax2 = ax1.twinx()
-    line = ax2.plot(
-        ad_insights_df["date"],
-        ad_insights_df["spend"],
-        color="magenta",
-        marker="o",
-        label="Amount Spent",
-    )
-    ax2.set_ylabel("Amount Spent", color="magenta")
-    ax2.tick_params(axis="y", labelcolor="magenta")
-
-    # X-axis date formatting
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
-    fig1.autofmt_xdate()
-
-    # Legend
-    lines_labels = [bars, line[0]]
-    labels = [l.get_label() for l in lines_labels]
-    ax1.legend(lines_labels, labels, loc="upper center", frameon=False, ncol=2)
-
-    plt.tight_layout()
-    chart_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
+    fig1 = generate_chart_1(ad_insights_df)
+    chart_imgs.append(("", generate_chart_image(fig1)))
 
 
 
