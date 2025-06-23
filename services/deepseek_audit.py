@@ -309,6 +309,9 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(user_token)
+        if not ad_data:
+            raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
+
         ad_insights_df = pd.DataFrame(ad_data)
 
         # Ensure all required columns exist, even if filled with zeros
@@ -349,13 +352,13 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
 
 
-            if 'date_start' in ad_insights_df.columns:
-                ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)  # ensure string
+            if 'date_start' in ad_insights_df.columns and ad_insights_df['date_start'].notna().any():
+                ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
                 ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
-                ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()]  # drop NaT rows
+                ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()] 
             else:
                 #ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
-                raise ValueError("❌ Missing 'date_start' in ad insights data. Cannot build proper time series.")
+                raise ValueError("❌ 'date_start' column is missing or all values are empty. Cannot build time series.")
             
             # ✅ Filter strictly to last 60 days
             cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
