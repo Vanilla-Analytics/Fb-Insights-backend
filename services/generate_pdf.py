@@ -280,33 +280,33 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
 
                         import pandas as pd
 
-                    for _, row in ad_insights_df.iterrows():
-                        table_data.append([
-                        pd.to_datetime(row['date']).strftime("%d %b %Y"),
-                        f"${row['spend']:,.2f}",
-                        int(row['purchases']),
-                        f"${row['purchase_value']:,.2f}",
-                        f"${row['cpa']:,.2f}",
-                        f"{int(row['impressions']):,}",
-                        f"{row['ctr']:.2%}",
-                        int(row['clicks']),
-                        f"{row['click_to_conversion']:.2%}",
-                        f"{row['roas']:.2f}",
-                    ])
+                        for _, row in ad_insights_df.iterrows():
+                            table_data.append([
+                            pd.to_datetime(row['date']).strftime("%d %b %Y"),
+                            f"${row['spend']:,.2f}",
+                            int(row['purchases']),
+                            f"${row['purchase_value']:,.2f}",
+                            f"${row['cpa']:,.2f}",
+                            f"{int(row['impressions']):,}",
+                            f"{row['ctr']:.2%}",
+                            int(row['clicks']),
+                            f"{row['click_to_conversion']:.2%}",
+                            f"{row['roas']:.2f}",
+                        ])
 
                     # Limit row count if needed (for fitting one page), or use page breaks
-                    summary_table = Table(table_data[:30], repeatRows=1, colWidths=[90]*10)
-                    summary_table.setStyle(TableStyle([
+                        summary_table = Table(table_data[:30], repeatRows=1, colWidths=[90]*10)
+                        summary_table.setStyle(TableStyle([
 
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 8),
-                        ("ALIGN", (0, 0), (-1, -1), "CENTER")
-                    ]))
+                            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 8),
+                            ("ALIGN", (0, 0), (-1, -1), "CENTER")
+                        ]))
 
-                    summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                    summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
+                        summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                        summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
 
 
               
