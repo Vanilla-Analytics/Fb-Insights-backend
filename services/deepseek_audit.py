@@ -21,7 +21,7 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 import matplotlib.pyplot as plt
 
 def generate_chart_1(ad_insights_df):
-    fig, ax1 = plt.subplots(figsize=(10, 5))
+    fig, ax1 = plt.subplots(figsize=(12, 6))
 
     # Fix 1: Avoid NaNs (replace with 0)
     ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
@@ -354,7 +354,13 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
                 ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()]  # drop NaT rows
             else:
-                ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
+                #ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
+                raise ValueError("❌ Missing 'date_start' in ad insights data. Cannot build proper time series.")
+            
+            # ✅ Filter strictly to last 60 days
+            cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
+            ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff]
+
 
             print("✅ Sample dates:", ad_insights_df['date'].head())
 
