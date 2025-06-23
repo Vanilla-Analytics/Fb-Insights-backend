@@ -13,15 +13,15 @@ from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_
 from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
 from services.prompts import RESULTS_SETUP_PROMPT
-
+import matplotlib.ticker as mticker
+import matplotlib.dates as mdates
 from services.generate_pdf import generate_pdf_report
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-import matplotlib.pyplot as plt
 
 def generate_chart_1(ad_insights_df):
-    import matplotlib.ticker as mticker
+    
     fig, ax1 = plt.subplots(figsize=(16, 6))  # ✅ Wider chart
 
     # Fill missing values
@@ -59,7 +59,9 @@ def generate_chart_1(ad_insights_df):
 
     # ✅ Format X-axis
     ax1.tick_params(axis='x', labelrotation=45, labelsize=10)
-    ax1.xaxis.set_major_formatter(mticker.DateFormatter('%d-%b'))
+    #ax1.xaxis.set_major_formatter(mticker.DateFormatter('%d-%b'))
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))  # ✅ Correct usage
+
 
     # Grid and layout
     ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
