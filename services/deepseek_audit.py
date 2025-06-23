@@ -448,14 +448,37 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
         #----------------------------------------------------------------------------------------------------
         #key_metrics = generate_key_metrics_section(ad_insights_df)
-        if not ad_insights_df.empty:
-            key_metrics = generate_key_metrics_section(ad_insights_df)
-        else:
-            key_metrics = {
-            "title": "KEY METRICS",
-            "content": "No ad data available to generate Key Metrics.",
-            "charts": []
-        }
+        # if not ad_insights_df.empty:
+        #     key_metrics = generate_key_metrics_section(ad_insights_df)
+        # else:
+        #     key_metrics = {
+        #     "title": "KEY METRICS",
+        #     "content": "No ad data available to generate Key Metrics.",
+        #     "charts": []
+        # }
+
+        # ✅ Group and aggregate
+        grouped_df = ad_insights_df.groupby('date').agg({
+            'spend': 'sum',
+            'purchases': 'sum',
+            'purchase_value': 'sum',
+            'impressions': 'sum',
+            'clicks': 'sum',
+            'cpc': 'mean',
+            'ctr': 'mean'
+        }).reset_index()
+
+        # ✅ Add calculated fields
+        grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
+        grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
+        grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
+
+        # ✅ Filter last 60 days (unique)
+        ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
+
+        # ✅ NOW generate key metrics with grouped data
+        key_metrics = generate_key_metrics_section(ad_insights_df)
+
 
         # Generate Executive Summary
         print("🤖 Generating Executive Summary...")
