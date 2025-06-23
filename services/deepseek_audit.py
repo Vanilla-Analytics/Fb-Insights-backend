@@ -360,37 +360,32 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             else:
                 print("⚠️ 'date_start' column is missing entirely.")
 
-
-            # ✅ Verify and convert date_start only if column exists
-            if 'date_start' in ad_insights_df.columns:
-                ad_insights_df = ad_insights_df.dropna(subset=['date_start'])  # remove empty date_start rows
-                if ad_insights_df.empty:
-                    raise ValueError("❌ All date_start values were empty or invalid.")
-    
-                ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
-                ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
-                ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()]
-            else:
+#----------------------------------------------------------------------------------------
+          # ✅ Make sure 'date_start' exists and convert to datetime
+            if 'date_start' not in ad_insights_df.columns:
                 raise ValueError("❌ 'date_start' column is missing in ad insights data.")
 
-            
+            ad_insights_df = ad_insights_df.dropna(subset=['date_start'])
+            if ad_insights_df.empty:
+                raise ValueError("❌ All 'date_start' values are empty or invalid.")
+
+            # Convert and filter by date
+            ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
+            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
+            ad_insights_df = ad_insights_df.dropna(subset=['date'])
+
             # ✅ Filter strictly to last 60 days
-            cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
-            ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff]
-            print("✅ Sample dates:", ad_insights_df['date'].head())
-            print(ad_insights_df.dtypes)
+            cutoff_date = pd.Timestamp.today() - pd.Timedelta(days=60)
+            ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff_date]
+            print("✅ Filtered sample dates:", ad_insights_df['date'].head())
 
-            
-            # 🔧 Force numeric types to prevent 'dtype=object' issues in mean()
-            ad_insights_df['cpc'] = pd.to_numeric(ad_insights_df['cpc'], errors='coerce')
-            ad_insights_df['ctr'] = pd.to_numeric(ad_insights_df['ctr'], errors='coerce')
-            ad_insights_df['spend'] = pd.to_numeric(ad_insights_df['spend'], errors='coerce')
-            ad_insights_df['purchase_value'] = pd.to_numeric(ad_insights_df['purchase_value'], errors='coerce')
-            ad_insights_df['purchases'] = pd.to_numeric(ad_insights_df['purchases'], errors='coerce')
-            ad_insights_df['impressions'] = pd.to_numeric(ad_insights_df['impressions'], errors='coerce')
-            ad_insights_df['clicks'] = pd.to_numeric(ad_insights_df['clicks'], errors='coerce')
+            # ✅ Convert to numeric to avoid aggregation issues
+            cols_to_numeric = ['spend', 'purchases', 'purchase_value', 'cpa', 'impressions', 'clicks', 'cpc', 'ctr']
+            for col in cols_to_numeric:
+                if col in ad_insights_df.columns:
+                    ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
 
-            # ✅ GROUP BY DATE to remove duplicate-day entries
+            # ✅ Group by date (one row per day)
             grouped_df = ad_insights_df.groupby('date').agg({
                 'spend': 'sum',
                 'purchases': 'sum',
@@ -400,30 +395,14 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 'cpc': 'mean',
                 'ctr': 'mean'
             }).reset_index()
-            
-            # ✅ Ensure these are numeric before groupby
-            ad_insights_df['cpc'] = pd.to_numeric(ad_insights_df['cpc'], errors='coerce')
-            ad_insights_df['ctr'] = pd.to_numeric(ad_insights_df['ctr'], errors='coerce')
-            # Derived metrics
+
+            # ✅ Add calculated fields
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
             grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
             grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
 
-            # Replace old df with grouped one
+            # ✅ Replace ad_insights_df with cleaned grouped data
             ad_insights_df = grouped_df
-
-
-            # Add default zeros for missing columns BEFORE checking .empty
-            for col in ['purchase_value', 'purchases', 'clicks', 'spend']:
-                if col not in ad_insights_df.columns:
-                    ad_insights_df[col] = 0
-            if ad_insights_df.empty:
-                print("⚠️ ad_insights_df is empty — skipping Key Metrics generation")
-
-        # ✅ Then add this
-        ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend'].replace(0, 1)
-        ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
-        ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
 
         #----------------------------------------------------------------------------------------------------
         #key_metrics = generate_key_metrics_section(ad_insights_df)
