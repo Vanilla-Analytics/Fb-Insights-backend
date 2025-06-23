@@ -21,7 +21,7 @@ DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def generate_chart_1(ad_insights_df):
-    fig, ax1 = plt.subplots(figsize=(16, 6))  # Wider chart
+    fig, ax1 = plt.subplots(figsize=(18, 6))  # Wider chart
 
     # Fill missing values
     ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
@@ -31,13 +31,16 @@ def generate_chart_1(ad_insights_df):
     ax1.bar(
         ad_insights_df["date"],
         ad_insights_df["purchase_value"],
-        color="#B2FF59",  # Light green
-        edgecolor="#A4C639",
-        width=0.6,
-        label="Purchase Conversion Value"
+        color="#B2FF59",               # Bright light green
+        edgecolor="#76FF03",           # Outline green
+        width=0.8,
+        label="Purchase Conversion Value",
+        zorder=1
     )
+    ax1.set_axisbelow(True)  # Grid and bars under line
+
     ax1.set_ylabel("Purchase Conversion Value", color="#4CAF50", fontsize=12)
-    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=10)
+    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=12, width=1.2)
     ax1.spines['left'].set_linewidth(1.2)
 
     # ✅ Magenta line for Amount Spent (Right Y-Axis)
