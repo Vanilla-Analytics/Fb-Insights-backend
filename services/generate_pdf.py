@@ -121,7 +121,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
         
 
-def generate_pdf_report(sections: list) -> StreamingResponse:
+def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingResponse:
     try:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
@@ -269,21 +269,19 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
 
                     
                     # New Page: Full Table Summary
-                    c.showPage()
-                    draw_header(c)
-                    c.setFont("Helvetica-Bold", 16)
-                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
+                    if ad_insights_df is not None and not ad_insights_df.empty:
+                        c.showPage()
+                        draw_header(c)
+                        c.setFont("Helvetica-Bold", 16)
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
 
-                    # Extract data from content section (or receive df separately)
-                    import pandas as pd
-                    from io import StringIO
+                        from reportlab.platypus import Table, TableStyle
+                        from reportlab.lib import colors
 
-                    # Simulate parsing or pass df directly via section
-                    from services.deepseek_audit import ad_insights_df  # Only if accessible
+                        # Prepare table data
+                        table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
-                    # Recreate the needed columns
-                    table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions",
-                        "CTR", "Link clicks", "Click To Conversion", "ROAS"]]
+                        import pandas as pd
 
                     for _, row in ad_insights_df.iterrows():
                         table_data.append([

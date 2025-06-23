@@ -350,7 +350,7 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
         # Generate PDF
         print("📄 Generating PDF report...")
-        pdf_response = generate_pdf_report(sections)
+        pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
         print("✅ PDF generated successfully")
         
         return pdf_response
