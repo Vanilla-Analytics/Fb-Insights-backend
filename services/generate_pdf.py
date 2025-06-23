@@ -274,7 +274,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         c.showPage()
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 16)
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 50, "Campaign Performance Summary")
 
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
@@ -307,7 +307,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         ]))
 
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                        summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
+                        #summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
+                        summary_table.drawOn(c, LEFT_MARGIN, 170) 
 
                     else:
                         c.showPage()
