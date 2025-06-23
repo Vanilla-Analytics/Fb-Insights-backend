@@ -361,7 +361,18 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
             ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff]
             print("✅ Sample dates:", ad_insights_df['date'].head())
+            print(ad_insights_df.dtypes)
+
             
+            # 🔧 Force numeric types to prevent 'dtype=object' issues in mean()
+            ad_insights_df['cpc'] = pd.to_numeric(ad_insights_df['cpc'], errors='coerce')
+            ad_insights_df['ctr'] = pd.to_numeric(ad_insights_df['ctr'], errors='coerce')
+            ad_insights_df['spend'] = pd.to_numeric(ad_insights_df['spend'], errors='coerce')
+            ad_insights_df['purchase_value'] = pd.to_numeric(ad_insights_df['purchase_value'], errors='coerce')
+            ad_insights_df['purchases'] = pd.to_numeric(ad_insights_df['purchases'], errors='coerce')
+            ad_insights_df['impressions'] = pd.to_numeric(ad_insights_df['impressions'], errors='coerce')
+            ad_insights_df['clicks'] = pd.to_numeric(ad_insights_df['clicks'], errors='coerce')
+
             # ✅ GROUP BY DATE to remove duplicate-day entries
             grouped_df = ad_insights_df.groupby('date').agg({
                 'spend': 'sum',
