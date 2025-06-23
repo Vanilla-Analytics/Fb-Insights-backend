@@ -350,15 +350,21 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         for col in numeric_fields:
             if col in ad_insights_df.columns:
                 ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
+            
+            print("📋 Checking date_start content:", ad_insights_df['date_start'].head(3))
 
-
-            if 'date_start' in ad_insights_df.columns and ad_insights_df['date_start'].notna().any():
+            # ✅ Verify and convert date_start only if column exists
+            if 'date_start' in ad_insights_df.columns:
+                ad_insights_df = ad_insights_df.dropna(subset=['date_start'])  # remove empty date_start rows
+                if ad_insights_df.empty:
+                    raise ValueError("❌ All date_start values were empty or invalid.")
+    
                 ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
                 ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
-                ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()] 
+                ad_insights_df = ad_insights_df[~ad_insights_df['date'].isna()]
             else:
-                #ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
-                raise ValueError("❌ 'date_start' column is missing or all values are empty. Cannot build time series.")
+                raise ValueError("❌ 'date_start' column is missing in ad insights data.")
+
             
             # ✅ Filter strictly to last 60 days
             cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
