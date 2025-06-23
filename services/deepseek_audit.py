@@ -375,7 +375,8 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
             # Convert and filter by date
             ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
-            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
+            #ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
+            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
             ad_insights_df = ad_insights_df.dropna(subset=['date'])
 
             # ✅ Filter strictly to last 60 days
