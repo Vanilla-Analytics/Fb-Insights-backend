@@ -32,6 +32,10 @@ def generate_chart_image(fig):
 
 
 def generate_key_metrics_section(ad_insights_df):
+    if ad_insights_df.empty or len(ad_insights_df) < 2:
+        print("⚠️ Not enough data to generate charts.")
+        return "No data available for Key Metrics.", []
+
     metrics_summary = {
         "Amount Spent": f"₹{ad_insights_df['spend'].sum():,.2f}",
         "Purchases": int(ad_insights_df['purchases'].sum()),
@@ -248,6 +252,14 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         ad_data = await fetch_ad_insights(user_token)
         ad_insights_df = pd.DataFrame(ad_data)
 
+        # Ensure all required columns exist, even if filled with zeros
+        expected_cols = ['date', 'spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
+
+        for col in expected_cols:
+            if col not in ad_insights_df.columns:
+                ad_insights_df[col] = 0
+
+
         combined_data = {
             "page_insights": page_data,
             "ad_insights": ad_data
@@ -279,7 +291,15 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
 
             if 'date' not in ad_insights_df.columns:
-                ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
+                if 'date_start' in ad_insights_df.columns:
+                    ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'])
+                else:
+                    ad_insights_df['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(ad_insights_df))
+
+            # Add default zeros for missing columns BEFORE checking .empty
+            for col in ['purchase_value', 'purchases', 'clicks', 'spend']:
+                if col not in ad_insights_df.columns:
+                    ad_insights_df[col] = 0
             if ad_insights_df.empty:
                 print("⚠️ ad_insights_df is empty — skipping Key Metrics generation")
 
