@@ -321,6 +321,12 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
 
         ad_insights_df = pd.DataFrame(ad_data)
+        # Ensure 'date' is present for charting and grouping
+        if 'date_start' in ad_insights_df.columns:
+            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
+        else:
+            raise ValueError("❌ Cannot parse 'date' because 'date_start' is missing.")
+
 
         # Ensure all required columns exist, even if filled with zeros
         #expected_cols = ['date', 'spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
