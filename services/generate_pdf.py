@@ -162,7 +162,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                     for line in lines:
                         #c.drawRightString(PAGE_WIDTH - RIGHT_MARGIN, text_y, line)
                         c.drawString(LEFT_MARGIN, text_y, line)
-                        text_y -= 16
+                        text_y -= 14
 
                     # Page 3: Chart 1 — Amount Spent vs Purchase Conversion Value
                     if charts:
@@ -175,9 +175,11 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 300
+                            chart_height = 280
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = title_y - chart_height - 30 
+                            #chart_y = title_y - chart_height - 30 
+                            chart_y = max(BOTTOM_MARGIN + 40, title_y - chart_height - 30)
+
 
                             img1 = ImageReader(charts[0][1])
                             c.drawImage(img1, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
@@ -234,7 +236,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = BOTTOM_MARGIN + 60
+                            chart_y = BOTTOM_MARGIN + 40
 
                             img3 = ImageReader(charts[2][1])
                             c.drawImage(img3, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
@@ -253,7 +255,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                             chart_height = 300
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = BOTTOM_MARGIN + 60
+                            chart_y = BOTTOM_MARGIN + 40
 
                             img4 = ImageReader(charts[3][1])
                             c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
