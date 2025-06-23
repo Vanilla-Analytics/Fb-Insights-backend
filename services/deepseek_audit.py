@@ -177,6 +177,8 @@ async def fetch_ad_insights(page_token: str):
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         #"date_preset": "last_60_days",
                         "date_preset":"maximum",
+                        "time_increment": 1,  # 👈 daily breakdown
+                        "level": "ad",        # 👈 required to enable daily granularity
                         "access_token": page_token
                     }
                     insights_resp = await client.get(ad_url, params=ad_params)
