@@ -409,23 +409,41 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 'ctr': 'mean'
             }).reset_index()
 
-            #ad_insights_df = ad_insights_df.sort_values('date', ascending=False).head(60).sort_values('date')  # Oldest to newest
-            # ✅ Ensure one unique row per day (last 60 days)
-            ad_insights_df = ad_insights_df.sort_values("date", ascending=False)
-            ad_insights_df = ad_insights_df.drop_duplicates(subset="date", keep="first")  # keep only one row per date
-            ad_insights_df = ad_insights_df.head(60).sort_values("date")  # oldest to newest for display
+            
+            # ad_insights_df = ad_insights_df.sort_values("date", ascending=False)
+            # ad_insights_df = ad_insights_df.drop_duplicates(subset="date", keep="first")  # keep only one row per date
+            # ad_insights_df = ad_insights_df.head(60).sort_values("date")  # oldest to newest for display
+            # grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
+            # grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
+            # grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
+            # pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
 
+            # ad_insights_df = grouped_df
+            # print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
+
+            # ✅ Group by date (ensure one row per day)
+            grouped_df = ad_insights_df.groupby('date').agg({
+                'spend': 'sum',
+                'purchases': 'sum',
+                'purchase_value': 'sum',
+                'impressions': 'sum',
+                'clicks': 'sum',
+                'cpc': 'mean',
+                'ctr': 'mean'
+            }).reset_index()
 
             # ✅ Add calculated fields
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
             grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
             grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
 
-            # ✅ Replace ad_insights_df with cleaned grouped data
+            # ✅ Keep only last 60 unique days
+            ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
+
+            # ✅ Feed final DataFrame to PDF
+            print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
             pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
 
-            ad_insights_df = grouped_df
-            print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
 
 
         #----------------------------------------------------------------------------------------------------
