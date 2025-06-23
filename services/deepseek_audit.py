@@ -21,42 +21,52 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 import matplotlib.pyplot as plt
 
 def generate_chart_1(ad_insights_df):
-    fig, ax1 = plt.subplots(figsize=(12, 6))
+    import matplotlib.ticker as mticker
+    fig, ax1 = plt.subplots(figsize=(16, 6))  # ✅ Wider chart
 
-    # Fix 1: Avoid NaNs (replace with 0)
+    # Fill missing values
     ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
     ad_insights_df['spend'] = ad_insights_df['spend'].fillna(0)
 
-    # Fix 2: Create bar plot for purchase value
+    # ✅ Green bars for Purchase Conversion Value
     ax1.bar(
         ad_insights_df["date"],
         ad_insights_df["purchase_value"],
-        color="#C1FF72",
-        label="Purchases conversion value"
+        color="#B2FF59",  # Light green
+        label="Purchase Conversion Value"
     )
-    ax1.set_ylabel("Purchase Conversion Value", color="#6B8E23")
-    ax1.tick_params(axis='y', labelcolor="#6B8E23")
+    ax1.set_ylabel("Purchase Conversion Value", color="#6B8E23", fontsize=12)
+    ax1.tick_params(axis='y', labelcolor="#6B8E23", labelsize=10)
+    ax1.spines['left'].set_linewidth(1.5)
 
-    # Fix 3: Add second Y-axis for amount spent
+    # ✅ Thicker magenta line for Amount Spent
     ax2 = ax1.twinx()
     ax2.plot(
         ad_insights_df["date"],
         ad_insights_df["spend"],
         color="magenta",
         marker="o",
-        label="Amount Spent"
+        label="Amount Spent",
+        linewidth=2.5
     )
-    ax2.set_ylabel("Amount Spent", color="magenta")
-    ax2.tick_params(axis='y', labelcolor="magenta")
+    ax2.set_ylabel("Amount Spent", color="magenta", fontsize=12)
+    ax2.tick_params(axis='y', labelcolor="magenta", labelsize=10)
+    ax2.spines['right'].set_linewidth(1.5)
 
-    # Fix 4: Tweak axis limits (optional but cleaner)
+    # Axis limits
     ax1.set_ylim(0, ad_insights_df['purchase_value'].max() * 1.2)
     ax2.set_ylim(0, ad_insights_df['spend'].max() * 1.2)
 
-    # Fix 5: Rotate x-labels and format layout
-    plt.xticks(rotation=45)
+    # ✅ Format X-axis
+    ax1.tick_params(axis='x', labelrotation=45, labelsize=10)
+    ax1.xaxis.set_major_formatter(mticker.DateFormatter('%d-%b'))
+
+    # Grid and layout
+    ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
     fig.tight_layout()
+
     return fig
+
 
 
 def generate_chart_image(fig):
