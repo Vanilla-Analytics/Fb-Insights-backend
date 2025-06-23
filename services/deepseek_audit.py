@@ -179,8 +179,8 @@ async def fetch_ad_insights(page_token: str):
                     ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
                     ad_params = {
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        #"date_preset": "last_60_days",
-                        "date_preset":"maximum",
+                        "date_preset": "last_60_days",
+                        #"date_preset":"maximum",
                         "time_increment": 1,  # 👈 daily breakdown
                         "level": "ad",        # 👈 required to enable daily granularity
                         "access_token": page_token
@@ -264,7 +264,7 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             "page_insights": page_data,
             "ad_insights": ad_data
         }
-        ad_insights_df = pd.DataFrame(ad_data)
+       
         print("🔎 Columns in ad_insights_df:", ad_insights_df.columns.tolist())
 
         # Ensure fallback/derived fields exist
