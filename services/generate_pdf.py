@@ -275,9 +275,6 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         c.setFont("Helvetica-Bold", 16)
                         c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
 
-                        from reportlab.platypus import Table, TableStyle
-                        from reportlab.lib import colors
-
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
