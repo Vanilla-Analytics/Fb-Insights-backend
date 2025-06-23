@@ -360,9 +360,26 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             # ✅ Filter strictly to last 60 days
             cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
             ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff]
-
-
             print("✅ Sample dates:", ad_insights_df['date'].head())
+            
+            # ✅ GROUP BY DATE to remove duplicate-day entries
+            grouped_df = ad_insights_df.groupby('date').agg({
+                'spend': 'sum',
+                'purchases': 'sum',
+                'purchase_value': 'sum',
+                'impressions': 'sum',
+                'clicks': 'sum',
+                'cpc': 'mean',
+                'ctr': 'mean'
+            }).reset_index()
+
+            # Derived metrics
+            grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
+            grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
+            grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
+
+            # Replace old df with grouped one
+            ad_insights_df = grouped_df
 
 
             # Add default zeros for missing columns BEFORE checking .empty
