@@ -172,14 +172,18 @@ async def fetch_ad_insights(page_token: str):
 
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
+            from datetime import datetime, timedelta
 
+            since = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
+            until = datetime.today().strftime('%Y-%m-%d')
             insights_data = []
             for acc in accounts:
                 try:
                     ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
                     ad_params = {
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "date_preset": "last_60_days",
+                        "time_range": {"since": since, "until": until},
+                        #"date_preset": "last_60_days",
                         #"date_preset":"maximum",
                         "time_increment": 1,  # 👈 daily breakdown
                         "level": "ad",        # 👈 required to enable daily granularity
