@@ -388,10 +388,9 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             print("🧪 Dates after parsing:", ad_insights_df['date'].dropna().unique())
 
 
-            # ✅ Filter strictly to last 60 days
-            cutoff_date = pd.Timestamp.today() - pd.Timedelta(days=60)
-            ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff_date]
-            print("✅ Filtered sample dates:", ad_insights_df['date'].head())
+            # cutoff_date = pd.Timestamp.today() - pd.Timedelta(days=60)
+            # ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff_date]
+            ad_insights_df = ad_insights_df.sort_values('date', ascending=False)
 
             # ✅ Convert to numeric to avoid aggregation issues
             cols_to_numeric = ['spend', 'purchases', 'purchase_value', 'cpa', 'impressions', 'clicks', 'cpc', 'ctr']
@@ -410,12 +409,16 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 'ctr': 'mean'
             }).reset_index()
 
+            ad_insights_df = ad_insights_df.sort_values('date', ascending=False).head(60).sort_values('date')  # Oldest to newest
+
             # ✅ Add calculated fields
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
             grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
             grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
 
             # ✅ Replace ad_insights_df with cleaned grouped data
+            pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
+
             ad_insights_df = grouped_df
             print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
 

@@ -327,7 +327,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         ])
 
                         # Limit row count if needed (for fitting one page), or use page breaks
-                        summary_table = Table(table_data[:30], repeatRows=1, colWidths=[90]*10)
+                        summary_table = Table(table_data, repeatRows=1, colWidths=[90]*10)
                         summary_table.setStyle(TableStyle([
 
                             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
@@ -349,7 +349,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         max_table_height = PAGE_HEIGHT - TOP_MARGIN - 80  # Header space
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
-                        table_y = max(min_table_y, max_table_height - estimated_height)
+                        #table_y = max(min_table_y, max_table_height - estimated_height)
+                        table_y = max(BOTTOM_MARGIN + 30, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 20)
+
 
 
 
