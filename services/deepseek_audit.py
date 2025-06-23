@@ -21,27 +21,26 @@ DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def generate_chart_1(ad_insights_df):
-    
-    fig, ax1 = plt.subplots(figsize=(16, 6))  # ✅ Wider chart
+    fig, ax1 = plt.subplots(figsize=(16, 6))  # Wider chart
 
     # Fill missing values
     ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
     ad_insights_df['spend'] = ad_insights_df['spend'].fillna(0)
 
-    # ✅ Green bars for Purchase Conversion Value
+    # ✅ Green bars for Purchase Conversion Value (Left Y-Axis)
     ax1.bar(
         ad_insights_df["date"],
         ad_insights_df["purchase_value"],
-        color="#4CAF50",  # ✅ darker green for visibility
-        edgecolor="black",  # ✅ optional border for better contrast
-        linewidth=0.5,
+        color="#B2FF59",  # Light green
+        edgecolor="#A4C639",
+        width=0.6,
         label="Purchase Conversion Value"
     )
-    ax1.set_ylabel("Purchase Conversion Value", color="#6B8E23", fontsize=12)
-    ax1.tick_params(axis='y', labelcolor="#6B8E23", labelsize=10)
-    ax1.spines['left'].set_linewidth(1.5)
+    ax1.set_ylabel("Purchase Conversion Value", color="#4CAF50", fontsize=12)
+    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=10)
+    ax1.spines['left'].set_linewidth(1.2)
 
-    # ✅ Thicker magenta line for Amount Spent
+    # ✅ Magenta line for Amount Spent (Right Y-Axis)
     ax2 = ax1.twinx()
     ax2.plot(
         ad_insights_df["date"],
@@ -53,20 +52,19 @@ def generate_chart_1(ad_insights_df):
     )
     ax2.set_ylabel("Amount Spent", color="magenta", fontsize=12)
     ax2.tick_params(axis='y', labelcolor="magenta", labelsize=10)
-    ax2.spines['right'].set_linewidth(1.5)
+    ax2.spines['right'].set_linewidth(1.2)
 
-    # Axis limits
+    # Axis scaling
     ax1.set_ylim(0, ad_insights_df['purchase_value'].max() * 1.2)
     ax2.set_ylim(0, ad_insights_df['spend'].max() * 1.2)
 
-    # ✅ Format X-axis
-    ax1.tick_params(axis='x', labelrotation=45, labelsize=10)
-    #ax1.xaxis.set_major_formatter(mticker.DateFormatter('%d-%b'))
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))  # ✅ Correct usage
-
+    # ✅ Format X-axis as proper date
+    ax1.set_xticks(ad_insights_df["date"])
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax1.tick_params(axis='x', rotation=45, labelsize=10)
 
     # Grid and layout
-    ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
+    ax1.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
     fig.tight_layout()
 
     return fig
