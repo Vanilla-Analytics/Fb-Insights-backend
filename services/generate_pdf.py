@@ -337,30 +337,25 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                             ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                         ]))
 
-                        # summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                        # table_y = title_y - 30 - (len(table_data[:30]) * 15) 
-                        # table_y = max(BOTTOM_MARGIN + 40, table_y) 
-                        # summary_table.drawOn(c, LEFT_MARGIN, table_y) 
-
-                        # Calculate safe Y position: between footer & title
-                        # table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100  # space below title
-                        # table_min_y = BOTTOM_MARGIN + 60
+                        # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
+                        # table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100
                         # estimated_height = 15 * len(table_data[:30])
                         # table_y = table_max_height - estimated_height
+                        # table_y = max(BOTTOM_MARGIN + 60, PAGE_HEIGHT / 2 - estimated_height / 2)
 
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 100
-                        table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100
-                        estimated_height = 15 * len(table_data[:30])
-                        table_y = table_max_height - estimated_height
+                        # Reserve fixed margin from top
+                        max_table_height = PAGE_HEIGHT - TOP_MARGIN - 130  # Header space
+                        min_table_y = BOTTOM_MARGIN + 20
+                        estimated_height = 16 * len(table_data[:30])
+                        table_y = max(min_table_y, max_table_height - estimated_height)
 
-
-                        # Clamp to minimum margin
-                        #table_y = max(table_min_y, table_y)
-                        table_y = max(BOTTOM_MARGIN + 60, PAGE_HEIGHT / 2 - estimated_height / 2)
 
 
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
+
+                        draw_footer = False  # Skip footer for table page
+
 
 
                     else:
@@ -427,7 +422,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                     except Exception as e:
                         print(f"⚠️ Could not render chart '{chart_title}': {str(e)}")
 
-            draw_footer_cta(c)
+            #draw_footer_cta(c)
+            if draw_footer:
+                draw_footer_cta(c)
+
             if i < len(sections) - 1:
                 c.showPage()
 
