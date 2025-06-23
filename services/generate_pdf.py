@@ -169,7 +169,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         #c.showPage()
                         #draw_header(c)
                         try:
-                            chart_title = "Amount Spent vs Purchase Conversion Value"
+                            #chart_title = "Amount Spent vs Purchase Conversion Value"
                             c.setFont("Helvetica-Bold", 16)
                             title_y = text_y - 10
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)

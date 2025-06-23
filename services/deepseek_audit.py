@@ -85,6 +85,8 @@ def generate_key_metrics_section(ad_insights_df):
     ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link CPC')
     ax5.set_title("CPA vs Link CPC")
     ax5.xaxis.set_major_locator(MaxNLocator(nbins=10))
+
+    chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
     # ax5.set_ylabel("CPA")
     # ax6.set_ylabel("Link CPC")
     # ax5.set_title("CPA vs Link CPC")
@@ -100,6 +102,8 @@ def generate_key_metrics_section(ad_insights_df):
     ax8.plot(ad_insights_df['date'], ad_insights_df['ctr'], color='darkblue', label='CTR')
     ax7.set_title("Click to Conversion vs CTR")
     ax7.xaxis.set_major_locator(MaxNLocator(nbins=10))
+
+    chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
     # ax7.set_ylabel("Click to Conversion")
     # ax8.set_ylabel("CTR")
     # ax7.set_title("Click to Conversion vs CTR")
