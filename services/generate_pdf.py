@@ -127,6 +127,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
         c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
 
         for i, section in enumerate(sections):
+            draw_footer = True  # ✅ Set default at start of each section
             section_title = section.get("title", "Untitled Section")
             content = section.get("content", "No content available.")
             charts = section.get("charts", [])
