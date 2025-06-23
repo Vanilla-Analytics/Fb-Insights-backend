@@ -442,7 +442,7 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
             # ✅ Feed final DataFrame to PDF
             print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
-            pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
+            #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
 
 
 
@@ -509,6 +509,8 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         ]
 
         # Generate PDF
+        print("✅ Final PDF table date count:", len(ad_insights_df), ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
+
         print("📄 Generating PDF report...")
         pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
         print("✅ PDF generated successfully")
