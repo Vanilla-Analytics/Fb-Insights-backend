@@ -286,16 +286,42 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
 
                         for _, row in ad_insights_df.iterrows():
                             table_data.append([
-                            pd.to_datetime(row['date']).strftime("%d %b %Y"),
-                            f"${row['spend']:,.2f}",
-                            int(row['purchases']),
-                            f"${row['purchase_value']:,.2f}",
-                            f"${row['cpa']:,.2f}",
-                            f"{int(row['impressions']):,}",
-                            f"{row['ctr']:.2%}",
-                            int(row['clicks']),
-                            f"{row['click_to_conversion']:.2%}",
-                            f"{row['roas']:.2f}",
+                                pd.to_datetime(row['date']).strftime("%d %b %Y"),
+                                f"${row['spend']:,.2f}",
+                                int(row['purchases']),
+                                f"${row['purchase_value']:,.2f}",
+                                f"${row['cpa']:,.2f}",
+                                f"{int(row['impressions']):,}",
+                                f"{row['ctr']:.2%}",
+                                int(row['clicks']),
+                                f"{row['click_to_conversion']:.2%}",
+                                f"{row['roas']:.2f}",
+                            ])
+                        # Calculate grand totals
+                        totals = {
+                            'spend': ad_insights_df['spend'].sum(),
+                            'purchases': ad_insights_df['purchases'].sum(),
+                            'purchase_value': ad_insights_df['purchase_value'].sum(),
+                            'cpa': ad_insights_df['cpa'].mean(),  # or weighted average
+                            'impressions': ad_insights_df['impressions'].sum(),
+                            'ctr': ad_insights_df['ctr'].mean(),
+                            'clicks': ad_insights_df['clicks'].sum(),
+                            'click_to_conversion': ad_insights_df['click_to_conversion'].mean(),
+                            'roas': ad_insights_df['roas'].mean()
+                        }
+
+                        # Append grand total row
+                        table_data.append([
+                            "Grand Total",
+                            f"${totals['spend']:,.2f}",
+                            int(totals['purchases']),
+                            f"${totals['purchase_value']:,.2f}",
+                            f"${totals['cpa']:,.2f}",
+                            f"{int(totals['impressions']):,}",
+                            f"{totals['ctr']:.2%}",
+                            int(totals['clicks']),
+                            f"{totals['click_to_conversion']:.2%}",
+                            f"{totals['roas']:.2f}",
                         ])
 
                         # Limit row count if needed (for fitting one page), or use page breaks
@@ -307,14 +333,26 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                             ("FONTSIZE", (0, 0), (-1, -1), 8),
                             ("ALIGN", (0, 0), (-1, -1), "CENTER")
+                            ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),  # Last row = Grand Total
+                            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
                         ]))
 
+                        # summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                        # table_y = title_y - 30 - (len(table_data[:30]) * 15) 
+                        # table_y = max(BOTTOM_MARGIN + 40, table_y) 
+                        # summary_table.drawOn(c, LEFT_MARGIN, table_y) 
+
+                        # Calculate safe Y position: between footer & title
+                        table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100  # space below title
+                        table_min_y = BOTTOM_MARGIN + 60
+                        estimated_height = 15 * len(table_data[:30])
+                        table_y = table_max_height - estimated_height
+
+                        # Clamp to minimum margin
+                        table_y = max(table_min_y, table_y)
+
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                        #summary_table.drawOn(c, LEFT_MARGIN - 10, BOTTOM_MARGIN + 80)
-                        # summary_table.drawOn(c, LEFT_MARGIN, 170)
-                        table_y = title_y - 30 - (len(table_data[:30]) * 15)  # spacing based on row height
-                        table_y = max(BOTTOM_MARGIN + 40, table_y)  # safety floor
-                        summary_table.drawOn(c, LEFT_MARGIN, table_y) 
+                        summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
 
                     else:
