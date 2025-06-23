@@ -208,7 +208,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = title_y - chart_height - 30 
 
-                            img2 = ImageReader(charts[0][1])
+                            #img2 = ImageReader(charts[0][1])
+                            img2 =   ImageReader(charts[1][1])
                             c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
                             # c.setFont("Helvetica-Bold", 14)
                             # #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
