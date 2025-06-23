@@ -170,6 +170,7 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                         #draw_header(c)
                         try:
                             #chart_title = "Amount Spent vs Purchase Conversion Value"
+                            chart_title = charts[0][0]
                             c.setFont("Helvetica-Bold", 16)
                             title_y = text_y - 10
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
@@ -178,7 +179,9 @@ def generate_pdf_report(sections: list) -> StreamingResponse:
                             chart_height = 280
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             #chart_y = title_y - chart_height - 30 
-                            chart_y = max(BOTTOM_MARGIN + 40, title_y - chart_height - 30)
+                            #chart_y = max(BOTTOM_MARGIN + 40, title_y - chart_height - 30)
+                            chart_y = max(BOTTOM_MARGIN + 60, title_y - chart_height - 10)
+
 
 
                             img1 = ImageReader(charts[0][1])
