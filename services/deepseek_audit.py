@@ -409,7 +409,12 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                 'ctr': 'mean'
             }).reset_index()
 
-            ad_insights_df = ad_insights_df.sort_values('date', ascending=False).head(60).sort_values('date')  # Oldest to newest
+            #ad_insights_df = ad_insights_df.sort_values('date', ascending=False).head(60).sort_values('date')  # Oldest to newest
+            # ✅ Ensure one unique row per day (last 60 days)
+            ad_insights_df = ad_insights_df.sort_values("date", ascending=False)
+            ad_insights_df = ad_insights_df.drop_duplicates(subset="date", keep="first")  # keep only one row per date
+            ad_insights_df = ad_insights_df.head(60).sort_values("date")  # oldest to newest for display
+
 
             # ✅ Add calculated fields
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
