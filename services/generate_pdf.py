@@ -332,9 +332,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                             ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
                             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                             ("FONTSIZE", (0, 0), (-1, -1), 8),
-                            ("ALIGN", (0, 0), (-1, -1), "CENTER")
+                            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),  # Last row = Grand Total
-                            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+                            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                         ]))
 
                         # summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
