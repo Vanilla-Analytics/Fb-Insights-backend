@@ -309,9 +309,13 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(user_token)
-        # Ensure ad_data always has expected keys even if empty
-        expected_keys = ['date_start', 'spend', 'impressions', 'clicks', 'cpc', 'ctr']
-        ad_data = [{k: d.get(k, None) for k in expected_keys} for d in ad_data if isinstance(d, dict)]
+        # Sanitize and ensure 'date_start' exists
+        ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
+        if not ad_data:
+            raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
+
+        # expected_keys = ['date_start', 'spend', 'impressions', 'clicks', 'cpc', 'ctr']
+        # ad_data = [{k: d.get(k, None) for k in expected_keys} for d in ad_data if isinstance(d, dict)]
 
         # if not ad_data:
         #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
