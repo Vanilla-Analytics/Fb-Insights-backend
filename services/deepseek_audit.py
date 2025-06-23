@@ -309,8 +309,12 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(user_token)
-        if not ad_data:
-            raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
+        # Ensure ad_data always has expected keys even if empty
+        expected_keys = ['date_start', 'spend', 'impressions', 'clicks', 'cpc', 'ctr']
+        ad_data = [{k: d.get(k, None) for k in expected_keys} for d in ad_data if isinstance(d, dict)]
+
+        # if not ad_data:
+        #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
 
         ad_insights_df = pd.DataFrame(ad_data)
 
@@ -351,7 +355,11 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             if col in ad_insights_df.columns:
                 ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
             
-            print("📋 Checking date_start content:", ad_insights_df['date_start'].head(3))
+            if 'date_start' in ad_insights_df.columns:
+                print("📋 Checking date_start content:", ad_insights_df['date_start'].head(3))
+            else:
+                print("⚠️ 'date_start' column is missing entirely.")
+
 
             # ✅ Verify and convert date_start only if column exists
             if 'date_start' in ad_insights_df.columns:
