@@ -323,7 +323,9 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         ad_insights_df = pd.DataFrame(ad_data)
 
         # Ensure all required columns exist, even if filled with zeros
-        expected_cols = ['date', 'spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
+        #expected_cols = ['date', 'spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
+        expected_cols = ['spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
+
 
         for col in expected_cols:
             if col not in ad_insights_df.columns:
@@ -375,9 +377,10 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
             # Convert and filter by date
             ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
-            #ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], format='%Y-%m-%d', errors='coerce')
             ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
             ad_insights_df = ad_insights_df.dropna(subset=['date'])
+            print("🧪 Dates after parsing:", ad_insights_df['date'].dropna().unique())
+
 
             # ✅ Filter strictly to last 60 days
             cutoff_date = pd.Timestamp.today() - pd.Timedelta(days=60)
@@ -408,6 +411,8 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
             # ✅ Replace ad_insights_df with cleaned grouped data
             ad_insights_df = grouped_df
+            print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
+
 
         #----------------------------------------------------------------------------------------------------
         #key_metrics = generate_key_metrics_section(ad_insights_df)

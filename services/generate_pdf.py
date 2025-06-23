@@ -297,6 +297,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                                 f"{row['click_to_conversion']:.2%}",
                                 f"{row['roas']:.2f}",
                             ])
+                        print("🖨 PDF row date:", row['date'], type(row['date']))
+
                         # Calculate grand totals
                         totals = {
                             'spend': ad_insights_df['spend'].sum(),
