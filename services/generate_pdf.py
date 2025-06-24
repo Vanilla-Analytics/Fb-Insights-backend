@@ -379,9 +379,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                             'purchases': 'sum'
                         }).reset_index()
 
-                        grouped_campaigns['roas'] = grouped_campaigns['purchase_value'] / grouped_campaigns['spend'].replace(0, 1)
-                        grouped_campaigns['cpa'] = grouped_campaigns['spend'] / grouped_campaigns['purchases'].replace(0, 1)
-
+                        # grouped_campaigns['roas'] = grouped_campaigns['purchase_value'] / grouped_campaigns['spend'].replace(0, 1)
+                        # grouped_campaigns['cpa'] = grouped_campaigns['spend'] / grouped_campaigns['purchases'].replace(0, 1)
+                        
+                        grouped_campaigns['roas'] = grouped_campaigns.apply(
+                            lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, axis=1
+                        )
+                        grouped_campaigns['cpa'] = grouped_campaigns.apply(
+                        lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1
+                        )
                         table_data = [["Campaign Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
 
                         for _, row in grouped_campaigns.iterrows():
