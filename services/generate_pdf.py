@@ -367,6 +367,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
 
                         c.setFont("Helvetica-Bold", 16)
                         c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Level Performance")
+                        # 🛠️ Ensure numeric types
+                        ad_insights_df['spend'] = pd.to_numeric(ad_insights_df['spend'], errors='coerce')
+                        ad_insights_df['purchase_value'] = pd.to_numeric(ad_insights_df['purchase_value'], errors='coerce')
+                        ad_insights_df['purchases'] = pd.to_numeric(ad_insights_df['purchases'], errors='coerce')
+
 
                         grouped_campaigns = ad_insights_df.groupby('campaign_name').agg({
                             'spend': 'sum',
