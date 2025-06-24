@@ -254,7 +254,8 @@ async def fetch_ad_insights(page_token: str):
                 try:
                     ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
                     ad_params = {
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
+                        #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
                         "time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
                         #"date_preset":"maximum",
@@ -331,6 +332,14 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
         if not ad_data:
             raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
+        
+        for ad in ad_data:
+            actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
+            values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
+
+            ad["purchases"] = actions.get("purchase", 0)
+            ad["purchase_value"] = values.get("purchase", 0)
+
 
         # expected_keys = ['date_start', 'spend', 'impressions', 'clicks', 'cpc', 'ctr']
         # ad_data = [{k: d.get(k, None) for k in expected_keys} for d in ad_data if isinstance(d, dict)]
