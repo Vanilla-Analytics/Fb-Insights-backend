@@ -360,16 +360,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
 
                         #draw_footer = False  # Skip footer for table page
 
-
-
-                    else:
-                        c.showPage()
-                        draw_header(c)
-                        c.setFont("Helvetica-Bold", 16)
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
-                        c.setFont("Helvetica", 12)
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠ No ad data available to display the summary table.") 
-                    # ✅ New Page: Campaign Level Performance Table
+                        # ✅ New Page: Campaign Level Performance Table
                     if ad_insights_df is not None and 'campaign_name' in ad_insights_df.columns:
                         c.showPage()
                         draw_header(c)
@@ -430,6 +421,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         table_y = PAGE_HEIGHT - TOP_MARGIN - 100
                         performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         performance_table.drawOn(c, LEFT_MARGIN, table_y)
+
+
+
+                    else:
+                        c.showPage()
+                        draw_header(c)
+                        c.setFont("Helvetica-Bold", 16)
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
+                        c.setFont("Helvetica", 12)
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠ No ad data available to display the summary table.") 
+                    
              
                     
             else:
