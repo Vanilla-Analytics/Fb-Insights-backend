@@ -121,7 +121,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
         
 
-def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingResponse:
+def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None) -> StreamingResponse:
     try:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
@@ -361,19 +361,20 @@ def generate_pdf_report(sections: list, ad_insights_df=None) -> StreamingRespons
                         #draw_footer = False  # Skip footer for table page
 
                         # ✅ New Page: Campaign Level Performance Table
-                    if ad_insights_df is not None and 'campaign_name' in ad_insights_df.columns:
+                    if full_ad_insights_df is not None and 'campaign_name' in full_ad_insights_df.columns:
                         c.showPage()
                         draw_header(c)
+                        df = full_ad_insights_df.copy()
 
                         c.setFont("Helvetica-Bold", 16)
                         c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Level Performance")
                         # 🛠️ Ensure numeric types
-                        ad_insights_df['spend'] = pd.to_numeric(ad_insights_df['spend'], errors='coerce')
-                        ad_insights_df['purchase_value'] = pd.to_numeric(ad_insights_df['purchase_value'], errors='coerce')
-                        ad_insights_df['purchases'] = pd.to_numeric(ad_insights_df['purchases'], errors='coerce')
+                        df['spend'] = pd.to_numeric(df['spend'], errors='coerce')
+                        df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce')
+                        df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce')
 
 
-                        grouped_campaigns = ad_insights_df.groupby('campaign_name').agg({
+                        grouped_campaigns = df.groupby('campaign_name').agg({
                             'spend': 'sum',
                             'purchase_value': 'sum',
                             'purchases': 'sum'

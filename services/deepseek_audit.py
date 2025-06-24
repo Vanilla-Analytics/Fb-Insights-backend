@@ -463,6 +463,9 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
             grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
             grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
+            # Keep full ad-level data for campaign table
+            full_ad_insights_df = ad_insights_df.copy()
+
 
             # ✅ Keep only last 60 unique days
             ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
@@ -562,7 +565,9 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         print("✅ Final PDF table date count:", len(ad_insights_df), ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
 
         print("📄 Generating PDF report...")
-        pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
+        #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
+        pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df, full_ad_insights_df=full_ad_insights_df)
+
         print("✅ PDF generated successfully")
         
         return pdf_response
