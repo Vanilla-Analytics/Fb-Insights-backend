@@ -376,6 +376,7 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         # Validate environment variables
         if not DEEPSEEK_API_URL or not DEEPSEEK_API_KEY:
             raise ValueError("DEEPSEEK_API_URL and DEEPSEEK_API_KEY environment variables must be set")
+        full_ad_insights_df = None
         
         # Fetch data from Facebook
         print("📊 Fetching Facebook data...")
@@ -622,7 +623,11 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
         print("📄 Generating PDF report...")
         #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
-        pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df, full_ad_insights_df=full_ad_insights_df)
+        pdf_response = generate_pdf_report(
+            sections,
+            ad_insights_df=ad_insights_df,
+            full_ad_insights_df=full_ad_insights_df if full_ad_insights_df is not None else pd.DataFrame()
+            )
 
         print("✅ PDF generated successfully")
         
