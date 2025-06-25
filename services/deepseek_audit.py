@@ -273,7 +273,7 @@ async def fetch_ad_insights(page_token: str):
 
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
                         "time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
                         #"date_preset":"maximum",
