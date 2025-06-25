@@ -244,14 +244,22 @@ async def fetch_ad_insights(page_token: str):
         async with httpx.AsyncClient() as client:
             acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
-            if acc_resp.status_code != 200:
-                print("⚠️ Facebook API Error:", acc_resp.text)
-                acc_resp.raise_for_status()
+            # if acc_resp.status_code != 200:
+            #     print("⚠️ Facebook API Error:", acc_resp.text)
+            #     acc_resp.raise_for_status()
 
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
-            accounts_data = acc_resp.json().get("data", [])
-            account_currency_map = {acc['id']: acc.get('account_currency', 'USD') for acc in accounts_data}
+
+            # Map account ID to currency
+            account_currency_map = {
+                acc["id"]: acc.get("account_currency", "USD") for acc in accounts
+            }
+
+            # accounts = acc_resp.json().get("data", [])
+            # print("📡 Ad Accounts fetched:", accounts)
+            # accounts_data = acc_resp.json().get("data", [])
+            # account_currency_map = {acc['id']: acc.get('account_currency', 'USD') for acc in accounts_data}
 
             from datetime import datetime, timedelta
 
@@ -265,7 +273,7 @@ async def fetch_ad_insights(page_token: str):
 
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
                         "time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
                         #"date_preset":"maximum",
@@ -275,16 +283,19 @@ async def fetch_ad_insights(page_token: str):
                     }
                     insights_resp = await client.get(ad_url, params=ad_params)
                     if insights_resp.status_code == 200:
-                        for ad in insights_resp.json().get("data", []):
+                        ad_results = insights_resp.json().get("data", [])
+                        # for ad in insights_resp.json().get("data", []):
+                        #     ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
+                        #     insights_data.append(ad)
+                        # print(f"📊 Insights from account {acc['id']}:", insights_resp.json().get("data", []))
+                        for ad in ad_results:
                             ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
                             insights_data.append(ad)
-                        # insights_data.extend(insights_resp.json().get("data", []))
-                        # print(f"📊 Insights from account {acc['id']}:", insights_resp.json().get("data", []))
-                        print(f"📊 Insights from account {acc['id']}:", insights_resp.json().get("data", []))
+                        print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
 
                     else:
                         print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
-                        print(f"🔍 Response status: {insights_resp.status_code}")
+                        print(f"🔍 Status: {insights_resp.status_code}, Content: {insights_resp.text}")
                         print(f"🔍 Response content: {insights_resp.text}")
                 except Exception as e:
                     print(f"⚠️ Warning: Error fetching insights for account {acc.get('id', 'unknown')}: {str(e)}")
