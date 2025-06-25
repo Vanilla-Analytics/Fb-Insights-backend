@@ -1,6 +1,7 @@
 # services/deepseek_audit.py
 import httpx
 import os
+import requests
 from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
 import matplotlib.pyplot as plt
@@ -268,19 +269,30 @@ async def fetch_ad_insights(page_token: str):
             insights_data = []
             for acc in accounts:
                 try:
-                    ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
+                    ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     
-
+                    today = datetime.today()
+                    sixty_days_ago = today - timedelta(days=60)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
-                        "time_range": {"since": since, "until": until},
+                        "time_range": {
+                            "since": sixty_days_ago.strftime("%Y-%m-%d"),
+                            "until": today.strftime("%Y-%m-%d")
+                        },
+                        #"time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
                         #"date_preset":"maximum",
                         "time_increment": 1,  # 👈 daily breakdown
                         "level": "ad",        # 👈 required to enable daily granularity
                         "access_token": page_token
                     }
+                    insights_response = requests.get(ad_url, params=ad_params)
+                    print(f"📡 Requesting URL: {ad_url}")
+                    print(f"📡 With params: {ad_params}")
+                    print(f"📦 Response status: {insights_response.status_code}")
+                    print(f"📦 Response body: {insights_response.text}")
+
                     insights_resp = await client.get(ad_url, params=ad_params)
                     # 🔍 Always print status and response body
                     print(f"📡 Requesting insights for account: {acc['id']}")
