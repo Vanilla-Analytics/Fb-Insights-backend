@@ -97,23 +97,27 @@ def generate_chart_image(fig):
 
 
 def generate_key_metrics_section(ad_insights_df):
+    currency_symbol = ad_insights_df['account_currency'].mode()[0]  # most common
+    currency_symbol = "₹" if currency_symbol == "INR" else "$"
+
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
         return "No data available for Key Metrics.", []
 
     metrics_summary = {
-        "Amount Spent": f"₹{ad_insights_df['spend'].sum():,.2f}",
+        "Amount Spent": f"{currency_symbol}{ad_insights_df['spend'].sum():,.2f}",
         "Purchases": int(ad_insights_df['purchases'].sum()),
-        "Purchase Value": f"₹{ad_insights_df['purchase_value'].sum():,.2f}",
+        "Purchase Value": f"{currency_symbol}{ad_insights_df['purchase_value'].sum():,.2f}",
         "ROAS": round(ad_insights_df['roas'].mean(), 2),
-        "CPA": f"₹{ad_insights_df['cpa'].mean():.2f}",
-        "Cost/Result": f"₹{ad_insights_df['cpa'].mean():.2f}",
+        "CPA": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
+        "Cost/Result": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
         "Impressions": int(ad_insights_df['impressions'].sum()),
-        "CPM": f"₹{(ad_insights_df['spend'].sum() / ad_insights_df['impressions'].sum() * 1000):.2f}",
+        "CPM": f"{currency_symbol}{(ad_insights_df['spend'].sum() / ad_insights_df['impressions'].sum() * 1000):.2f}",
         "Link Clicks": int(ad_insights_df['clicks'].sum()),
-        "Link CPC": f"₹{ad_insights_df['cpc'].mean():.2f}",
+        "Link CPC": f"{currency_symbol}{ad_insights_df['cpc'].mean():.2f}",
         "CTR (link)": f"{ad_insights_df['ctr'].mean():.2%}"
     }
+    
 
     summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
 
@@ -235,7 +239,8 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
 async def fetch_ad_insights(page_token: str):
     """Fetch Facebook ad insights"""
     try:
-        url = f"https://graph.facebook.com/v18.0/me/adaccounts"
+        #url = f"https://graph.facebook.com/v18.0/me/adaccounts"
+        url = f"https://graph.facebook.com/v18.0/me/adaccounts?fields=account_id,account_currency"
         async with httpx.AsyncClient() as client:
             acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
@@ -245,6 +250,9 @@ async def fetch_ad_insights(page_token: str):
 
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
+            accounts_data = acc_resp.json().get("data", [])
+            account_currency_map = {acc['id']: acc.get('account_currency', 'USD') for acc in accounts_data}
+
             from datetime import datetime, timedelta
 
             since = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
@@ -253,6 +261,8 @@ async def fetch_ad_insights(page_token: str):
             for acc in accounts:
                 try:
                     ad_url = f"https://graph.facebook.com/v18.0/{acc['id']}/insights"
+                    
+
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
@@ -265,7 +275,11 @@ async def fetch_ad_insights(page_token: str):
                     }
                     insights_resp = await client.get(ad_url, params=ad_params)
                     if insights_resp.status_code == 200:
-                        insights_data.extend(insights_resp.json().get("data", []))
+                        for ad in insights_resp.json().get("data", []):
+                            ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
+                            insights_data.append(ad)
+                        # insights_data.extend(insights_resp.json().get("data", []))
+                        # print(f"📊 Insights from account {acc['id']}:", insights_resp.json().get("data", []))
                         print(f"📊 Insights from account {acc['id']}:", insights_resp.json().get("data", []))
 
                     else:
@@ -349,6 +363,9 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
         ad_insights_df = pd.DataFrame(ad_data)
         # Ensure 'date' is present for charting and grouping
+        if 'account_currency' not in ad_insights_df.columns:
+            ad_insights_df['account_currency'] = 'USD'
+
         if 'date_start' in ad_insights_df.columns:
             ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
         else:
