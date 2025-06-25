@@ -289,19 +289,25 @@ async def fetch_ad_insights(page_token: str):
                         "access_token": page_token
                     }
                     insights_response = requests.get(ad_url, params=ad_params)
+                    
                     print(f"📡 Requesting URL: {ad_url}")
                     print(f"📡 With params: {ad_params}")
                     print(f"📦 Response status: {insights_response.status_code}")
                     print(f"📦 Response body: {insights_response.text}")
 
-                    insights_resp = await client.get(ad_url, params=ad_params)
-                    # 🔍 Always print status and response body
-                    print(f"📡 Requesting insights for account: {acc['id']}")
-                    print(f"📄 URL used: {ad_url}")
-                    print(f"📦 Status Code: {insights_resp.status_code}")
-                    print(f"📄 Full Response Body: {insights_resp.text}")
-                    if insights_resp.status_code == 200:
-                        ad_results = insights_resp.json().get("data", [])
+                    # insights_resp = await client.get(ad_url, params=ad_params)
+                    # print(f"📡 Requesting insights for account: {acc['id']}")
+                    # print(f"📄 URL used: {ad_url}")
+                    # print(f"📦 Status Code: {insights_resp.status_code}")
+                    # print(f"📄 Full Response Body: {insights_resp.text}")
+                    if insights_response.status_code == 200:
+                        ad_results = insights_response.json().get("data", [])
+                        for ad in ad_results:
+                            ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
+                            insights_data.append(ad)
+                    else:
+                        print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
+                        print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
                         print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")  # ✅ This is your count message
                         # for ad in insights_resp.json().get("data", []):
                         #     ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
@@ -312,10 +318,10 @@ async def fetch_ad_insights(page_token: str):
                             insights_data.append(ad)
                         
 
-                    else:
-                        print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
-                        print(f"🔍 Status: {insights_resp.status_code}, Content: {insights_resp.text}")
-                        print(f"🔍 Response content: {insights_resp.text}")
+                    # else:
+                    #     print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
+                    #     print(f"🔍 Status: {insights_resp.status_code}, Content: {insights_resp.text}")
+                    #     print(f"🔍 Response content: {insights_resp.text}")
                 except Exception as e:
                     print(f"⚠️ Warning: Error fetching insights for account {acc.get('id', 'unknown')}: {str(e)}")
                     continue
