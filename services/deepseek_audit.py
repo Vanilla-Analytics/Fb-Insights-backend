@@ -17,6 +17,7 @@ from services.prompts import RESULTS_SETUP_PROMPT
 import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from services.generate_pdf import generate_pdf_report
+import json
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -276,10 +277,10 @@ async def fetch_ad_insights(page_token: str):
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
-                        "time_range": {
+                        "time_range": json.dumps({
                             "since": sixty_days_ago.strftime("%Y-%m-%d"),
                             "until": today.strftime("%Y-%m-%d")
-                        },
+                        }),
                         #"time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
                         #"date_preset":"maximum",
