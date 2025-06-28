@@ -408,6 +408,10 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
 
         ad_insights_df = pd.DataFrame(ad_data)
+        # Extract currency before any grouping
+        currency_symbol = ad_insights_df['account_currency'].mode()[0] if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty else "USD"
+        currency_symbol = "₹" if currency_symbol == "INR" else "$"
+
         # Ensure 'date' is present for charting and grouping
         if 'account_currency' not in ad_insights_df.columns:
             ad_insights_df['account_currency'] = 'USD'
