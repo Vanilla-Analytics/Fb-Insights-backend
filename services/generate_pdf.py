@@ -121,7 +121,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
         
 
-def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None) -> StreamingResponse:
+def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol="$") -> StreamingResponse:
     try:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
@@ -287,10 +287,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         for _, row in ad_insights_df.iterrows():
                             table_data.append([
                                 pd.to_datetime(row['date']).strftime("%d %b %Y"),
-                                f"${row['spend']:,.2f}",
+                                f"{currency_symbol}{row['spend']:,.2f}",
                                 int(row['purchases']),
-                                f"${row['purchase_value']:,.2f}",
-                                f"${row['cpa']:,.2f}",
+                                f"{currency_symbol}{row['purchase_value']:,.2f}",
+                                f"{currency_symbol}{row['cpa']:,.2f}",
                                 f"{int(row['impressions']):,}",
                                 f"{row['ctr']:.2%}",
                                 int(row['clicks']),
@@ -315,10 +315,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Append grand total row
                         table_data.append([
                             "Grand Total",
-                            f"${totals['spend']:,.2f}",
+                            f"{currency_symbol}{totals['spend']:,.2f}",
                             int(totals['purchases']),
-                            f"${totals['purchase_value']:,.2f}",
-                            f"${totals['cpa']:,.2f}",
+                            f"{currency_symbol}{totals['purchase_value']:,.2f}",
+                            f"{currency_symbol}{totals['cpa']:,.2f}",
                             f"{int(totals['impressions']):,}",
                             f"{totals['ctr']:.2%}",
                             int(totals['clicks']),
@@ -390,11 +390,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             for _, row in grouped_campaigns.iterrows():
                                 table_data.append([
                                     row['campaign_name'],
-                                    f"${row['spend']:,.2f}",
-                                    f"${row['purchase_value']:,.2f}",
+                                    f"{currency_symbol}{row['spend']:,.2f}",
+                                    f"{currency_symbol}{row['purchase_value']:,.2f}",
                                     int(row['purchases']),
                                     f"{row['roas']:.2f}",
-                                    f"${row['cpa']:.2f}"
+                                    f"{currency_symbol}{row['cpa']:.2f}"
                                 ])
 
                             # Grand Total
@@ -411,11 +411,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             table_data.append([
                                 "Grand Total",
-                                f"${grand_totals['spend']:,.2f}",
-                                f"${grand_totals['purchase_value']:,.2f}",
+                                f"{currency_symbol}{grand_totals['spend']:,.2f}",
+                                f"{currency_symbol}{grand_totals['purchase_value']:,.2f}",
                                 int(grand_totals['purchases']),
                                 f"{grand_totals['roas']:.2f}",
-                                f"${grand_totals['cpa']:.2f}"
+                                f"{currency_symbol}{grand_totals['cpa']:.2f}"
                             ])
 
                             performance_table = Table(table_data, repeatRows=1, colWidths=[170, 90, 90, 80, 80, 80])

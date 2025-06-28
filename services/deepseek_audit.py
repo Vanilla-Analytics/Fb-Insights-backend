@@ -159,6 +159,8 @@ def generate_key_metrics_section(ad_insights_df):
     ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
     ax3.set_title("Purchases vs ROAS")
     ax3.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax3.tick_params(axis='x', rotation=45, labelsize=10)
     # ax3.set_ylabel("Purchases")
     # ax4.set_ylabel("ROAS")  
 
@@ -172,6 +174,8 @@ def generate_key_metrics_section(ad_insights_df):
     ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link CPC')
     ax5.set_title("CPA vs Link CPC")
     ax5.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax5.tick_params(axis='x', rotation=45, labelsize=10)
 
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
     # ax5.set_ylabel("CPA")
@@ -189,6 +193,8 @@ def generate_key_metrics_section(ad_insights_df):
     ax8.plot(ad_insights_df['date'], ad_insights_df['ctr'], color='darkblue', label='CTR')
     ax7.set_title("Click to Conversion vs CTR")
     ax7.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    ax7.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax7.tick_params(axis='x', rotation=45, labelsize=10)
 
     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
     # ax7.set_ylabel("Click to Conversion")
@@ -622,11 +628,16 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         print("✅ Final PDF table date count:", len(ad_insights_df), ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
 
         print("📄 Generating PDF report...")
-        #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
+        #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)# Determine currency symbol from ad_insights_df
+        currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "USD"
+        currency_symbol = "₹" if currency_symbol == "INR" else "$"
+
+
         pdf_response = generate_pdf_report(
             sections,
             ad_insights_df=ad_insights_df,
-            full_ad_insights_df=full_ad_insights_df if full_ad_insights_df is not None else pd.DataFrame()
+            full_ad_insights_df=full_ad_insights_df if full_ad_insights_df is not None else pd.DataFrame(),
+            currency_symbol=currency_symbol
             )
 
         print("✅ PDF generated successfully")
