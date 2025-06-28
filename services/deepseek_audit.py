@@ -408,9 +408,14 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
 
         ad_insights_df = pd.DataFrame(ad_data)
-        # Extract currency before any grouping
-        currency_symbol = ad_insights_df['account_currency'].mode()[0] if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty else "USD"
-        currency_symbol = "₹" if currency_symbol == "INR" else "$"
+        # ✅ Extract currency symbol BEFORE grouping
+        if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty:
+            currency = ad_insights_df['account_currency'].mode()[0]
+        else:
+            currency = "USD"
+
+        currency_symbol = "₹" if currency == "INR" else "$"
+
 
         # Ensure 'date' is present for charting and grouping
         if 'account_currency' not in ad_insights_df.columns:
@@ -633,8 +638,8 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
         print("📄 Generating PDF report...")
         #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)# Determine currency symbol from ad_insights_df
-        currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "USD"
-        currency_symbol = "₹" if currency_symbol == "INR" else "$"
+        #--currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "USD"
+        #--currency_symbol = "₹" if currency_symbol == "INR" else "$"
 
 
         pdf_response = generate_pdf_report(
