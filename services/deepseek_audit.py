@@ -408,13 +408,28 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
 
         ad_insights_df = pd.DataFrame(ad_data)
-        # ✅ Extract currency symbol BEFORE grouping
-        if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty:
-            currency = ad_insights_df['account_currency'].mode()[0]
-        else:
-            currency = "USD"
+        
+        # if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty:
+        #     currency = ad_insights_df['account_currency'].mode()[0]
+        # else:
+        #     currency = "USD"
 
-        currency_symbol = "₹" if currency == "INR" else "$"
+        # currency_symbol = "₹" if currency == "INR" else "$"
+
+        if 'account_currency' in ad_insights_df.columns:
+    # Drop NaNs and normalize casing
+            valid_currencies = ad_insights_df['account_currency'].dropna().astype(str).str.upper()
+            if not valid_currencies.empty:
+                currency = valid_currencies.mode()[0]
+                print("📌 Detected currency from account_currency:", currency)
+                currency_symbol = "₹" if currency == "INR" else "$"
+            else:
+                print("⚠️ account_currency present but empty — defaulting to $")
+                currency_symbol = "$"
+        else:
+            print("⚠️ account_currency column missing — defaulting to $")
+            currency_symbol = "$"
+
 
 
         # Ensure 'date' is present for charting and grouping

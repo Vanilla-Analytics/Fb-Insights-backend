@@ -134,6 +134,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
             draw_header(c)
 
             if section_title.strip().upper() == "KEY METRICS":
+                    # Debug print to verify currency symbol
+                    print(f"🔎 Current currency symbol: {currency_symbol}")
                     # Page 1: Key Metrics Header & Cards
                     c.setFont("Helvetica-Bold", 24)
                     c.setFillColor(colors.black)
