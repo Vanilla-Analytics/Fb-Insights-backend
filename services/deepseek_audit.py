@@ -425,7 +425,10 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         # currency_symbol = "₹" if currency == "INR" else "$"
 
         if 'account_currency' in ad_insights_df.columns:
-    # Drop NaNs and normalize casing
+            print("💰 Unique currencies in ad_insights_df:", ad_insights_df['account_currency'].unique())
+            print("🔢 Account counts by currency:\n", ad_insights_df['account_currency'].value_counts())
+
+
             valid_currencies = ad_insights_df['account_currency'].dropna().astype(str).str.upper()
             if not valid_currencies.empty:
                 currency = valid_currencies.mode()[0]
