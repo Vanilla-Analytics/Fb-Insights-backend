@@ -264,9 +264,15 @@ async def fetch_ad_insights(page_token: str):
             print("📡 Ad Accounts fetched:", accounts)
 
             # Map account ID to currency
+            # account_currency_map = {
+            #     acc["id"]: acc.get("account_currency", "USD") for acc in accounts
+            # }
+
             account_currency_map = {
-                acc["id"]: acc.get("account_currency", "USD") for acc in accounts
+                str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
+                for acc in accounts
             }
+
 
             # accounts = acc_resp.json().get("data", [])
             # print("📡 Ad Accounts fetched:", accounts)
@@ -328,7 +334,9 @@ async def fetch_ad_insights(page_token: str):
                         print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
 
                     for ad in ad_results:
-                        ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
+                        
+                        ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
+
                         insights_data.append(ad)
 
                 except Exception as e:
