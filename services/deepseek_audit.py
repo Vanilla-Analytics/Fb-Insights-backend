@@ -98,13 +98,13 @@ def generate_chart_image(fig):
     # return buf
 
 
-def generate_key_metrics_section(ad_insights_df):
-    # Handle missing account_currency with a default value
-    if 'account_currency' not in ad_insights_df.columns:
-        currency_symbol = "$"  # Default to USD
-    else:
-        currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "$"
-        currency_symbol = "₹" if currency_symbol == "INR" else "$"
+def generate_key_metrics_section(ad_insights_df, currency_symbol="$"):
+    
+    # if 'account_currency' not in ad_insights_df.columns:
+    #     currency_symbol = "$"  # Default to USD
+    # else:
+    #     currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "$"
+    #     currency_symbol = "₹" if currency_symbol == "INR" else "$"
 
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
@@ -334,7 +334,7 @@ async def fetch_ad_insights(page_token: str):
                         print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
 
                     for ad in ad_results:
-                        
+
                         ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
 
                         insights_data.append(ad)
@@ -602,7 +602,7 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
 
         # ✅ NOW generate key metrics with grouped data
-        key_metrics = generate_key_metrics_section(ad_insights_df)
+        key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
 
 
         # Generate Executive Summary
