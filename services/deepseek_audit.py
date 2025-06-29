@@ -382,63 +382,50 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
         return f"Error generating content: {str(e)}"
 
 
-async def generate_audit(page_id: str,user_token: str, page_token: str):
+async def generate_audit(page_id: str, user_token: str, page_token: str):
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
-        
-        # Validate environment variables
+
         if not DEEPSEEK_API_URL or not DEEPSEEK_API_KEY:
             raise ValueError("DEEPSEEK_API_URL and DEEPSEEK_API_KEY environment variables must be set")
-        full_ad_insights_df = None
-        
-        # Fetch data from Facebook
+
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(user_token)
-        # Sanitize and ensure 'date_start' exists
+
+        # Filter out invalid entries
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
         if not ad_data:
             raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
-        
+
         for ad in ad_data:
             actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
             values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
-
             ad["purchases"] = actions.get("purchase", 0)
             ad["purchase_value"] = values.get("purchase", 0)
 
-        full_ad_insights_df = pd.DataFrame(ad_data)
+        # Create original DataFrame with date_start intact
+        original_df = pd.DataFrame(ad_data)
 
+        if 'date_start' not in original_df.columns:
+            raise ValueError("❌ 'date_start' column is missing in ad insights data.")
 
-        # expected_keys = ['date_start', 'spend', 'impressions', 'clicks', 'cpc', 'ctr']
-        # ad_data = [{k: d.get(k, None) for k in expected_keys} for d in ad_data if isinstance(d, dict)]
+        original_df = original_df.dropna(subset=['date_start'])
+        original_df['date_start'] = original_df['date_start'].astype(str)
+        original_df['date'] = pd.to_datetime(original_df['date_start'], errors='coerce')
+        original_df = original_df.dropna(subset=['date'])
 
-        # if not ad_data:
-        #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
+        numeric_fields = [
+            'spend', 'impressions', 'clicks', 'purchases', 'purchase_value',
+            'conversion_value', 'conversions', 'cpc', 'ctr'
+        ]
+        for col in numeric_fields:
+            if col in original_df.columns:
+                original_df[col] = pd.to_numeric(original_df[col], errors='coerce').fillna(0)
 
-        ad_insights_df = pd.DataFrame(ad_data)
-        if 'date_start' in ad_insights_df.columns:
-            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'])
-        else:
-            raise ValueError("Missing date_start column in ad insights data")
-            
-        ad_insights_df = ad_insights_df.sort_values('date')
-        numeric_cols = ['spend', 'purchases', 'purchase_value', 'impressions', 'clicks', 
-                       'cpc', 'ctr', 'roas', 'cpa', 'click_to_conversion']
-        for col in numeric_cols:
-            if col in ad_insights_df.columns:
-                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
-        
-        # if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty:
-        #     currency = ad_insights_df['account_currency'].mode()[0]
-        # else:
-        #     currency = "USD"
-
-        # currency_symbol = "₹" if currency == "INR" else "$"
-
-        # ✅ FIX: DEFINE grouped_df SAFELY
-        grouped_df = ad_insights_df.groupby('date').agg({
+        # Calculate aggregated metrics per day
+        grouped_df = original_df.groupby('date').agg({
             'spend': 'sum',
             'purchases': 'sum',
             'purchase_value': 'sum',
@@ -448,297 +435,77 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             'ctr': 'mean'
         }).reset_index()
 
-        # ✅ Add calculated metrics
         grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
         grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
         grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
 
-        # ✅ Ensure 30-day continuity
+        # Pad with missing dates for last 30 days
         last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
         ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0).rename_axis('date').reset_index()
-        print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
 
-        if 'account_currency' in ad_insights_df.columns:
-            print("💰 Unique currencies in ad_insights_df:", ad_insights_df['account_currency'].unique())
-            print("🔢 Account counts by currency:\n", ad_insights_df['account_currency'].value_counts())
-
-
-            valid_currencies = ad_insights_df['account_currency'].dropna().astype(str).str.upper()
-            if not valid_currencies.empty:
-                currency = valid_currencies.mode()[0]
-                print("📌 Detected currency from account_currency:", currency)
-                currency_symbol = "₹" if currency == "INR" else "$"
-            else:
-                print("⚠️ account_currency present but empty — defaulting to $")
-                currency_symbol = "$"
+        # Detect currency
+        if 'account_currency' in original_df.columns:
+            valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
+            currency = valid_currencies.mode()[0] if not valid_currencies.empty else "USD"
         else:
-            print("⚠️ account_currency column missing — defaulting to $")
-            currency_symbol = "$"
-
-
-
-        # Ensure 'date' is present for charting and grouping
-        if 'account_currency' not in ad_insights_df.columns:
-            ad_insights_df['account_currency'] = 'USD'
-
-        if 'date_start' in ad_insights_df.columns:
-            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
-        else:
-            raise ValueError("❌ Cannot parse 'date' because 'date_start' is missing.")
-
-
-        # Ensure all required columns exist, even if filled with zeros
-        #expected_cols = ['date', 'spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
-        expected_cols = ['spend', 'purchase_value', 'purchases', 'cpa', 'impressions','ctr', 'clicks', 'click_to_conversion', 'roas', 'cpc']
-
-
-        for col in expected_cols:
-            if col not in ad_insights_df.columns:
-                ad_insights_df[col] = 0
-
+            currency = "USD"
+        currency_symbol = "₹" if currency == "INR" else "$"
 
         combined_data = {
             "page_insights": page_data,
             "ad_insights": ad_data
         }
-       
-        print("🔎 Columns in ad_insights_df:", ad_insights_df.columns.tolist())
 
-        # Ensure fallback/derived fields exist
-        if 'purchase_value' not in ad_insights_df.columns:
-            ad_insights_df['purchase_value'] = ad_insights_df.get('conversion_value', 0)
-
-        if 'purchases' not in ad_insights_df.columns:
-            ad_insights_df['purchases'] = ad_insights_df.get('conversions', 0)
-
-        if 'clicks' not in ad_insights_df.columns:
-            ad_insights_df['clicks'] = 1
-
-        if 'spend' not in ad_insights_df.columns:
-            ad_insights_df['spend'] = 1
-
-# ✅ Convert all key fields to numeric
-        numeric_fields = [
-            'spend', 'impressions', 'clicks', 'purchases', 'purchase_value','conversion_value', 'conversions', 'cpc', 'ctr'
-        ]
-
-        for col in numeric_fields:
-            if col in ad_insights_df.columns:
-                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
-            
-        if 'date_start' in ad_insights_df.columns:
-            print("📋 Checking date_start content:", ad_insights_df['date_start'].head(3))
-        else:
-            print("⚠️ 'date_start' column is missing entirely.")
-
-#----------------------------------------------------------------------------------------
-          # ✅ Make sure 'date_start' exists and convert to datetime
-            if 'date_start' not in ad_insights_df.columns:
-                raise ValueError("❌ 'date_start' column is missing in ad insights data.")
-
-            ad_insights_df = ad_insights_df.dropna(subset=['date_start'])
-            if ad_insights_df.empty:
-                raise ValueError("❌ All 'date_start' values are empty or invalid.")
-
-            # Convert and filter by date
-            ad_insights_df['date_start'] = ad_insights_df['date_start'].astype(str)
-            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'], errors='coerce')
-            ad_insights_df = ad_insights_df.dropna(subset=['date'])
-            print("🧪 Dates after parsing:", ad_insights_df['date'].dropna().unique())
-
-
-            # cutoff_date = pd.Timestamp.today() - pd.Timedelta(days=60)
-            # ad_insights_df = ad_insights_df[ad_insights_df['date'] >= cutoff_date]
-            ad_insights_df = ad_insights_df.sort_values('date', ascending=False)
-
-            # ✅ Convert to numeric to avoid aggregation issues
-            cols_to_numeric = ['spend', 'purchases', 'purchase_value', 'cpa', 'impressions', 'clicks', 'cpc', 'ctr']
-            for col in cols_to_numeric:
-                if col in ad_insights_df.columns:
-                    ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
-
-            # ✅ Group by date (one row per day)
-            # grouped_df = ad_insights_df.groupby('date').agg({
-            #     'spend': 'sum',
-            #     'purchases': 'sum',
-            #     'purchase_value': 'sum',
-            #     'impressions': 'sum',
-            #     'clicks': 'sum',
-            #     'cpc': 'mean',
-            #     'ctr': 'mean'
-            # }).reset_index()
-
-            
-            # ad_insights_df = ad_insights_df.sort_values("date", ascending=False)
-            # ad_insights_df = ad_insights_df.drop_duplicates(subset="date", keep="first")  # keep only one row per date
-            # ad_insights_df = ad_insights_df.head(60).sort_values("date")  # oldest to newest for display
-            # grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
-            # grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
-            # grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
-            # pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
-
-            # ad_insights_df = grouped_df
-            # print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
-
-            # # ✅ Group by date (ensure one row per day)
-            # grouped_df = ad_insights_df.groupby('date').agg({
-            #     'spend': 'sum',
-            #     'purchases': 'sum',
-            #     'purchase_value': 'sum',
-            #     'impressions': 'sum',
-            #     'clicks': 'sum',
-            #     'cpc': 'mean',
-            #     'ctr': 'mean'
-            # }).reset_index()
-
-            # ✅ Add calculated fields
-            grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
-            grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
-            grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
-            
-            # full_ad_insights_df = ad_insights_df.copy()
-
-
-            # ✅ Keep only last 60 unique days
-            #ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
-            # ✅ Ensure 30 unique recent calendar days, even if no data
-            last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
-
-            # Set 'date' as index and reindex to fill missing days with 0s
-            ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0)
-
-            # Reset index and rename
-            ad_insights_df = ad_insights_df.rename_axis('date').reset_index()
-
-            # Convert columns to numeric again to be safe
-            for col in ['spend', 'purchases', 'purchase_value', 'impressions', 'clicks', 'cpc', 'ctr']:
-                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
-
-            # Recalculate derived metrics
-            ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend'].replace(0, 1)
-            ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
-            ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
-
-
-            # ✅ Feed final DataFrame to PDF
-            print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
-            #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)
-
-
-
-        #----------------------------------------------------------------------------------------------------
-        #key_metrics = generate_key_metrics_section(ad_insights_df)
-        # if not ad_insights_df.empty:
-        #     key_metrics = generate_key_metrics_section(ad_insights_df)
-        # else:
-        #     key_metrics = {
-        #     "title": "KEY METRICS",
-        #     "content": "No ad data available to generate Key Metrics.",
-        #     "charts": []
-        # }
-
-        # ✅ Group and aggregate ----------latest new
-        # grouped_df = ad_insights_df.groupby('date').agg({
-        #     'spend': 'sum',
-        #     'purchases': 'sum',
-        #     'purchase_value': 'sum',
-        #     'impressions': 'sum',
-        #     'clicks': 'sum',
-        #     'cpc': 'mean',
-        #     'ctr': 'mean'
-        # }).reset_index()
-
-        # ✅ Add calculated fields
-        grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
-        grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
-        grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
-
-        # ✅ Filter last 60 days (unique)--------latest new
-        # ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
-
-        # ✅ NOW generate key metrics with grouped data
+        # ✅ Generate key metrics + charts
         key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
 
-
-        # Generate Executive Summary
+        # ✅ LLM Sections
         print("🤖 Generating Executive Summary...")
         executive_summary = await generate_llm_content(EXECUTIVE_SUMMARY_PROMPT, combined_data)
-        print("✅ Executive Summary generated successfully")
 
-        # Generate Account Naming & Structure analysis
         print("🤖 Generating Account Naming & Structure analysis...")
         account_structure = await generate_llm_content(ACCOUNT_NAMING_STRUCTURE_PROMPT, combined_data)
-        print("✅ Account Naming & Structure analysis generated successfully")
 
         print("🤖 Generating Testing Activity section...")
         testing_activity = await generate_llm_content(TESTING_ACTIVITY_PROMPT, combined_data)
-        print("✅ Testing Activity generated successfully")
 
         print("🤖 Generating Remarketing Activity section...")
         remarketing_activity = await generate_llm_content(REMARKETING_ACTIVITY_PROMPT, combined_data)
-        print("✅ Remarketing Activity generated successfully")
 
         print("🤖 Generating Results Setup section...")
         results_setup = await generate_llm_content(RESULTS_SETUP_PROMPT, combined_data)
-        print("✅ Results Setup generated successfully")
 
-        # Prepare sections for PDF
+        # ✅ Combine sections
         sections = [
-            {
-                "title": "EXECUTIVE SUMMARY",
-                "content": executive_summary,
-                "charts": []
-            },
-            {
-                "title": "ACCOUNT NAMING & STRUCTURE",
-                "content": account_structure,
-                "charts": []
-            },
-            {
-                "title": "TESTING ACTIVITY",
-                "content": testing_activity,
-                "charts": []
-            },
-            {
-                "title": "REMARKETING ACTIVITY",
-                "content": remarketing_activity
-            },
-            {
-                "title": "RESULTS SETUP",
-                "content": results_setup,
-                "charts": []
-            },
+            {"title": "EXECUTIVE SUMMARY", "content": executive_summary, "charts": []},
+            {"title": "ACCOUNT NAMING & STRUCTURE", "content": account_structure, "charts": []},
+            {"title": "TESTING ACTIVITY", "content": testing_activity, "charts": []},
+            {"title": "REMARKETING ACTIVITY", "content": remarketing_activity, "charts": []},
+            {"title": "RESULTS SETUP", "content": results_setup, "charts": []},
             key_metrics
         ]
 
-        # Generate PDF
-        print("✅ Final PDF table date count:", len(ad_insights_df), ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
-
         print("📄 Generating PDF report...")
-        #pdf_response = generate_pdf_report(sections, ad_insights_df=ad_insights_df)# Determine currency symbol from ad_insights_df
-        #--currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "USD"
-        #--currency_symbol = "₹" if currency_symbol == "INR" else "$"
-
-
         pdf_response = generate_pdf_report(
             sections,
             ad_insights_df=ad_insights_df,
-            full_ad_insights_df=full_ad_insights_df if full_ad_insights_df is not None else pd.DataFrame(),
+            full_ad_insights_df=original_df,
             currency_symbol=currency_symbol
-            )
+        )
 
         print("✅ PDF generated successfully")
-        
         return pdf_response
-        
+
     except httpx.HTTPStatusError as e:
         error_msg = f"HTTP error from external API: {e.response.status_code} - {e.response.text}"
         print(f"❌ {error_msg}")
         raise Exception(error_msg)
+
     except httpx.RequestError as e:
         error_msg = f"Request error: {str(e)}"
         print(f"❌ {error_msg}")
         raise Exception(error_msg)
+
     except Exception as e:
         error_msg = f"Error generating audit: {str(e)}"
         print(f"❌ {error_msg}")
