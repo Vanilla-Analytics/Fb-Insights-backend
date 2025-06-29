@@ -566,7 +566,25 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
 
             # ✅ Keep only last 60 unique days
-            ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
+            #ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
+            # ✅ Ensure 30 unique recent calendar days, even if no data
+            last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
+
+            # Set 'date' as index and reindex to fill missing days with 0s
+            ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0)
+
+            # Reset index and rename
+            ad_insights_df = ad_insights_df.rename_axis('date').reset_index()
+
+            # Convert columns to numeric again to be safe
+            for col in ['spend', 'purchases', 'purchase_value', 'impressions', 'clicks', 'cpc', 'ctr']:
+                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
+
+            # Recalculate derived metrics
+            ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend'].replace(0, 1)
+            ad_insights_df['cpa'] = ad_insights_df['spend'] / ad_insights_df['purchases'].replace(0, 1)
+            ad_insights_df['click_to_conversion'] = ad_insights_df['purchases'] / ad_insights_df['clicks'].replace(0, 1)
+
 
             # ✅ Feed final DataFrame to PDF
             print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
