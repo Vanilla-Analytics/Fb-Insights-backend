@@ -405,11 +405,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             "offsite_conversion.custom.1408006162945363",
             "purchase"
         ]
-        for k in PURCHASE_KEYS:
-            if actions.get(k):
-                print(f"✅ Found {k} with count {actions[k]}")
-            if values.get(k):
-                print(f"💰 Found {k} with value {values[k]}")
+        
 
         # for ad in ad_data:
         #     actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
@@ -417,10 +413,14 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #     ad["purchases"] = actions.get("purchase", 0)
         #     ad["purchase_value"] = values.get("purchase", 0)
         for ad in ad_data:
-            actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
-            values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
+            try:
+                actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
+                values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
+            except Exception as e:
+                print(f"⚠️ Error parsing actions in ad: {e}")
+                actions, values = {}, {}
 
-        # Sum values across all keys considered as "purchase"
+            # Safely sum purchase-related values
             ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
             ad["purchase_value"] = sum(values.get(k, 0) for k in PURCHASE_KEYS)
 
