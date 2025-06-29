@@ -454,32 +454,31 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 180
+                            chart_y = BOTTOM_MARGIN + 60
             
                         # First two charts (donuts) side by side
                             chart_width = 220
                             chart_height = 220
                             padding = 40
+
+                            x1 = LEFT_MARGIN
+                            x2 = x1 + chart_width + padding
+                            x3 = x2 + chart_width + padding
             
                             # Donut Chart 1 (Cost Split)
                             if len(split_charts) > 0:
                                 img1 = ImageReader(split_charts[0][1])
-                                c.drawImage(img1, LEFT_MARGIN, chart_y - chart_height, 
-                                width=chart_width, height=chart_height)
-            
+                                c.drawImage(img1, x1, chart_y, width=chart_width, height=chart_height)
+
                             # Donut Chart 2 (Revenue Split)
                             if len(split_charts) > 1:
                                 img2 = ImageReader(split_charts[1][1])
-                                c.drawImage(img2, LEFT_MARGIN + chart_width + padding, chart_y - chart_height,
-                                width=chart_width, height=chart_height)
-            
+                                c.drawImage(img2, x2, chart_y, width=chart_width, height=chart_height)
+
                             # ROAS Chart (horizontal bar)
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
-                                #roas_chart_height = 120
-                                #roas_chart_y = chart_y - chart_height - roas_chart_height - 20
-                                c.drawImage(img3, LEFT_MARGIN + chart_width + padding, chart_y - chart_height, 
-                                width=chart_width, height=chart_height)
+                                c.drawImage(img3, x3, chart_y, width=chart_width, height=chart_height)
 
 
 
