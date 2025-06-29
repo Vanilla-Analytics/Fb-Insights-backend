@@ -439,7 +439,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 170
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 150
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -450,20 +450,50 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                           "Campaign data available but no valid campaign names found")
                             
                         # Draw Split Charts
-                        if 'split_charts' in locals() and split_charts:
-                            chart_x = LEFT_MARGIN
-                            chart_y = BOTTOM_MARGIN + 10
-                            try:
-                                for i, (title, chart_buf) in enumerate(split_charts):
-                                    img = ImageReader(chart_buf)
-                                    if i < 2:
-                                        # Donut charts
-                                        c.drawImage(img, chart_x + i * 240, chart_y + 130, width=220, height=220)
-                                    else:
-                                    # ROAS chart
-                                        c.drawImage(img, chart_x + 20, chart_y, width=700, height=120)
-                            except Exception as e:
-                                print(f"⚠️ Error drawing split charts: {e}")
+                        # if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
+                        #     chart_start_y = table_y - performance_table._height - 40
+                        #     chart_x = LEFT_MARGIN
+                        #     chart_y = BOTTOM_MARGIN + 10
+                        #     try:
+                        #         for i, (title, chart_buf) in enumerate(split_charts):
+                        #             img = ImageReader(chart_buf)
+                        #             if i < 2:
+                        #                 # Donut charts
+                        #                 c.drawImage(img, chart_x + i * 240, chart_y + 130, width=220, height=220)
+                        #             else:
+                        #             # ROAS chart
+                        #                 c.drawImage(img, chart_x + 20, chart_y, width=700, height=120)
+                        #     except Exception as e:
+                        #         print(f"⚠️ Error drawing split charts: {e}")
+
+                        # Draw Split Charts below the table
+                        if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
+                            chart_start_y = table_y - performance_table._height - 40  # Start charts below table
+            
+                        # First two charts (donuts) side by side
+                            chart_width = 220
+                            chart_height = 220
+                            padding = 40
+            
+                            # Donut Chart 1 (Cost Split)
+                            if len(split_charts) > 0:
+                                img1 = ImageReader(split_charts[0][1])
+                                c.drawImage(img1, LEFT_MARGIN, chart_start_y - chart_height, 
+                                width=chart_width, height=chart_height)
+            
+                            # Donut Chart 2 (Revenue Split)
+                            if len(split_charts) > 1:
+                                img2 = ImageReader(split_charts[1][1])
+                                c.drawImage(img2, LEFT_MARGIN + chart_width + padding, chart_start_y - chart_height,
+                                width=chart_width, height=chart_height)
+            
+                            # ROAS Chart (horizontal bar)
+                            if len(split_charts) > 2:
+                                img3 = ImageReader(split_charts[2][1])
+                                roas_chart_height = 120
+                                roas_chart_y = chart_start_y - chart_height - roas_chart_height - 20
+                                c.drawImage(img3, LEFT_MARGIN, roas_chart_y, 
+                                width=PAGE_WIDTH - 2*LEFT_MARGIN, height=roas_chart_height)
 
 
 
