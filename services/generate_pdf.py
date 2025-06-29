@@ -280,7 +280,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
                         # c.setFont("Helvetica-Bold", 16)
                         # c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Summary")
-                        ad_insights_df = ad_insights_df.sort_values('date').tail(30)
+                        ad_insights_df = ad_insights_df.sort_values('date')
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
@@ -369,7 +369,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         c.setFont("Helvetica-Bold", 16)
                         c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Level Performance")
-                        if not full_ad_insights_df['campaign_name'].isnull().all():
+                        df = full_ad_insights_df[full_ad_insights_df['campaign_name'].notna()]
+                        if not df.empty:
                             df = full_ad_insights_df.copy()
                             df = df[df['campaign_name'].notna()]  # Filter out rows without campaign names
                             # Ensure numeric columns
@@ -438,7 +439,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 100
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 60
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
