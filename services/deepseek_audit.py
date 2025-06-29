@@ -462,8 +462,16 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
         #ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0).rename_axis('date').reset_index()
 
+        #cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
+        #ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
+
         cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
         ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
+
+        if ad_insights_df.empty:
+            print("⚠️ No data in last 30 days. Using last available 30 records.")
+            ad_insights_df = grouped_df.tail(30)
+
 
 
         # Detect currency
