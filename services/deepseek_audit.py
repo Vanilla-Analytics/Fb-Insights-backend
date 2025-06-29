@@ -459,8 +459,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
 
         # Pad with missing dates for last 30 days
-        last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
-        ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0).rename_axis('date').reset_index()
+        #last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
+        #ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0).rename_axis('date').reset_index()
+
+        cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
+        ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
+
 
         # Detect currency
         if 'account_currency' in original_df.columns:
