@@ -454,7 +454,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 60
+                            chart_y = BOTTOM_MARGIN + 80
             
                         # First two charts (donuts) side by side
                             chart_width = 220
@@ -478,7 +478,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ROAS Chart (horizontal bar)
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
-                                c.drawImage(img3, x3, chart_y, width=chart_width, height=chart_height)
+                                roas_width = chart_width + 40
+                                c.drawImage(img3, x3, chart_y, width=roas_width, height=chart_height)
 
 
 
