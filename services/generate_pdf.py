@@ -453,8 +453,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
-                            chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            #chart_y = BOTTOM_MARGIN + 180
+                            #chart_y = table_y - performance_table._height - 10  # Start charts below table
+                            chart_y = BOTTOM_MARGIN + 180
             
                         # First two charts (donuts) side by side
                             chart_width = 220
