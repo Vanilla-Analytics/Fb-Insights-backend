@@ -439,7 +439,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 110
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 180
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
