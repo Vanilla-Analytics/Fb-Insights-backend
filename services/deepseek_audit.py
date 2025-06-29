@@ -416,6 +416,17 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         #     raise ValueError("❌ No ad insights returned from Facebook. Cannot generate report.")
 
         ad_insights_df = pd.DataFrame(ad_data)
+        if 'date_start' in ad_insights_df.columns:
+            ad_insights_df['date'] = pd.to_datetime(ad_insights_df['date_start'])
+        else:
+            raise ValueError("Missing date_start column in ad insights data")
+            
+        ad_insights_df = ad_insights_df.sort_values('date')
+        numeric_cols = ['spend', 'purchases', 'purchase_value', 'impressions', 'clicks', 
+                       'cpc', 'ctr', 'roas', 'cpa', 'click_to_conversion']
+        for col in numeric_cols:
+            if col in ad_insights_df.columns:
+                ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
         
         # if 'account_currency' in ad_insights_df.columns and not ad_insights_df['account_currency'].mode().empty:
         #     currency = ad_insights_df['account_currency'].mode()[0]

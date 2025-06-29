@@ -280,7 +280,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
                         # c.setFont("Helvetica-Bold", 16)
                         # c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Summary")
-
+                        ad_insights_df = ad_insights_df.sort_values('date').tail(30)
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
@@ -369,71 +369,83 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         c.setFont("Helvetica-Bold", 16)
                         c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Level Performance")
+                        if not full_ad_insights_df['campaign_name'].isnull().all():
+                            df = full_ad_insights_df.copy()
+                            df = df[df['campaign_name'].notna()]  # Filter out rows without campaign names
+                            # Ensure numeric columns
+                            numeric_cols = ['spend', 'purchase_value', 'purchases']
+                            for col in numeric_cols:
+                                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-                        # Ensure numeric
-                        df['spend'] = pd.to_numeric(df['spend'], errors='coerce')
-                        df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce')
-                        df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce')
+                            # Group by campaign
+                            grouped_campaigns = df.groupby('campaign_name').agg({
+                                'spend': 'sum',
+                                'purchase_value': 'sum',
+                                'purchases': 'sum'
+                            }).reset_index()
 
-                        grouped_campaigns = df.groupby('campaign_name').agg({
-                            'spend': 'sum',
-                            'purchase_value': 'sum',
-                            'purchases': 'sum'
-                        }).reset_index()
+                            # Calculate metrics
+                            grouped_campaigns['roas'] = grouped_campaigns.apply(
+                                lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, 
+                                axis=1
+                            )
+                            grouped_campaigns['cpa'] = grouped_campaigns.apply(
+                                lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, 
+                                axis=1
+                            )
+                            
 
-                        grouped_campaigns['roas'] = grouped_campaigns.apply(
-                            lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, axis=1
-                        )
-                        grouped_campaigns['cpa'] = grouped_campaigns.apply(
-                            lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1
-                        )
-
-                        table_data = [["Campaign Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
-                        for _, row in grouped_campaigns.iterrows():
-                            table_data.append([
-                                row['campaign_name'],
-                                f"{currency_symbol}{row['spend']:,.2f}",
-                                f"{currency_symbol}{row['purchase_value']:,.2f}",
-                                int(row['purchases']),
-                                f"{row['roas']:.2f}",
-                                f"{currency_symbol}{row['cpa']:.2f}"
-                            ])
+                            table_data = [["Campaign Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
+                            for _, row in grouped_campaigns.iterrows():
+                                table_data.append([
+                                    row['campaign_name'],
+                                    f"{currency_symbol}{row['spend']:,.2f}",
+                                    f"{currency_symbol}{row['purchase_value']:,.2f}",
+                                    int(row['purchases']),
+                                    f"{row['roas']:.2f}",
+                                    f"{currency_symbol}{row['cpa']:.2f}"
+                                ])
 
                             # Grand Total
-                        total_spend = grouped_campaigns['spend'].sum()
-                        total_purchases = grouped_campaigns['purchases'].sum()
-                        total_purchase_value = grouped_campaigns['purchase_value'].sum()
-                        grand_totals = {
-                            'spend': total_spend,
-                            'purchase_value': total_purchase_value,
-                            'purchases': total_purchases,
-                            'roas': total_purchase_value / total_spend if total_spend > 0 else 0,
-                            'cpa': total_spend / total_purchases if total_purchases > 0 else 0
-                        }
+                            total_spend = grouped_campaigns['spend'].sum()
+                            total_purchases = grouped_campaigns['purchases'].sum()
+                            total_purchase_value = grouped_campaigns['purchase_value'].sum()
+                            grand_totals = {
+                                'spend': total_spend,
+                                'purchase_value': total_purchase_value,
+                                'purchases': total_purchases,
+                                'roas': total_purchase_value / total_spend if total_spend > 0 else 0,
+                                'cpa': total_spend / total_purchases if total_purchases > 0 else 0
+                            }
 
-                        table_data.append([
-                            "Grand Total",
-                            f"{currency_symbol}{grand_totals['spend']:,.2f}",
-                            f"{currency_symbol}{grand_totals['purchase_value']:,.2f}",
-                            int(grand_totals['purchases']),
-                            f"{grand_totals['roas']:.2f}",
-                            f"{currency_symbol}{grand_totals['cpa']:.2f}"
-                        ])
+                            table_data.append([
+                                "Grand Total",
+                                f"{currency_symbol}{grand_totals['spend']:,.2f}",
+                                f"{currency_symbol}{grand_totals['purchase_value']:,.2f}",
+                                int(grand_totals['purchases']),
+                                f"{grand_totals['roas']:.2f}",
+                                f"{currency_symbol}{grand_totals['cpa']:.2f}"
+                            ])
 
-                        performance_table = Table(table_data, repeatRows=1, colWidths=[170, 90, 90, 80, 80, 80])
-                        performance_table.setStyle(TableStyle([
-                            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 8),
-                            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                            ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
-                            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
-                        ]))
+                            performance_table = Table(table_data, repeatRows=1, colWidths=[170, 90, 90, 80, 80, 80])
+                            performance_table.setStyle(TableStyle([
+                                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
+                                ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
+                            ]))
 
-                        table_y = PAGE_HEIGHT - TOP_MARGIN - 100
-                        performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                        performance_table.drawOn(c, LEFT_MARGIN, table_y)
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 100
+                            performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                            performance_table.drawOn(c, LEFT_MARGIN, table_y)
+
+                        else:
+                            c.setFont("Helvetica", 12)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, 
+                          "Campaign data available but no valid campaign names found")
 
 
 
