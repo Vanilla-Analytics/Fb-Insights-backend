@@ -402,16 +402,11 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         PURCHASE_KEYS = [
             "offsite_conversion.purchase",
             "offsite_conversion.fb_pixel_purchase",
+            "offsite_conversion.fb_pixel_custom",
             "offsite_conversion.custom.1408006162945363",
-            "purchase"
+            "offsite_conversion.custom.587738624322885"
         ]
-        
 
-        # for ad in ad_data:
-        #     actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
-        #     values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
-        #     ad["purchases"] = actions.get("purchase", 0)
-        #     ad["purchase_value"] = values.get("purchase", 0)
         for ad in ad_data:
             try:
                 actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
@@ -420,14 +415,17 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                 print(f"⚠️ Error parsing actions in ad: {e}")
                 actions, values = {}, {}
 
-            # Safely sum purchase-related values
             ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
             ad["purchase_value"] = sum(values.get(k, 0) for k in PURCHASE_KEYS)
+            ad["link_clicks"] = actions.get("link_click", 0)
+
 
 
 
         # Create original DataFrame with date_start intact
         original_df = pd.DataFrame(ad_data)
+        for col in ['spend', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpc', 'ctr', 'link_clicks']:
+            original_df[col] = pd.to_numeric(original_df.get(col, 0), errors='coerce').fillna(0)
 
         if 'date_start' not in original_df.columns:
             raise ValueError("❌ 'date_start' column is missing in ad insights data.")
