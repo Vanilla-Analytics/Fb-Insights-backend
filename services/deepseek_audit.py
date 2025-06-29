@@ -225,6 +225,51 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="$"):
         "charts": chart_imgs
     }
 
+def generate_campaign_split_charts(df, currency_symbol="$"):
+    import matplotlib.pyplot as plt
+
+    # Group by campaign
+    grouped = df[df['campaign_name'].notna()].copy()
+    grouped['spend'] = pd.to_numeric(grouped['spend'], errors='coerce').fillna(0)
+    grouped['purchase_value'] = pd.to_numeric(grouped['purchase_value'], errors='coerce').fillna(0)
+
+    spend_split = grouped.groupby('campaign_name')['spend'].sum().sort_values(ascending=False)
+    revenue_split = grouped.groupby('campaign_name')['purchase_value'].sum().sort_values(ascending=False)
+    roas_split = revenue_split / spend_split.replace(0, 1)
+
+    top_spend = spend_split.head(8)
+    top_revenue = revenue_split.head(8)
+    top_roas = roas_split.dropna().sort_values(ascending=False).head(10)
+
+    figs = []
+
+    # 1. Cost Split (Donut)
+    fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
+    wedges, texts, autotexts = ax1.pie(top_spend, labels=top_spend.index, autopct='%1.1f%%', startangle=90)
+    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+    fig1.gca().add_artist(centre_circle)
+    ax1.set_title('Cost Split', fontsize=14)
+    figs.append(("Cost Split", generate_chart_image(fig1)))
+
+    # 2. Revenue Split (Donut)
+    fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
+    wedges2, texts2, autotexts2 = ax2.pie(top_revenue, labels=top_revenue.index, autopct='%1.1f%%', startangle=90)
+    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+    fig2.gca().add_artist(centre_circle)
+    ax2.set_title('Revenue Split', fontsize=14)
+    figs.append(("Revenue Split", generate_chart_image(fig2)))
+
+    # 3. ROAS Split (Horizontal bar)
+    fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
+    ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
+    ax3.set_title('ROAS Split', fontsize=14)
+    ax3.set_xlabel("ROAS")
+    plt.tight_layout()
+    figs.append(("ROAS Split", generate_chart_image(fig3)))
+
+    return figs
+
+
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
     try:
@@ -489,6 +534,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # ✅ Generate key metrics + charts
         key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
+        split_charts = generate_campaign_split_charts(original_df, currency_symbol)
+
 
         # ✅ LLM Sections
         print("🤖 Generating Executive Summary...")
@@ -521,7 +568,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             sections,
             ad_insights_df=ad_insights_df,
             full_ad_insights_df=original_df,
-            currency_symbol=currency_symbol
+            currency_symbol=currency_symbol,
+            split_charts=split_charts
         )
 
         print("✅ PDF generated successfully")

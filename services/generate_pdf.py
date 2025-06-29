@@ -121,7 +121,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
         
 
-def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol="$") -> StreamingResponse:
+def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol="$", split_charts=None) -> StreamingResponse:
     try:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
@@ -439,14 +439,32 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 180
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 170
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
+
 
                         else:
                             c.setFont("Helvetica", 12)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, 
                           "Campaign data available but no valid campaign names found")
+                            
+                        # Draw Split Charts
+                        if 'split_charts' in locals() and split_charts:
+                            chart_x = LEFT_MARGIN
+                            chart_y = BOTTOM_MARGIN + 10
+                            try:
+                                for i, (title, chart_buf) in enumerate(split_charts):
+                                    img = ImageReader(chart_buf)
+                                    if i < 2:
+                                        # Donut charts
+                                        c.drawImage(img, chart_x + i * 240, chart_y + 130, width=220, height=220)
+                                    else:
+                                    # ROAS chart
+                                        c.drawImage(img, chart_x + 20, chart_y, width=700, height=120)
+                            except Exception as e:
+                                print(f"⚠️ Error drawing split charts: {e}")
+
 
 
 
