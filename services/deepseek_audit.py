@@ -437,6 +437,27 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
 
         # currency_symbol = "₹" if currency == "INR" else "$"
 
+        # ✅ FIX: DEFINE grouped_df SAFELY
+        grouped_df = ad_insights_df.groupby('date').agg({
+            'spend': 'sum',
+            'purchases': 'sum',
+            'purchase_value': 'sum',
+            'impressions': 'sum',
+            'clicks': 'sum',
+            'cpc': 'mean',
+            'ctr': 'mean'
+        }).reset_index()
+
+        # ✅ Add calculated metrics
+        grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
+        grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
+        grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
+
+        # ✅ Ensure 30-day continuity
+        last_30_days = pd.date_range(end=pd.Timestamp.today(), periods=30)
+        ad_insights_df = grouped_df.set_index('date').reindex(last_30_days).fillna(0).rename_axis('date').reset_index()
+        print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
+
         if 'account_currency' in ad_insights_df.columns:
             print("💰 Unique currencies in ad_insights_df:", ad_insights_df['account_currency'].unique())
             print("🔢 Account counts by currency:\n", ad_insights_df['account_currency'].value_counts())
@@ -537,15 +558,15 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
                     ad_insights_df[col] = pd.to_numeric(ad_insights_df[col], errors='coerce').fillna(0)
 
             # ✅ Group by date (one row per day)
-            grouped_df = ad_insights_df.groupby('date').agg({
-                'spend': 'sum',
-                'purchases': 'sum',
-                'purchase_value': 'sum',
-                'impressions': 'sum',
-                'clicks': 'sum',
-                'cpc': 'mean',
-                'ctr': 'mean'
-            }).reset_index()
+            # grouped_df = ad_insights_df.groupby('date').agg({
+            #     'spend': 'sum',
+            #     'purchases': 'sum',
+            #     'purchase_value': 'sum',
+            #     'impressions': 'sum',
+            #     'clicks': 'sum',
+            #     'cpc': 'mean',
+            #     'ctr': 'mean'
+            # }).reset_index()
 
             
             # ad_insights_df = ad_insights_df.sort_values("date", ascending=False)
@@ -559,16 +580,16 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             # ad_insights_df = grouped_df
             # print("📆 Final grouped dates:", ad_insights_df['date'].dt.strftime("%Y-%m-%d").tolist())
 
-            # ✅ Group by date (ensure one row per day)
-            grouped_df = ad_insights_df.groupby('date').agg({
-                'spend': 'sum',
-                'purchases': 'sum',
-                'purchase_value': 'sum',
-                'impressions': 'sum',
-                'clicks': 'sum',
-                'cpc': 'mean',
-                'ctr': 'mean'
-            }).reset_index()
+            # # ✅ Group by date (ensure one row per day)
+            # grouped_df = ad_insights_df.groupby('date').agg({
+            #     'spend': 'sum',
+            #     'purchases': 'sum',
+            #     'purchase_value': 'sum',
+            #     'impressions': 'sum',
+            #     'clicks': 'sum',
+            #     'cpc': 'mean',
+            #     'ctr': 'mean'
+            # }).reset_index()
 
             # ✅ Add calculated fields
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
