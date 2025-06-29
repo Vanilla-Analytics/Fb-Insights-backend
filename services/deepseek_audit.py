@@ -560,12 +560,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         # ✅ Generate key metrics + charts
         key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
         split_charts = generate_campaign_split_charts(original_df, currency_symbol)
-        cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
-        sections.append({
-            "title": "COST BY CAMPAIGNS",
-            "content": "",  # No paragraph needed
-            "charts": [cost_by_campaign_chart]
-        })
+        
 
 
         # ✅ LLM Sections
@@ -593,6 +588,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             {"title": "RESULTS SETUP", "content": results_setup, "charts": []},
             key_metrics
         ]
+        cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
+        sections.append({
+            "title": "COST BY CAMPAIGNS",
+            "content": "",  # No paragraph needed
+            "charts": [cost_by_campaign_chart]
+        })
 
         print("📄 Generating PDF report...")
         pdf_response = generate_pdf_report(
