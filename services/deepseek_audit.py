@@ -269,6 +269,31 @@ def generate_campaign_split_charts(df, currency_symbol="$"):
 
     return figs
 
+def generate_cost_by_campaign_chart(df):
+    import matplotlib.pyplot as plt
+
+    df['date'] = pd.to_datetime(df['date'])
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['campaign_name'] = df['campaign_name'].fillna("Unknown Campaign")
+
+    grouped = df.groupby(['campaign_name', 'date'])['spend'].sum().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='campaign_name', values='spend').fillna(0)
+
+    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5, marker='o', markersize=3)
+
+    ax.set_title("Cost By Campaigns", fontsize=16, weight='bold')
+    ax.set_ylabel("Amount spent")
+    ax.set_xlabel("Day")
+    ax.legend(loc="upper left", fontsize=8, ncol=3)
+    ax.grid(True, linestyle='--', alpha=0.5)
+
+    fig.tight_layout()
+    return ("Cost By Campaigns", generate_chart_image(fig))
+
+
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
@@ -535,6 +560,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         # ✅ Generate key metrics + charts
         key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
         split_charts = generate_campaign_split_charts(original_df, currency_symbol)
+        cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
+        sections.append({
+            "title": "COST BY CAMPAIGNS",
+            "content": "",  # No paragraph needed
+            "charts": [cost_by_campaign_chart]
+        })
 
 
         # ✅ LLM Sections
