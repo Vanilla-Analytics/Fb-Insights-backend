@@ -408,6 +408,8 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             ad["purchases"] = actions.get("purchase", 0)
             ad["purchase_value"] = values.get("purchase", 0)
 
+        full_ad_insights_df = pd.DataFrame(ad_data)
+
 
         # expected_keys = ['date_start', 'spend', 'impressions', 'clicks', 'cpc', 'ctr']
         # ad_data = [{k: d.get(k, None) for k in expected_keys} for d in ad_data if isinstance(d, dict)]
@@ -572,8 +574,8 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
             grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
             grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
             grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
-            # Keep full ad-level data for campaign table
-            full_ad_insights_df = ad_insights_df.copy()
+            
+            # full_ad_insights_df = ad_insights_df.copy()
 
 
             # ✅ Keep only last 60 unique days
@@ -614,24 +616,24 @@ async def generate_audit(page_id: str,user_token: str, page_token: str):
         #     "charts": []
         # }
 
-        # ✅ Group and aggregate
-        grouped_df = ad_insights_df.groupby('date').agg({
-            'spend': 'sum',
-            'purchases': 'sum',
-            'purchase_value': 'sum',
-            'impressions': 'sum',
-            'clicks': 'sum',
-            'cpc': 'mean',
-            'ctr': 'mean'
-        }).reset_index()
+        # ✅ Group and aggregate ----------latest new
+        # grouped_df = ad_insights_df.groupby('date').agg({
+        #     'spend': 'sum',
+        #     'purchases': 'sum',
+        #     'purchase_value': 'sum',
+        #     'impressions': 'sum',
+        #     'clicks': 'sum',
+        #     'cpc': 'mean',
+        #     'ctr': 'mean'
+        # }).reset_index()
 
         # ✅ Add calculated fields
         grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
         grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
         grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
 
-        # ✅ Filter last 60 days (unique)
-        ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
+        # ✅ Filter last 60 days (unique)--------latest new
+        # ad_insights_df = grouped_df.sort_values('date', ascending=False).head(60).sort_values('date')
 
         # ✅ NOW generate key metrics with grouped data
         key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
