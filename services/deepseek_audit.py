@@ -398,12 +398,33 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
         if not ad_data:
             raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
+        
+        PURCHASE_KEYS = [
+            "offsite_conversion.purchase",
+            "offsite_conversion.fb_pixel_purchase",
+            "offsite_conversion.custom.1408006162945363",
+            "purchase"
+        ]
+        for k in PURCHASE_KEYS:
+            if actions.get(k):
+                print(f"✅ Found {k} with count {actions[k]}")
+            if values.get(k):
+                print(f"💰 Found {k} with value {values[k]}")
 
+        # for ad in ad_data:
+        #     actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
+        #     values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
+        #     ad["purchases"] = actions.get("purchase", 0)
+        #     ad["purchase_value"] = values.get("purchase", 0)
         for ad in ad_data:
             actions = {d["action_type"]: float(d["value"]) for d in ad.get("actions", []) if "action_type" in d and "value" in d}
             values = {d["action_type"]: float(d["value"]) for d in ad.get("action_values", []) if "action_type" in d and "value" in d}
-            ad["purchases"] = actions.get("purchase", 0)
-            ad["purchase_value"] = values.get("purchase", 0)
+
+        # Sum values across all keys considered as "purchase"
+            ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
+            ad["purchase_value"] = sum(values.get(k, 0) for k in PURCHASE_KEYS)
+
+
 
         # Create original DataFrame with date_start intact
         original_df = pd.DataFrame(ad_data)
