@@ -403,15 +403,12 @@ async def fetch_ad_insights(page_token: str):
 
                     if insights_response.status_code == 200:
                         print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
+                        for ad in ad_results:
+                            ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
+                            insights_data.append(ad)
                     else:
                         print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
                         print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
-
-                    for ad in ad_results:
-
-                        ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
-
-                        insights_data.append(ad)
 
                 except Exception as e:
                     print(f"⚠️ Warning: Error fetching insights for account {acc.get('id', 'unknown')}: {str(e)}")
