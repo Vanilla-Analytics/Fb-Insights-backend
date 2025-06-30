@@ -293,7 +293,6 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
 def generate_campaign_split_charts(df, currency_symbol="$"):
-    import matplotlib.pyplot as plt
 
     # Group by campaign - filter out rows without campaign names first
     grouped = df[df['campaign_name'].notna()].copy()
@@ -367,7 +366,6 @@ def generate_campaign_split_charts(df, currency_symbol="$"):
     return figs
 
 def generate_cost_by_campaign_chart(df):
-    import matplotlib.pyplot as plt
 
     df['date'] = pd.to_datetime(df['date'])
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
@@ -448,27 +446,27 @@ async def fetch_ad_insights(page_token: str):
 
             from datetime import datetime, timedelta
 
-            since = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
-            until = datetime.today().strftime('%Y-%m-%d')
+            # since = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
+            # until = datetime.today().strftime('%Y-%m-%d')
             insights_data = []
             for acc in accounts:
                 try:
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     
-                    today = datetime.today()
-                    sixty_days_ago = today - timedelta(days=60)
-                    end_date = datetime.today() - timedelta(days=1)
-                    start_date = end_date - timedelta(days=59)
+                    # today = datetime.today()
+                    # sixty_days_ago = today - timedelta(days=60)
+                    # end_date = datetime.today() - timedelta(days=1)
+                    # start_date = end_date - timedelta(days=59)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
-                        "time_range": json.dumps({
-                            "since": start_date.strftime("%Y-%m-%d"),
-                            "until": end_date.strftime("%Y-%m-%d")
-                        }),
+                        # "time_range": json.dumps({
+                        #     "since": start_date.strftime("%Y-%m-%d"),
+                        #     "until": end_date.strftime("%Y-%m-%d")
+                        # }),
                         #"time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
-                        #"date_preset":"maximum",
+                        "date_preset":"maximum",
                         "time_increment": 1,  # 👈 daily breakdown
                         "level": "ad",        # 👈 required to enable daily granularity
                         "access_token": page_token
