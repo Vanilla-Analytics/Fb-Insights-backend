@@ -457,8 +457,8 @@ async def fetch_ad_insights(page_token: str):
                     
                     today = datetime.today()
                     sixty_days_ago = today - timedelta(days=60)
-                    end_date = datetime.now()
-                    start_date = end_date - timedelta(days=60)
+                    end_date = datetime.today() - timedelta(days=1)
+                    start_date = end_date - timedelta(days=59)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
@@ -484,11 +484,29 @@ async def fetch_ad_insights(page_token: str):
                     print(f"📦 Response status: {insights_response.status_code}")
                     print(f"📦 Response body: {insights_response.text}")
                         
-                    ad_results = insights_response.json().get("data", [])
-                    print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
+                    # ad_results = insights_response.json().get("data", [])
+                    # print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
+                    # if not ad_results:
+                    #     print(f"⚠️ No data returned for account {acc['id']}")
+                    #     continue
+
+                    ad_results = []
+                    data_page = insights_response.json()
+                    ad_results.extend(data_page.get("data", []))
+
+                    # 🔁 Handle pagination
+                    while "paging" in data_page and "next" in data_page["paging"]:
+                        next_url = data_page["paging"]["next"]
+                        next_response = await client.get(next_url)
+                        next_response.raise_for_status()
+                        data_page = next_response.json()
+                        ad_results.extend(data_page.get("data", []))
+
+                    print(f"📊 Total insights from account {acc['id']}: {len(ad_results)} entries")
                     if not ad_results:
                         print(f"⚠️ No data returned for account {acc['id']}")
                         continue
+
 
                     if insights_response.status_code == 200:
                         ad_results = insights_response.json().get("data", [])
@@ -557,6 +575,11 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Filter out invalid entries
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
+        if not ad_data:
+            print("🚨 Raw ad_data returned from Facebook:")
+            ad_raw = await fetch_ad_insights(user_token)  # re-fetch without filter
+            print(ad_raw[:2])  # Log a couple of entries for debugging
+
         if not ad_data:
             raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
         
