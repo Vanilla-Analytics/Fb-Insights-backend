@@ -455,18 +455,18 @@ async def fetch_ad_insights(page_token: str):
                     
                     # today = datetime.today()
                     # sixty_days_ago = today - timedelta(days=60)
-                    # end_date = datetime.today() - timedelta(days=1)
-                    # start_date = end_date - timedelta(days=59)
+                    end_date = datetime.today() - timedelta(days=1)
+                    start_date = end_date - timedelta(days=59)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
-                        # "time_range": json.dumps({
-                        #     "since": start_date.strftime("%Y-%m-%d"),
-                        #     "until": end_date.strftime("%Y-%m-%d")
-                        # }),
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
+                        "time_range": json.dumps({
+                            "since": start_date.strftime("%Y-%m-%d"),
+                            "until": end_date.strftime("%Y-%m-%d")
+                        }),
                         #"time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
-                        "date_preset":"maximum",
+                        #"date_preset":"maximum",
                         "time_increment": 1,  # 👈 daily breakdown
                         "level": "ad",        # 👈 required to enable daily granularity
                         "access_token": page_token
