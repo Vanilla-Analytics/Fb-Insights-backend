@@ -544,13 +544,29 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
 
 
-        # Detect currency
+        # Detect currency-----------------------
+        # if 'account_currency' in original_df.columns:
+        #     valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
+        #     currency = valid_currencies.mode()[0] if not valid_currencies.empty else "USD"
+        # else:
+        #     currency = "USD"
+        # currency_symbol = "₹" if currency == "INR" else "$"
+
+        # Detect currency more reliably
+        currency = "USD"  # Default
+
         if 'account_currency' in original_df.columns:
             valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
-            currency = valid_currencies.mode()[0] if not valid_currencies.empty else "USD"
-        else:
-            currency = "USD"
+            if not valid_currencies.empty:
+            # Priority: If INR exists in any row, use INR
+                if "INR" in valid_currencies.values:
+                    currency = "INR"
+                else:
+                    currency = valid_currencies.mode()[0]
+
         currency_symbol = "₹" if currency == "INR" else "$"
+        print(f"💰 Detected account currency: {currency} → Using symbol: {currency_symbol}")
+
 
         combined_data = {
             "page_insights": page_data,
