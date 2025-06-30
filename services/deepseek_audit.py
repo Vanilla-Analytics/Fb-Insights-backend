@@ -326,32 +326,19 @@ async def fetch_ad_insights(page_token: str):
         async with httpx.AsyncClient() as client:
             acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
-            # if acc_resp.status_code != 200:
-            #     print("⚠️ Facebook API Error:", acc_resp.text)
-            #     acc_resp.raise_for_status()
 
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
-
-            # Map account ID to currency
-            # account_currency_map = {
-            #     acc["id"]: acc.get("account_currency", "USD") for acc in accounts
-            # }
 
             account_currency_map = {
                 str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
                 for acc in accounts
             }
+            from datetime import datetime, timedelta
 
-            for ad in ad_results:
-                ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
-                insights_data.append(ad)
-
-
-            # accounts = acc_resp.json().get("data", [])
-            # print("📡 Ad Accounts fetched:", accounts)
-            # accounts_data = acc_resp.json().get("data", [])
-            # account_currency_map = {acc['id']: acc.get('account_currency', 'USD') for acc in accounts_data}
+            # for ad in ad_results:
+            #     ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
+            #     insights_data.append(ad)
 
             from datetime import datetime, timedelta
 
@@ -363,7 +350,7 @@ async def fetch_ad_insights(page_token: str):
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     
                     today = datetime.today()
-                    sixty_days_ago = today - timedelta(days=60)
+                    sixty_days_ago = today - timedelta(days=30)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
@@ -384,24 +371,11 @@ async def fetch_ad_insights(page_token: str):
                     print(f"📡 With params: {ad_params}")
                     print(f"📦 Response status: {insights_response.status_code}")
                     print(f"📦 Response body: {insights_response.text}")
-
-                    
-                    # if insights_response.status_code == 200:
-                    #     ad_results = insights_response.json().get("data", [])
-                    #     for ad in ad_results:
-                    #         ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
-                    #         insights_data.append(ad)
-                    # else:
-                    #     print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
-                    #     print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
-                    #     print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")  # ✅ This is your count message
-                    #     for ad in ad_results:
-                    #         ad["account_currency"] = account_currency_map.get(acc["id"], "USD")
-                    #         insights_data.append(ad)
                         
-                    ad_results = insights_response.json().get("data", [])
+                    #ad_results = insights_response.json().get("data", [])
 
                     if insights_response.status_code == 200:
+                        ad_results = insights_response.json().get("data", [])
                         print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
                         for ad in ad_results:
                             ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
