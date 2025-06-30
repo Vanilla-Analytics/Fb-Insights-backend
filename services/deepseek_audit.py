@@ -426,7 +426,7 @@ async def fetch_ad_insights(page_token: str):
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     
                     today = datetime.today()
-                    sixty_days_ago = today - timedelta(days=30)
+                    sixty_days_ago = today - timedelta(days=60)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
@@ -591,7 +591,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
         #ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
 
-        cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
+        cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
         ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
 
         if ad_insights_df.empty:
