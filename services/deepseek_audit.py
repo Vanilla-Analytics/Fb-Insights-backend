@@ -459,7 +459,7 @@ async def fetch_ad_insights(page_token: str):
                     start_date = end_date - timedelta(days=59)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
                         "time_range": json.dumps({
                             "since": start_date.strftime("%Y-%m-%d"),
                             "until": end_date.strftime("%Y-%m-%d")
