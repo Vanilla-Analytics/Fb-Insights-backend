@@ -181,7 +181,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 280
+                            chart_height = 320
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             #chart_y = title_y - chart_height - 30 
                             #chart_y = max(BOTTOM_MARGIN + 40, title_y - chart_height - 30)
@@ -207,7 +207,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 300
+                            chart_height = 320
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = title_y - chart_height - 30 
 
@@ -243,7 +243,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 300
+                            chart_height = 320
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 40
 
@@ -262,7 +262,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 300
+                            chart_height = 320
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 40
 

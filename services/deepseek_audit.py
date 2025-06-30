@@ -26,7 +26,7 @@ def generate_chart_1(ad_insights_df):
     import matplotlib.dates as mdates
     import matplotlib.pyplot as plt
 
-    fig, ax1 = plt.subplots(figsize=(18, 6), dpi=200)
+    fig, ax1 = plt.subplots(figsize=(20, 8), dpi=200, constrained_layout=True)
 
     # Fill missing values
     ad_insights_df['purchase_value'] = ad_insights_df['purchase_value'].fillna(0)
@@ -59,21 +59,22 @@ def generate_chart_1(ad_insights_df):
     )
 
     # Labels
-    ax1.set_ylabel("Purchases", color="#4CAF50", fontsize=12)
-    ax2.set_ylabel("Amount Spent", color="magenta", fontsize=12)
+    ax1.set_ylabel("Purchases", color="#4CAF50", fontsize=10)
+    ax2.set_ylabel("Amount Spent", color="magenta", fontsize=10)
 
-    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=12)
-    ax2.tick_params(axis='y', labelcolor="magenta", labelsize=12)
+    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=10)
+    ax2.tick_params(axis='y', labelcolor="magenta", labelsize=10)
 
     # X-axis formatting
     ax1.set_xticks(ad_insights_df["date"])
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    ax1.tick_params(axis='x', rotation=45, labelsize=10)
+    ax1.tick_params(axis='x', rotation=45, labelsize=8)
 
     # Grid
     ax1.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
 
-    fig.tight_layout()
+    #fig.tight_layout()
+    fig.subplots_adjust(left=0.1, right=0.85, bottom=0.2, top=0.9)
     return fig
 
 
