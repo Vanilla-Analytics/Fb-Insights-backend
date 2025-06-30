@@ -494,6 +494,11 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Create original DataFrame with date_start intact
         original_df = pd.DataFrame(ad_data)
+        # 🚨 Check if account_currency is missing
+        if 'account_currency' not in original_df.columns:
+            print("⚠️ 'account_currency' column missing in original_df.")
+        else:
+            print("✅ 'account_currency' found:", original_df['account_currency'].unique())
         for col in ['spend', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpc', 'ctr', 'link_clicks']:
             original_df[col] = pd.to_numeric(original_df.get(col, 0), errors='coerce').fillna(0)
 
