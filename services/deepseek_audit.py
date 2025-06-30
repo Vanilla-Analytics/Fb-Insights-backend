@@ -226,47 +226,122 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="$"):
         "charts": chart_imgs
     }
 
+# def generate_campaign_split_charts(df, currency_symbol="$"):
+#     import matplotlib.pyplot as plt
+
+#     # Group by campaign
+#     grouped = df[df['campaign_name'].notna()].copy()
+#     grouped['spend'] = pd.to_numeric(grouped['spend'], errors='coerce').fillna(0)
+#     grouped['purchase_value'] = pd.to_numeric(grouped['purchase_value'], errors='coerce').fillna(0)
+
+#     spend_split = grouped.groupby('campaign_name')['spend'].sum().sort_values(ascending=False)
+#     revenue_split = grouped.groupby('campaign_name')['purchase_value'].sum().sort_values(ascending=False)
+#     roas_split = revenue_split / spend_split.replace(0, 1)
+
+#     top_spend = spend_split.head(8)
+#     top_revenue = revenue_split.head(8)
+#     top_roas = roas_split.dropna().sort_values(ascending=False).head(10)
+
+#     figs = []
+
+#     # 1. Cost Split (Donut)
+#     fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
+#     wedges, texts, autotexts = ax1.pie(top_spend, labels=top_spend.index, autopct='%1.1f%%', startangle=90)
+#     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+#     fig1.gca().add_artist(centre_circle)
+#     ax1.set_title('Cost Split', fontsize=14)
+#     figs.append(("Cost Split", generate_chart_image(fig1)))
+
+#     # 2. Revenue Split (Donut)
+#     fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
+#     wedges2, texts2, autotexts2 = ax2.pie(top_revenue, labels=top_revenue.index, autopct='%1.1f%%', startangle=90)
+#     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+#     fig2.gca().add_artist(centre_circle)
+#     ax2.set_title('Revenue Split', fontsize=14)
+#     figs.append(("Revenue Split", generate_chart_image(fig2)))
+
+#     # 3. ROAS Split (Horizontal bar)
+#     fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
+#     ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
+#     ax3.set_title('ROAS Split', fontsize=14)
+#     ax3.set_xlabel("ROAS")
+#     plt.tight_layout()
+#     figs.append(("ROAS Split", generate_chart_image(fig3)))
+
+#     return figs
+
+
 def generate_campaign_split_charts(df, currency_symbol="$"):
     import matplotlib.pyplot as plt
 
-    # Group by campaign
+    # Group by campaign - filter out rows without campaign names first
     grouped = df[df['campaign_name'].notna()].copy()
+    
+    # Convert numeric columns safely
     grouped['spend'] = pd.to_numeric(grouped['spend'], errors='coerce').fillna(0)
     grouped['purchase_value'] = pd.to_numeric(grouped['purchase_value'], errors='coerce').fillna(0)
 
+    # Check if we have any valid data
+    if grouped.empty or grouped['spend'].sum() == 0:
+        print("⚠️ No valid campaign data available for split charts")
+        return []  # Return empty list if no data
+
     spend_split = grouped.groupby('campaign_name')['spend'].sum().sort_values(ascending=False)
     revenue_split = grouped.groupby('campaign_name')['purchase_value'].sum().sort_values(ascending=False)
+    
+    # Handle division by zero for ROAS calculation
     roas_split = revenue_split / spend_split.replace(0, 1)
+    roas_split = roas_split.dropna()
 
-    top_spend = spend_split.head(8)
-    top_revenue = revenue_split.head(8)
-    top_roas = roas_split.dropna().sort_values(ascending=False).head(10)
+    # Get top campaigns (but ensure we have data)
+    top_spend = spend_split.head(8) if not spend_split.empty else pd.Series(dtype=float)
+    top_revenue = revenue_split.head(8) if not revenue_split.empty else pd.Series(dtype=float)
+    top_roas = roas_split.sort_values(ascending=False).head(10) if not roas_split.empty else pd.Series(dtype=float)
 
     figs = []
 
-    # 1. Cost Split (Donut)
-    fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
-    wedges, texts, autotexts = ax1.pie(top_spend, labels=top_spend.index, autopct='%1.1f%%', startangle=90)
-    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-    fig1.gca().add_artist(centre_circle)
-    ax1.set_title('Cost Split', fontsize=14)
-    figs.append(("Cost Split", generate_chart_image(fig1)))
+    # 1. Cost Split (Donut) - only if we have data
+    if not top_spend.empty:
+        fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
+        wedges, texts, autotexts = ax1.pie(
+            top_spend, 
+            labels=top_spend.index, 
+            autopct='%1.1f%%', 
+            startangle=90
+        )
+        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+        fig1.gca().add_artist(centre_circle)
+        ax1.set_title('Cost Split', fontsize=14)
+        figs.append(("Cost Split", generate_chart_image(fig1)))
+    else:
+        print("⚠️ No spend data available for cost split chart")
 
-    # 2. Revenue Split (Donut)
-    fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
-    wedges2, texts2, autotexts2 = ax2.pie(top_revenue, labels=top_revenue.index, autopct='%1.1f%%', startangle=90)
-    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-    fig2.gca().add_artist(centre_circle)
-    ax2.set_title('Revenue Split', fontsize=14)
-    figs.append(("Revenue Split", generate_chart_image(fig2)))
+    # 2. Revenue Split (Donut) - only if we have data
+    if not top_revenue.empty:
+        fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
+        wedges2, texts2, autotexts2 = ax2.pie(
+            top_revenue, 
+            labels=top_revenue.index, 
+            autopct='%1.1f%%', 
+            startangle=90
+        )
+        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+        fig2.gca().add_artist(centre_circle)
+        ax2.set_title('Revenue Split', fontsize=14)
+        figs.append(("Revenue Split", generate_chart_image(fig2)))
+    else:
+        print("⚠️ No revenue data available for revenue split chart")
 
-    # 3. ROAS Split (Horizontal bar)
-    fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
-    ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
-    ax3.set_title('ROAS Split', fontsize=14)
-    ax3.set_xlabel("ROAS")
-    plt.tight_layout()
-    figs.append(("ROAS Split", generate_chart_image(fig3)))
+    # 3. ROAS Split (Horizontal bar) - only if we have data
+    if not top_roas.empty:
+        fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
+        ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
+        ax3.set_title('ROAS Split', fontsize=14)
+        ax3.set_xlabel("ROAS")
+        plt.tight_layout()
+        figs.append(("ROAS Split", generate_chart_image(fig3)))
+    else:
+        print("⚠️ No ROAS data available for ROAS split chart")
 
     return figs
 
