@@ -509,7 +509,7 @@ async def fetch_ad_insights(page_token: str):
 
 
                     if insights_response.status_code == 200:
-                        ad_results = insights_response.json().get("data", [])
+                        #ad_results = insights_response.json().get("data", [])
                         print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
                         for ad in ad_results:
                             ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
