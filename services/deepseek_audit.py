@@ -423,9 +423,11 @@ async def fetch_ad_insights(page_token: str):
         async with httpx.AsyncClient() as client:
             acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
-
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
+            if not accounts:
+                print("⚠️ No ad accounts found for this user")
+                return []
 
             # account_currency_map = {
             #     str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
@@ -455,12 +457,14 @@ async def fetch_ad_insights(page_token: str):
                     
                     today = datetime.today()
                     sixty_days_ago = today - timedelta(days=60)
+                    end_date = datetime.now()
+                    start_date = end_date - timedelta(days=60)
                     ad_params = {
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
                         "time_range": json.dumps({
-                            "since": sixty_days_ago.strftime("%Y-%m-%d"),
-                            "until": today.strftime("%Y-%m-%d")
+                            "since": start_date.strftime("%Y-%m-%d"),
+                            "until": end_date.strftime("%Y-%m-%d")
                         }),
                         #"time_range": {"since": since, "until": until},
                         #"date_preset": "last_60_days",
@@ -473,14 +477,18 @@ async def fetch_ad_insights(page_token: str):
                     # Use async client
                     insights_response = await client.get(ad_url, params=ad_params)
                     insights_response.raise_for_status()
-                    insights_response = requests.get(ad_url, params=ad_params)
+                    #insights_response = requests.get(ad_url, params=ad_params)
                     
                     print(f"📡 Requesting URL: {ad_url}")
                     print(f"📡 With params: {ad_params}")
                     print(f"📦 Response status: {insights_response.status_code}")
                     print(f"📦 Response body: {insights_response.text}")
                         
-                    #ad_results = insights_response.json().get("data", [])
+                    ad_results = insights_response.json().get("data", [])
+                    print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
+                    if not ad_results:
+                        print(f"⚠️ No data returned for account {acc['id']}")
+                        continue
 
                     if insights_response.status_code == 200:
                         ad_results = insights_response.json().get("data", [])
