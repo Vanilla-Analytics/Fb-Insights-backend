@@ -99,7 +99,7 @@ def generate_chart_image(fig):
     # return buf
 
 
-def generate_key_metrics_section(ad_insights_df, currency_symbol="$"):
+def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     
     # if 'account_currency' not in ad_insights_df.columns:
     #     currency_symbol = "$"  # Default to USD
@@ -110,20 +110,41 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="$"):
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
         return "No data available for Key Metrics.", []
+    
+    # Calculate metrics properly
+    total_spend = ad_insights_df['spend'].sum()
+    total_purchases = ad_insights_df['purchases'].sum()
+    total_purchase_value = ad_insights_df['purchase_value'].sum()
+    total_impressions = ad_insights_df['impressions'].sum()
+    total_clicks = ad_insights_df['clicks'].sum()
 
     metrics_summary = {
-        "Amount Spent": f"{currency_symbol}{ad_insights_df['spend'].sum():,.2f}",
-        "Purchases": int(ad_insights_df['purchases'].sum()),
-        "Purchase Value": f"{currency_symbol}{ad_insights_df['purchase_value'].sum():,.2f}",
-        "ROAS": round(ad_insights_df['roas'].mean(), 2),
-        "CPA": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
-        "Cost/Result": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
-        "Impressions": int(ad_insights_df['impressions'].sum()),
-        "CPM": f"{currency_symbol}{(ad_insights_df['spend'].sum() / ad_insights_df['impressions'].sum() * 1000):.2f}",
-        "Link Clicks": int(ad_insights_df['clicks'].sum()),
-        "Link CPC": f"{currency_symbol}{ad_insights_df['cpc'].mean():.2f}",
-        "CTR (link)": f"{ad_insights_df['ctr'].mean():.2%}"
+        "Amount Spent": f"{currency_symbol}{total_spend:,.2f}",
+        "Purchases": int(total_purchases),
+        "Purchase Value": f"{currency_symbol}{total_purchase_value:,.2f}",
+        "ROAS": round(total_purchase_value / total_spend, 2) if total_spend > 0 else 0,
+        "CPA": f"{currency_symbol}{round(total_spend / total_purchases, 2) if total_purchases > 0 else 0:.2f}",
+        "Cost/Result": f"{currency_symbol}{round(total_spend / total_purchases, 2) if total_purchases > 0 else 0:.2f}",
+        "Impressions": int(total_impressions),
+        "CPM": f"{currency_symbol}{round((total_spend / total_impressions * 1000), 2) if total_impressions > 0 else 0:.2f}",
+        "Link Clicks": int(total_clicks),
+        "Link CPC": f"{currency_symbol}{round(total_spend / total_clicks, 2) if total_clicks > 0 else 0:.2f}",
+        "CTR (link)": f"{round((total_clicks / total_impressions), 4) if total_impressions > 0 else 0:.2%}"
     }
+
+    # metrics_summary = {
+    #     "Amount Spent": f"{currency_symbol}{ad_insights_df['spend'].sum():,.2f}",
+    #     "Purchases": int(ad_insights_df['purchases'].sum()),
+    #     "Purchase Value": f"{currency_symbol}{ad_insights_df['purchase_value'].sum():,.2f}",
+    #     "ROAS": round(ad_insights_df['roas'].mean(), 2),
+    #     "CPA": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
+    #     "Cost/Result": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
+    #     "Impressions": int(ad_insights_df['impressions'].sum()),
+    #     "CPM": f"{currency_symbol}{(ad_insights_df['spend'].sum() / ad_insights_df['impressions'].sum() * 1000):.2f}",
+    #     "Link Clicks": int(ad_insights_df['clicks'].sum()),
+    #     "Link CPC": f"{currency_symbol}{ad_insights_df['cpc'].mean():.2f}",
+    #     "CTR (link)": f"{ad_insights_df['ctr'].mean():.2%}"
+    # }
     
 
     summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
@@ -406,9 +427,16 @@ async def fetch_ad_insights(page_token: str):
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
 
+            # account_currency_map = {
+            #     str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
+            #     for acc in accounts
+            # }
+
+            # More robust currency mapping
             account_currency_map = {
-                str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
+                str(acc.get("account_id")): acc.get("account_currency", "USD")
                 for acc in accounts
+                if acc.get("account_id")
             }
             from datetime import datetime, timedelta
 
@@ -441,6 +469,10 @@ async def fetch_ad_insights(page_token: str):
                         "level": "ad",        # 👈 required to enable daily granularity
                         "access_token": page_token
                     }
+
+                    # Use async client
+                    insights_response = await client.get(ad_url, params=ad_params)
+                    insights_response.raise_for_status()
                     insights_response = requests.get(ad_url, params=ad_params)
                     
                     print(f"📡 Requesting URL: {ad_url}")
@@ -612,20 +644,39 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         currency = "USD"  # Default
         currency_symbol = "$"
 
-        if 'account_currency' in original_df.columns:
-        # Get the most frequent non-null currency
-            valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
-            if not valid_currencies.empty:
-            # Check for any INR occurrences first
-                if "INR" in valid_currencies.values:
-                    currency = "INR"
-                    currency_symbol = "₹"
-                else:
-                # Fall back to mode if no INR found
-                    currency = valid_currencies.mode()[0]
-                    currency_symbol = "₹" if currency == "INR" else "$"
+        # if 'account_currency' in original_df.columns:
+        # # Get the most frequent non-null currency
+        #     valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
+        #     if not valid_currencies.empty:
+        #     # Check for any INR occurrences first
+        #         if "INR" in valid_currencies.values:
+        #             currency = "INR"
+        #             currency_symbol = "₹"
+        #         else:
+        #         # Fall back to mode if no INR found
+        #             currency = valid_currencies.mode()[0]
+        #             currency_symbol = "₹" if currency == "INR" else "$"
 
-        print(f"💰 Detected account currency: {currency} → Using symbol: {currency_symbol}")
+        def detect_currency(df):
+            if 'account_currency' not in df.columns:
+                return "USD", "$"
+    
+            currencies = df['account_currency'].dropna().astype(str).str.strip().str.upper()
+            if currencies.empty:
+                return "USD", "$"
+    
+            # Prioritize INR if present
+            if "INR" in currencies.values:
+                return "INR", "₹"
+    
+            # Get most frequent currency
+            currency = currencies.mode()[0] if not currencies.mode().empty else "USD"
+            return currency, "₹" if currency == "INR" else "$"
+
+        # Then use it:
+        currency, currency_symbol = detect_currency(original_df)
+
+        #print(f"💰 Detected account currency: {currency} → Using symbol: {currency_symbol}")
 
 
         combined_data = {
