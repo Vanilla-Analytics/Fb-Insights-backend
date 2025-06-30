@@ -343,6 +343,10 @@ async def fetch_ad_insights(page_token: str):
                 for acc in accounts
             }
 
+            for ad in ad_results:
+                ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
+                insights_data.append(ad)
+
 
             # accounts = acc_resp.json().get("data", [])
             # print("📡 Ad Accounts fetched:", accounts)
@@ -559,17 +563,21 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Detect currency more reliably
         currency = "USD"  # Default
+        currency_symbol = "$"
 
         if 'account_currency' in original_df.columns:
+        # Get the most frequent non-null currency
             valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
             if not valid_currencies.empty:
-            # Priority: If INR exists in any row, use INR
+            # Check for any INR occurrences first
                 if "INR" in valid_currencies.values:
                     currency = "INR"
+                    currency_symbol = "₹"
                 else:
+                # Fall back to mode if no INR found
                     currency = valid_currencies.mode()[0]
+                    currency_symbol = "₹" if currency == "INR" else "$"
 
-        currency_symbol = "₹" if currency == "INR" else "$"
         print(f"💰 Detected account currency: {currency} → Using symbol: {currency_symbol}")
 
 
