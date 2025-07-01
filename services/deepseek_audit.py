@@ -422,133 +422,223 @@ async def check_account_status(account_id, token):
         })
         return resp.json()
 
+# async def fetch_ad_insights(page_token: str):
+#     """Fetch Facebook ad insights"""
+#     try:
+#         #url = f"https://graph.facebook.com/v18.0/me/adaccounts"
+#         url = f"https://graph.facebook.com/v22.0/me/adaccounts?fields=account_id,account_currency"
+#         async with httpx.AsyncClient() as client:
+#             acc_resp = await client.get(url, params={
+#                 "access_token": page_token,
+#                 "fields": "account_id,account_currency,name,account_status"
+#             })
+#             #acc_resp = await client.get(url, params={"access_token": page_token})
+#             acc_resp.raise_for_status()
+#             accounts = acc_resp.json().get("data", [])
+#             print("📡 Ad Accounts fetched:", accounts)
+#             if not accounts:
+#                 print("⚠️ No ad accounts found for this user")
+#                 return []
+
+#             # account_currency_map = {
+#             #     str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
+#             #     for acc in accounts
+#             # }
+
+#             # More robust currency mapping
+#             account_currency_map = {
+#                 str(acc.get("account_id")): acc.get("account_currency", "USD")
+#                 for acc in accounts
+#                 if acc.get("account_id")
+#             }
+#             from datetime import datetime, timedelta
+
+#             # for ad in ad_results:
+#             #     ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
+#             #     insights_data.append(ad)
+
+#             from datetime import datetime, timedelta
+
+#             # since = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
+#             # until = datetime.today().strftime('%Y-%m-%d')
+#             insights_data = []
+#             for acc in accounts:
+#                 try:
+#                     # First check account status
+#                     status_info = await check_account_status(acc['id'], page_token)
+#                     print(f"🔍 Account Status: {status_info}")
+
+#                     if status_info.get('account_status') != 1:
+#                         print(f"⚠️ Account {acc.get('name')} is not active")
+#                         continue
+#                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    
+#                     # today = datetime.today()
+#                     # sixty_days_ago = today - timedelta(days=60)
+#                     end_date = datetime.now(timezone.utc).date()
+#                     start_date = end_date - timedelta(days=59)
+#                     ad_params = {
+#                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
+#                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
+#                         "time_range": json.dumps({
+#                             "since": start_date.strftime("%Y-%m-%d"),
+#                             "until": end_date.strftime("%Y-%m-%d")
+#                         }),
+#                         #"time_range": {"since": since, "until": until},
+#                         #"date_preset": "last_60_days",
+#                         #"date_preset":"maximum",
+#                         "time_increment": 1,  # 👈 daily breakdown
+#                         "level": "ad",        # 👈 required to enable daily granularity
+#                         "access_token": page_token
+#                     }
+
+#                     # Use async client
+#                     insights_response = await client.get(ad_url, params=ad_params)
+#                     insights_response.raise_for_status()
+#                     #insights_response = requests.get(ad_url, params=ad_params)
+                    
+#                     print(f"📡 Requesting URL: {ad_url}")
+#                     print(f"📡 With params: {ad_params}")
+#                     print(f"📦 Response status: {insights_response.status_code}")
+#                     print(f"📦 Response body: {insights_response.text}")
+                        
+#                     # ad_results = insights_response.json().get("data", [])
+#                     # print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
+#                     # if not ad_results:
+#                     #     print(f"⚠️ No data returned for account {acc['id']}")
+#                     #     continue
+
+#                     ad_results = []
+#                     data_page = insights_response.json()
+#                     ad_results.extend(data_page.get("data", []))
+
+#                     # 🔁 Handle pagination
+#                     # Replace your pagination code with this:
+#                     while True:
+#                         data_page = insights_response.json()
+#                         ad_results.extend(data_page.get("data", []))
+    
+#                         if 'paging' not in data_page or 'next' not in data_page['paging']:
+#                             break
+        
+#                         next_url = data_page["paging"]["next"]
+#                         insights_response = await client.get(next_url)
+#                         insights_response.raise_for_status()
+
+#                     print(f"📊 Total insights from account {acc['id']}: {len(ad_results)} entries")
+#                     if not ad_results:
+#                         print(f"⚠️ No data returned for account {acc['id']}")
+#                         continue
+
+
+#                     if insights_response.status_code == 200:
+#                         #ad_results = insights_response.json().get("data", [])
+#                         print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
+#                         for ad in ad_results:
+#                             ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
+#                             insights_data.append(ad)
+#                     else:
+#                         print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
+#                         print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
+
+#                 except Exception as e:
+#                     print(f"⚠️ Warning: Error fetching insights for account {acc.get('id', 'unknown')}: {str(e)}")
+#                     continue
+            
+#             return insights_data
+#     except Exception as e:
+#         print(f"❌ Error fetching ad insights: {str(e)}")
+#         print(f"🔍 Response: {acc_resp.text}")
+#         return []
+
 async def fetch_ad_insights(page_token: str):
     """Fetch Facebook ad insights"""
     try:
-        #url = f"https://graph.facebook.com/v18.0/me/adaccounts"
-        url = f"https://graph.facebook.com/v22.0/me/adaccounts?fields=account_id,account_currency"
+        url = f"https://graph.facebook.com/v22.0/me/adaccounts"
         async with httpx.AsyncClient() as client:
+            # First get accounts with more detailed fields
             acc_resp = await client.get(url, params={
                 "access_token": page_token,
-                "fields": "account_id,account_currency,name,account_status"
+                "fields": "id,name,account_status,disable_reason,adsets{id,name}"
             })
-            #acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
             accounts = acc_resp.json().get("data", [])
-            print("📡 Ad Accounts fetched:", accounts)
+            
             if not accounts:
                 print("⚠️ No ad accounts found for this user")
                 return []
 
-            # account_currency_map = {
-            #     str(acc.get("account_id") or acc.get("id")): acc.get("account_currency", "USD")
-            #     for acc in accounts
-            # }
-
-            # More robust currency mapping
-            account_currency_map = {
-                str(acc.get("account_id")): acc.get("account_currency", "USD")
-                for acc in accounts
-                if acc.get("account_id")
-            }
-            from datetime import datetime, timedelta
-
-            # for ad in ad_results:
-            #     ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
-            #     insights_data.append(ad)
-
-            from datetime import datetime, timedelta
-
-            # since = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
-            # until = datetime.today().strftime('%Y-%m-%d')
             insights_data = []
             for acc in accounts:
                 try:
-                    # First check account status
-                    status_info = await check_account_status(acc['id'], page_token)
-                    print(f"🔍 Account Status: {status_info}")
-
-                    if status_info.get('account_status') != 1:
-                        print(f"⚠️ Account {acc.get('name')} is not active")
-                        continue
-                    ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    print(f"🔍 Processing account: {acc.get('name')} ({acc.get('id')})")
                     
-                    # today = datetime.today()
-                    # sixty_days_ago = today - timedelta(days=60)
-                    end_date = datetime.now(timezone.utc).date()
-                    start_date = end_date - timedelta(days=59)
-                    ad_params = {
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
-                        #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
-                        "time_range": json.dumps({
-                            "since": start_date.strftime("%Y-%m-%d"),
-                            "until": end_date.strftime("%Y-%m-%d")
-                        }),
-                        #"time_range": {"since": since, "until": until},
-                        #"date_preset": "last_60_days",
-                        #"date_preset":"maximum",
-                        "time_increment": 1,  # 👈 daily breakdown
-                        "level": "ad",        # 👈 required to enable daily granularity
+                    # Check if account has any active adsets first
+                    if 'adsets' not in acc or not acc['adsets'].get('data'):
+                        print(f"⚠️ No adsets found for account {acc.get('name')}")
+                        continue
+                        
+                    # Get insights with broader time range and simpler fields first
+                    ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    params = {
+                        "fields": "spend,impressions,date_start",
+                        "date_preset": "maximum",  # Get all available data
+                        "time_increment": 1,
+                        "level": "ad",
                         "access_token": page_token
                     }
-
-                    # Use async client
-                    insights_response = await client.get(ad_url, params=ad_params)
-                    insights_response.raise_for_status()
-                    #insights_response = requests.get(ad_url, params=ad_params)
                     
-                    print(f"📡 Requesting URL: {ad_url}")
-                    print(f"📡 With params: {ad_params}")
-                    print(f"📦 Response status: {insights_response.status_code}")
-                    print(f"📦 Response body: {insights_response.text}")
-                        
-                    # ad_results = insights_response.json().get("data", [])
-                    # print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
-                    # if not ad_results:
-                    #     print(f"⚠️ No data returned for account {acc['id']}")
-                    #     continue
-
-                    ad_results = []
-                    data_page = insights_response.json()
-                    ad_results.extend(data_page.get("data", []))
-
-                    # 🔁 Handle pagination
-                    # Replace your pagination code with this:
-                    while True:
-                        data_page = insights_response.json()
-                        ad_results.extend(data_page.get("data", []))
-    
-                        if 'paging' not in data_page or 'next' not in data_page['paging']:
-                            break
-        
-                        next_url = data_page["paging"]["next"]
-                        insights_response = await client.get(next_url)
-                        insights_response.raise_for_status()
-
-                    print(f"📊 Total insights from account {acc['id']}: {len(ad_results)} entries")
-                    if not ad_results:
-                        print(f"⚠️ No data returned for account {acc['id']}")
+                    print(f"📡 Initial insights request for account {acc['id']}")
+                    insights_response = await client.get(ad_url, params=params)
+                    insights_response.raise_for_status()
+                    
+                    data = insights_response.json().get("data", [])
+                    print(f"📊 Initial insights count: {len(data)}")
+                    
+                    if not data:
+                        print(f"⚠️ No insights data for account {acc['id']}")
                         continue
-
-
-                    if insights_response.status_code == 200:
-                        #ad_results = insights_response.json().get("data", [])
-                        print(f"📊 Insights from account {acc['id']}: {len(ad_results)} entries")
-                        for ad in ad_results:
-                            ad["account_currency"] = account_currency_map.get(str(acc.get("account_id") or acc.get("id")), "USD")
-                            insights_data.append(ad)
-                    else:
-                        print(f"⚠️ Warning: Failed to fetch insights for account {acc['id']}")
-                        print(f"🔍 Status: {insights_response.status_code}, Content: {insights_response.text}")
-
+                        
+                    # If we got some data, now request detailed fields
+                    detailed_params = {
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
+                        "time_range": json.dumps({
+                            "since": (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d"),
+                            "until": datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                        }),
+                        "time_increment": 1,
+                        "level": "ad",
+                        "access_token": page_token
+                    }
+                    
+                    detailed_response = await client.get(ad_url, params=detailed_params)
+                    detailed_response.raise_for_status()
+                    
+                    ad_results = []
+                    data_page = detailed_response.json()
+                    ad_results.extend(data_page.get("data", []))
+                    
+                    # Handle pagination
+                    while 'paging' in data_page and 'next' in data_page['paging']:
+                        next_url = data_page["paging"]["next"]
+                        data_page = await client.get(next_url)
+                        data_page = data_page.json()
+                        ad_results.extend(data_page.get("data", []))
+                    
+                    print(f"📊 Total detailed insights: {len(ad_results)}")
+                    
+                    for ad in ad_results:
+                        ad["account_currency"] = "USD"  # Default, adjust as needed
+                        insights_data.append(ad)
+                        
                 except Exception as e:
-                    print(f"⚠️ Warning: Error fetching insights for account {acc.get('id', 'unknown')}: {str(e)}")
+                    print(f"⚠️ Error processing account {acc.get('id')}: {str(e)}")
                     continue
             
             return insights_data
+            
     except Exception as e:
-        print(f"❌ Error fetching ad insights: {str(e)}")
-        print(f"🔍 Response: {acc_resp.text}")
+        print(f"❌ Error in fetch_ad_insights: {str(e)}")
         return []
 
 
