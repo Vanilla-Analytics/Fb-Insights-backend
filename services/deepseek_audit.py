@@ -428,7 +428,11 @@ async def fetch_ad_insights(page_token: str):
         #url = f"https://graph.facebook.com/v18.0/me/adaccounts"
         url = f"https://graph.facebook.com/v18.0/me/adaccounts?fields=account_id,account_currency"
         async with httpx.AsyncClient() as client:
-            acc_resp = await client.get(url, params={"access_token": page_token})
+            acc_resp = await client.get(url, params={
+                "access_token": page_token,
+                "fields": "account_id,account_currency,name,account_status"
+            })
+            #acc_resp = await client.get(url, params={"access_token": page_token})
             acc_resp.raise_for_status()
             accounts = acc_resp.json().get("data", [])
             print("📡 Ad Accounts fetched:", accounts)
@@ -460,12 +464,19 @@ async def fetch_ad_insights(page_token: str):
             insights_data = []
             for acc in accounts:
                 try:
+                    # First check account status
+                    status_info = await check_account_status(acc['id'], page_token)
+                    print(f"🔍 Account Status: {status_info}")
+
+                    if status_info.get('account_status') != 1:
+                        print(f"⚠️ Account {acc.get('name')} is not active")
+                        continue
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     
                     # today = datetime.today()
                     # sixty_days_ago = today - timedelta(days=60)
                     end_date = datetime.now(timezone.utc).date()
-                    start_date = end_date - timedelta(days=29)
+                    start_date = end_date - timedelta(days=59)
                     ad_params = {
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
                         #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
