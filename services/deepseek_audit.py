@@ -394,7 +394,7 @@ def generate_cost_by_campaign_chart(df):
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
     try:
-        base_url = f"https://graph.facebook.com/v18.0/{page_id}/insights"
+        base_url = f"https://graph.facebook.com/v22.0/{page_id}/insights"
         since = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
         until = datetime.now().strftime("%Y-%m-%d")
 
@@ -414,7 +414,7 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
         return {"data": [], "error": str(e)}
     
 async def check_account_status(account_id, token):
-    url = f"https://graph.facebook.com/v18.0/{account_id}"
+    url = f"https://graph.facebook.com/v22.0/{account_id}"
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, params={
             "access_token": token,
@@ -426,7 +426,7 @@ async def fetch_ad_insights(page_token: str):
     """Fetch Facebook ad insights"""
     try:
         #url = f"https://graph.facebook.com/v18.0/me/adaccounts"
-        url = f"https://graph.facebook.com/v18.0/me/adaccounts?fields=account_id,account_currency"
+        url = f"https://graph.facebook.com/v22.0/me/adaccounts?fields=account_id,account_currency"
         async with httpx.AsyncClient() as client:
             acc_resp = await client.get(url, params={
                 "access_token": page_token,
