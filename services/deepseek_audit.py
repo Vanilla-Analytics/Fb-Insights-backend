@@ -17,6 +17,7 @@ from services.prompts import RESULTS_SETUP_PROMPT
 import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from services.generate_pdf import generate_pdf_report
+from datetime import datetime, timedelta , timezone
 import json
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
@@ -411,7 +412,15 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     except Exception as e:
         print(f"❌ Error fetching Facebook insights: {str(e)}")
         return {"data": [], "error": str(e)}
-
+    
+async def check_account_status(account_id, token):
+    url = f"https://graph.facebook.com/v18.0/{account_id}"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, params={
+            "access_token": token,
+            "fields": "id,name,account_status,disable_reason"
+        })
+        return resp.json()
 
 async def fetch_ad_insights(page_token: str):
     """Fetch Facebook ad insights"""
@@ -455,11 +464,11 @@ async def fetch_ad_insights(page_token: str):
                     
                     # today = datetime.today()
                     # sixty_days_ago = today - timedelta(days=60)
-                    end_date = datetime.today() - timedelta(days=1)
-                    start_date = end_date - timedelta(days=59)
+                    end_date = datetime.now(timezone.utc).date()
+                    start_date = end_date - timedelta(days=29)
                     ad_params = {
-                        #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr",
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
+                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
+                        #"fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start",
                         "time_range": json.dumps({
                             "since": start_date.strftime("%Y-%m-%d"),
                             "until": end_date.strftime("%Y-%m-%d")
@@ -493,12 +502,17 @@ async def fetch_ad_insights(page_token: str):
                     ad_results.extend(data_page.get("data", []))
 
                     # 🔁 Handle pagination
-                    while "paging" in data_page and "next" in data_page["paging"]:
-                        next_url = data_page["paging"]["next"]
-                        next_response = await client.get(next_url)
-                        next_response.raise_for_status()
-                        data_page = next_response.json()
+                    # Replace your pagination code with this:
+                    while True:
+                        data_page = insights_response.json()
                         ad_results.extend(data_page.get("data", []))
+    
+                        if 'paging' not in data_page or 'next' not in data_page['paging']:
+                            break
+        
+                        next_url = data_page["paging"]["next"]
+                        insights_response = await client.get(next_url)
+                        insights_response.raise_for_status()
 
                     print(f"📊 Total insights from account {acc['id']}: {len(ad_results)} entries")
                     if not ad_results:
