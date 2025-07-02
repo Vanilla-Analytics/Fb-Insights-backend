@@ -845,7 +845,20 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         sections.append({
             "title": "COST BY CAMPAIGNS",
             "content": "",  # No paragraph needed
-            "charts": [cost_by_campaign_chart]
+            "charts": [cost_by_campaign_chart],
+            "contains_table": False
+        })
+        sections.append({
+            "title": "Daily Campaign Performance Summary",
+            "content": "",
+            "charts": [],
+            "contains_table": True  # ✅ mark table-only pages like this
+        })
+        sections.append({
+            "title": "CAMPAIGN PERFORMANCE SUMMARY",
+            "content": "",
+            "charts": [],
+            "contains_table": True  # ✅ mark table-only pages like this
         })
 
         print("📄 Generating PDF report...")

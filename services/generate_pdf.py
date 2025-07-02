@@ -25,15 +25,18 @@ LOGO_HEIGHT = 45
 LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
 
 LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
-def adjust_page_height(c, title: str):
+def adjust_page_height(c, section: dict):
     """
-    Dynamically adjust PAGE_HEIGHT based on section title.
-    Also resets LOGO_Y_OFFSET for header rendering.
+    Adjust PAGE_HEIGHT based on whether the section contains a table (no charts).
+    - If charts are present → PAGE_HEIGHT = 600
+    - If no charts, but tables are drawn → PAGE_HEIGHT = 1000
     """
     global PAGE_HEIGHT, LOGO_Y_OFFSET
 
-    tall_sections = ["KEY METRICS", "COST BY CAMPAIGNS"]  # Add more titles as needed
-    PAGE_HEIGHT = 1000 if title.strip().upper() in tall_sections else 600
+    has_charts = bool(section.get("charts"))
+    is_table_only_section = not has_charts and section.get("contains_table", False)
+
+    PAGE_HEIGHT = 1000 if is_table_only_section else 600
     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 
@@ -116,8 +119,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
         #c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
 
         for i, section in enumerate(sections):  
+            
+            adjust_page_height(c, section)  # Adjust page height based on section title
             section_title = section.get("title", "Untitled Section")
-            adjust_page_height(c, section_title)  # Adjust page height based on section title
             
             draw_footer = True  # ✅ Set default at start of each section
             section_title = section.get("title", "Untitled Section")
@@ -140,8 +144,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
-                    next_title = sections[i + 1].get("title", "Untitled Section")
-                    adjust_page_height(c, next_title)
+                    next_section = sections[i + 1]
+                    adjust_page_height(c, next_section)
+
                     draw_header(c)
 
                     c.setFont("Helvetica-Bold", 20)
@@ -193,8 +198,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # Page 4: Chart 2 — Purchases vs ROAS
                     if len(charts) > 1:
                         c.showPage()
-                        next_title = sections[i + 1].get("title", "Untitled Section")
-                        adjust_page_height(c, next_title)
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
 
                         draw_header(c)
                         try:
@@ -217,8 +223,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if len(charts) > 2:
                         c.showPage()
-                        next_title = sections[i + 1].get("title", "Untitled Section")
-                        adjust_page_height(c, next_title)
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
 
                         draw_header(c)
                         try:
@@ -239,8 +246,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if len(charts) > 3:
                         c.showPage()
-                        next_title = sections[i + 1].get("title", "Untitled Section")
-                        adjust_page_height(c, next_title)
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
 
                         draw_header(c)
                         try:
@@ -263,10 +271,16 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
                         c.showPage()
-                        next_title = sections[i + 1].get("title", "Untitled Section")
-                        adjust_page_height(c, next_title)
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
 
                         draw_header(c)
+                        c.setFont("Helvetica-Bold", 18)
+                        c.setFillColor(colors.black)
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 40
+                        c.drawCentredString(PAGE_WIDTH / 2, title_y, "Daily Campaign Performance Summary")
+
                         
                         # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
                         # c.setFont("Helvetica-Bold", 16)
@@ -338,10 +352,6 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
                         table_y = max(BOTTOM_MARGIN + 0, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 70)
-
-
-
-
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -349,8 +359,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if full_ad_insights_df is not None and 'campaign_name' in full_ad_insights_df.columns:
                         c.showPage()
-                        next_title = sections[i + 1].get("title", "Untitled Section")
-                        adjust_page_height(c, next_title)
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
 
                         draw_header(c)
                         df = full_ad_insights_df.copy()
@@ -471,8 +482,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     else:
                         c.showPage()
-                        next_title = sections[i + 1].get("title", "Untitled Section")
-                        adjust_page_height(c, next_title)
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
 
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 16)
@@ -484,6 +496,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
             else:
                 if section_title.strip().upper() == "COST BY CAMPAIGNS":
+                    c.showPage()
+                    adjust_page_height(c, section)
+                    draw_header(c)
+                    
                     c.setFont("Helvetica-Bold", 22)
                     c.setFillColor(colors.black)
                     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, section_title)
@@ -535,8 +551,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #if text_y < BOTTOM_MARGIN + 30:
                                 if text_y < 40:
                                     c.showPage()
-                                    next_title = sections[i + 1].get("title", "Untitled Section")
-                                    adjust_page_height(c, next_title)
+                                    next_section = sections[i + 1]
+                                    adjust_page_height(c, next_section)
+
 
                                     draw_header(c)
                                     text_y = PAGE_HEIGHT - TOP_MARGIN - 30
@@ -564,10 +581,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     draw_footer_cta(c)
 
                 if i < len(sections) - 1:
-                    
+
                     c.showPage()
-                    next_title = sections[i + 1].get("title", "Untitled Section")
-                    adjust_page_height(c, next_title)
+                    next_section = sections[i + 1]
+                    adjust_page_height(c, next_section)
+
 
 
         c.save()
