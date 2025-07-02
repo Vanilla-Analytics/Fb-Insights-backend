@@ -182,15 +182,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #chart_title = "Amount Spent vs Purchase Conversion Value"
                             chart_title = charts[0][0]
                             c.setFont("Helvetica-Bold", 16)
-                            title_y = text_y - 10
-                            #c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+                            title_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_height = 370
+                            chart_height = 350
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            #chart_y = title_y - chart_height - 30 
+                            chart_y = title_y - chart_height - 40 
                             #chart_y = max(BOTTOM_MARGIN + 40, title_y - chart_height - 30)
-                            chart_y = max(BOTTOM_MARGIN + 60, title_y - chart_height - 10)
+                            #chart_y = max(BOTTOM_MARGIN + 30, title_y - chart_height - 10)
 
 
 
@@ -458,8 +458,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
-                            #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 60
+                            chart_y = table_y - 240 # Start charts below table
+                            #chart_y = BOTTOM_MARGIN + 60
             
                         # First two charts (donuts) side by side
                             chart_width = 200
@@ -502,8 +502,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
             else:
                 if section_title.strip().upper() == "COST BY CAMPAIGNS":
-                    c.showPage()
                     adjust_page_height(c, section)
+                    c.showPage()
+                    
                     draw_header(c)
 
                     c.setFont("Helvetica-Bold", 22)

@@ -430,10 +430,14 @@ async def fetch_ad_insights(user_token: str):
         async with httpx.AsyncClient(timeout=timeout) as client:
             acc_resp = await client.get(url, params={
                 "access_token": user_token,
-                "fields": "id,name,account_status,disable_reason,adsets{id,name}"
+                #"fields": "id,name,account_status,disable_reason,adsets{id,name}"
+                "fields": "id,name,account_status,disable_reason,account_currency,adsets{id,name}"
+
             })
             acc_resp.raise_for_status()
             accounts = acc_resp.json().get("data", [])
+            print("✅ 'account_currency' values from accounts:", [acc.get("account_currency") for acc in accounts])
+
 
             if not accounts:
                 print("⚠️ No ad accounts found for this user")
