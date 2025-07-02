@@ -40,7 +40,13 @@ def adjust_page_height(c, section: dict):
         section.get("contains_table", False)
     )
 
-    PAGE_HEIGHT = 1000 if is_table_page else 600
+    # Dynamically increase height based on table rows
+    if is_table_page:
+        max_rows = section.get("table_rows", 0)
+        PAGE_HEIGHT = min(1600, 600 + max(20 * max_rows, 400))  # Cap height at 1600
+    else:
+        PAGE_HEIGHT = 600
+
     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 
@@ -310,6 +316,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{row['click_to_conversion']:.2%}",
                                 f"{row['roas']:.2f}",
                             ])
+
+                        next_section["contains_table"] = True
+                        next_section["table_rows"] = len(table_data)  # Or however many rows are going to be rendered
+
                         print("🖨 PDF row date:", row['date'], type(row['date']))
 
                         # Calculate grand totals
@@ -412,6 +422,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{row['roas']:.2f}",
                                     f"{currency_symbol}{row['cpa']:.2f}"
                                 ])
+
+                            next_section["contains_table"] = True
+                            next_section["table_rows"] = len(table_data)
 
                             # Grand Total
                             total_spend = grouped_campaigns['spend'].sum()
