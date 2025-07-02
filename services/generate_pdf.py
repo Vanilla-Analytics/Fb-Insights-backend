@@ -116,7 +116,9 @@ def draw_metrics_grid(c, metrics, start_y):
 
         
 
-def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol="$", split_charts=None) -> StreamingResponse:
+def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol=None, split_charts=None) -> StreamingResponse:
+    if currency_symbol is None:
+        currency_symbol = "₹"
     try:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer)   
@@ -282,7 +284,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 40
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 80
                         c.drawCentredString(PAGE_WIDTH / 2, title_y, "Daily Campaign Performance Summary")
 
                         
@@ -355,7 +357,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
-                        table_y = max(BOTTOM_MARGIN + 150, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 220)
+                        table_y = max(BOTTOM_MARGIN + 80, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 220)
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -457,7 +459,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 120
+                            chart_y = BOTTOM_MARGIN + 60
             
                         # First two charts (donuts) side by side
                             chart_width = 200
@@ -509,7 +511,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, section_title)
 
                     if charts:
-                        chart_y = BOTTOM_MARGIN + 100
+                        chart_y = PAGE_HEIGHT - TOP_MARGIN - 440
+
                         chart_height = 420
                         chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                         chart_x = LEFT_MARGIN
@@ -584,7 +587,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                 if draw_footer:
                     draw_footer_cta(c)
 
-                if i < len(sections) - 1:
+                if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
 
                     c.showPage()
                     next_section = sections[i + 1]
