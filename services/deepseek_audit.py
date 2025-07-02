@@ -589,66 +589,49 @@ async def fetch_ad_insights(user_token: str):
 #         return []
 
 #-----------------------------------------------------------------------------------------------
-# async def generate_llm_content(prompt: str, data: dict) -> str:
-#     """Generate content using DeepSeek LLM"""
-#     try:
-#         data_prompt = f"Analyze the following Facebook data:\n{data}"
-        
-#         async with httpx.AsyncClient(timeout=60.0) as client:
-#             res = await client.post(
-#                 DEEPSEEK_API_URL,
-#                 headers={
-#                     "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-#                     "Content-Type": "application/json"
-#                 },
-#                 json={
-#                     "model": "deepseek-chat",
-#                     "messages": [
-#                         {"role": "system", "content": prompt},
-#                         {"role": "user", "content": data_prompt}
-#                     ]
-#                 }
-#                 #response = await client.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload)
-#             )
-#             res.raise_for_status()
-            
-#             response_data = res.json()
-#             if "choices" not in response_data or not response_data["choices"]:
-#                 raise ValueError("Invalid response from DeepSeek API")
-                
-#             return response_data["choices"][0]["message"]["content"]
-#     except Exception as e:
-#         print(f"❌ Error generating LLM content: {str(e)}")
-#         return f"Error generating content: {str(e)}"
+
+
+import json
+
+MAX_TOKEN_LIMIT = 8000  # Conservative limit in characters
 
 async def generate_llm_content(prompt: str, data: dict) -> str:
-    """Generate content using DeepSeek LLM"""
+    """Generate content using DeepSeek LLM with size control"""
     try:
-        data_prompt = f"Analyze the following Facebook data:\n{data}"
+        # 🔹 Step 1: Safely convert `data` to string (JSON)
+        try:
+            data_str = json.dumps(data, indent=2)  # prettified for readability
+        except Exception as e:
+            print(f"⚠️ Error serializing data to JSON: {e}")
+            data_str = str(data)  # fallback to str()
 
+        # 🔹 Step 2: Truncate if too large
+        if len(data_str) > MAX_TOKEN_LIMIT:
+            print(f"⚠️ Data too large for DeepSeek ({len(data_str)} chars). Truncating...")
+            data_str = data_str[:MAX_TOKEN_LIMIT] + "\n\n...[truncated]"
+
+        # 🔹 Step 3: Build prompt
+        user_prompt = f"{prompt}\n\nAnalyze the following Facebook data:\n{data_str}"
+
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [
+                {"role": "system", "content": "You are a Meta Ads expert who writes audit reports."},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.7
+        }
+
+        # 🔹 Step 4: Send to DeepSeek
         async with httpx.AsyncClient(timeout=60.0) as client:
-            headers = {
-                "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-                "Content-Type": "application/json"
-            }
-
-            payload = {
-                "model": "deepseek-chat",
-                "messages": [
-                    {"role": "system", "content": "You are a Meta Ads expert..."},
-                    {"role": "user", "content": prompt + "\n\n" + data_prompt}
-                ],
-                "temperature": 0.7
-            }
-
-            print("📡 Sending request to DeepSeek:", json.dumps(payload, indent=2))  # Optional debug
-
             res = await client.post(
                 DEEPSEEK_API_URL,
-                headers=headers,
-                json=payload  # ✅ CORRECT
+                headers={
+                    "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json=payload
             )
-
             res.raise_for_status()
             response_data = res.json()
             return response_data["choices"][0]["message"]["content"]
@@ -656,6 +639,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
     except Exception as e:
         print(f"❌ Error generating LLM content: {str(e)}")
         return f"Error generating content: {str(e)}"
+
 
 async def generate_audit(page_id: str, user_token: str, page_token: str):
     """Generate audit report and return PDF"""
