@@ -422,7 +422,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{grand_totals['cpa']:.2f}"
                             ])
 
-                            performance_table = Table(table_data, repeatRows=1, colWidths=[170, 90, 90, 80, 80, 80])
+                            performance_table = Table(table_data, repeatRows=1, colWidths=[220, 110, 110, 90, 90, 90])
                             performance_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -433,7 +433,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 260
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 300
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -448,11 +448,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 40
+                            chart_y = BOTTOM_MARGIN + 20
             
                         # First two charts (donuts) side by side
-                            chart_width = 230
-                            chart_height = 230
+                            chart_width = 200
+                            chart_height = 200
                             padding = 40
 
                             x1 = LEFT_MARGIN
