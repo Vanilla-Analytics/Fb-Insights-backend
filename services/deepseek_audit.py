@@ -176,7 +176,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
     # Chart 2: Purchases vs ROAS
-    fig2, ax3 = plt.subplots(figsize=(12, 4))
+    fig2, ax3 = plt.subplots(figsize=(14, 7))
     ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
     ax4 = ax3.twinx()
     ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
@@ -592,25 +592,37 @@ async def fetch_ad_insights(user_token: str):
 
 
 import json
+import httpx
 
-MAX_TOKEN_LIMIT = 8000  # Conservative limit in characters
+MAX_TOKEN_LIMIT = 8000  # Maximum length of JSON string to send
+MAX_AD_ITEMS = 30       # Max ad entries to keep for DeepSeek
+
+def truncate_ad_data(data: dict, max_items: int = MAX_AD_ITEMS) -> dict:
+    """Return a smaller copy of ad_insights for LLM prompt"""
+    truncated = data.copy()
+    if "ad_insights" in truncated and isinstance(truncated["ad_insights"], list):
+        truncated["ad_insights"] = truncated["ad_insights"][:max_items]
+    return truncated
 
 async def generate_llm_content(prompt: str, data: dict) -> str:
-    """Generate content using DeepSeek LLM with size control"""
+    """Generate content using DeepSeek LLM with safe truncation"""
     try:
-        # 🔹 Step 1: Safely convert `data` to string (JSON)
+        # 🔹 Step 1: Truncate long ad_insights
+        truncated_data = truncate_ad_data(data)
+
+        # 🔹 Step 2: Convert to JSON string
         try:
-            data_str = json.dumps(data, indent=2)  # prettified for readability
+            data_str = json.dumps(truncated_data, indent=2)
         except Exception as e:
             print(f"⚠️ Error serializing data to JSON: {e}")
-            data_str = str(data)  # fallback to str()
+            data_str = str(truncated_data)  # fallback
 
-        # 🔹 Step 2: Truncate if too large
+        # 🔹 Step 3: Truncate further if still too large
         if len(data_str) > MAX_TOKEN_LIMIT:
-            print(f"⚠️ Data too large for DeepSeek ({len(data_str)} chars). Truncating...")
+            print(f"⚠️ Even truncated data too large ({len(data_str)} chars). Truncating...")
             data_str = data_str[:MAX_TOKEN_LIMIT] + "\n\n...[truncated]"
 
-        # 🔹 Step 3: Build prompt
+        # 🔹 Step 4: Prepare prompt
         user_prompt = f"{prompt}\n\nAnalyze the following Facebook data:\n{data_str}"
 
         payload = {
@@ -622,7 +634,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
             "temperature": 0.7
         }
 
-        # 🔹 Step 4: Send to DeepSeek
+        # 🔹 Step 5: Make API call
         async with httpx.AsyncClient(timeout=60.0) as client:
             res = await client.post(
                 DEEPSEEK_API_URL,
@@ -638,7 +650,8 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
 
     except Exception as e:
         print(f"❌ Error generating LLM content: {str(e)}")
-        return f"Error generating content: {str(e)}"
+        return "⚠️ Unable to generate this section due to large dataset or API error."
+
 
 
 async def generate_audit(page_id: str, user_token: str, page_token: str):
