@@ -510,20 +510,27 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     c.setFont("Helvetica-Bold", 22)
                     c.setFillColor(colors.black)
-                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, section_title)
+                    heading_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                    c.drawString(LEFT_MARGIN, heading_y, section_title)
 
                     if charts:
-                        chart_y = PAGE_HEIGHT - TOP_MARGIN - 440
-
-                        chart_height = 420
-                        chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                        chart_x = LEFT_MARGIN
 
                         try:
-                            img = ImageReader(charts[0][1])
+                            # Chart image
+                            chart_image = charts[0][1]
+                            img = ImageReader(chart_image)
+
+                             # Chart sizing
+                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN - 60
+                            chart_height = 400
+                            chart_x = (PAGE_WIDTH - chart_width) / 2
+                            chart_y = (PAGE_HEIGHT - chart_height) / 2 - 20  # Vertical center with spacing
+
                             c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
                         except Exception as e:
                             print(f"⚠️ Could not render COST BY CAMPAIGNS chart: {str(e)}")
+                    draw_footer_cta(c)
                 else:
                 
                 # Default layout
@@ -589,8 +596,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                 if draw_footer:
                     draw_footer_cta(c)
 
-                # if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
-                if i < len(sections) - 1:
+                if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
+                #if i < len(sections) - 1:
 
                     c.showPage()
                     next_section = sections[i + 1]
