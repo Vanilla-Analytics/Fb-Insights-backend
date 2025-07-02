@@ -248,7 +248,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
         "charts": chart_imgs
     }
 
-# def generate_campaign_split_charts(df, currency_symbol="$"):
+# def generate_campaign_split_charts(df):
 #     import matplotlib.pyplot as plt
 
 #     # Group by campaign
@@ -293,7 +293,9 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 #     return figs
 
 
-def generate_campaign_split_charts(df, currency_symbol="$"):
+def generate_campaign_split_charts(df, currency_symbol=None):
+    if currency_symbol is None:
+        currency_symbol = "₹"  # or "$" if you prefer USD fallback
 
     # Group by campaign - filter out rows without campaign names first
     grouped = df[df['campaign_name'].notna()].copy()

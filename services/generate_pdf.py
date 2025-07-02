@@ -357,7 +357,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
-                        table_y = max(BOTTOM_MARGIN + 80, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 220)
+                        #table_y = max(BOTTOM_MARGIN + 80, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 220)
+                        table_y = PAGE_HEIGHT - TOP_MARGIN - 100 - estimated_height
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -588,7 +589,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                 if draw_footer:
                     draw_footer_cta(c)
 
-                if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
+                # if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
+                if i < len(sections) - 1:
 
                     c.showPage()
                     next_section = sections[i + 1]
