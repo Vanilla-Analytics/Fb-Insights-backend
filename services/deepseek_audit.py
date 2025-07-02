@@ -423,10 +423,11 @@ async def check_account_status(account_id, token):
         return resp.json()
 
 async def fetch_ad_insights(user_token: str):
+    timeout = httpx.Timeout(60.0, connect=10.0)  # ✅ increase timeout
     """Fetch Facebook ad insights using user's access token"""
     try:
         url = f"https://graph.facebook.com/v22.0/me/adaccounts"
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             acc_resp = await client.get(url, params={
                 "access_token": user_token,
                 "fields": "id,name,account_status,disable_reason,adsets{id,name}"
