@@ -467,6 +467,8 @@ async def fetch_ad_insights(user_token: str):
                     ad_results = []
                     data_page = detailed_response.json()
                     ad_results.extend(data_page.get("data", []))
+                    print(f"🔍 Raw insight response: {detailed_response.text}")
+
 
                     while 'paging' in data_page and 'next' in data_page['paging']:
                         next_url = data_page["paging"]["next"]
@@ -482,8 +484,9 @@ async def fetch_ad_insights(user_token: str):
                         insights_data.append(ad)
 
                 except Exception as e:
+                    import traceback
                     print(f"⚠️ Error processing account {acc.get('id')}: {str(e)}")
-                    continue
+                    traceback.print_exc()
 
             return insights_data
 
