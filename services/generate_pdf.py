@@ -36,7 +36,14 @@ def adjust_page_height(c, section: dict):
     has_charts = bool(section.get("charts"))
     is_table_only_section = not has_charts and section.get("contains_table", False)
 
-    PAGE_HEIGHT = 1000 if is_table_only_section else 600
+    # More explicit condition for table pages
+    is_table_page = (
+        "Daily Campaign Performance Summary" in section.get("title", "") or 
+        "CAMPAIGN PERFORMANCE SUMMARY" in section.get("title", "") or
+        section.get("contains_table", False)
+    )
+
+    PAGE_HEIGHT = 1000 if is_table_page else 600
     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 
@@ -351,7 +358,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
-                        table_y = max(BOTTOM_MARGIN + 0, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 70)
+                        table_y = max(BOTTOM_MARGIN + 50, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 120)
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -438,7 +445,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 300
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 360
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -453,7 +460,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 20
+                            chart_y = BOTTOM_MARGIN + 70
             
                         # First two charts (donuts) side by side
                             chart_width = 200
@@ -499,7 +506,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     c.showPage()
                     adjust_page_height(c, section)
                     draw_header(c)
-                    
+
                     c.setFont("Helvetica-Bold", 22)
                     c.setFillColor(colors.black)
                     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, section_title)
