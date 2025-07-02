@@ -483,72 +483,91 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
              
                     
             else:
+                if section_title.strip().upper() == "COST BY CAMPAIGNS":
+                    c.setFont("Helvetica-Bold", 22)
+                    c.setFillColor(colors.black)
+                    c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, section_title)
+
+                    if charts:
+                        chart_y = BOTTOM_MARGIN + 60
+                        chart_height = 420
+                        chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
+                        chart_x = LEFT_MARGIN
+
+                        try:
+                            img = ImageReader(charts[0][1])
+                            c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                        except Exception as e:
+                            print(f"⚠️ Could not render COST BY CAMPAIGNS chart: {str(e)}")
+                else:
+                
                 # Default layout
-                left_section_width = PAGE_WIDTH * 0.4
-                c.setFillColor(colors.white)
-                c.rect(LEFT_MARGIN, BOTTOM_MARGIN, left_section_width - LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN, fill=True, stroke=False)
-                title_width = left_section_width - 2 * inch
-                title_lines = simpleSplit(section_title, "Helvetica-Bold", 20, title_width)
-                title_y = PAGE_HEIGHT - TOP_MARGIN - 20
-                c.setFillColor(colors.black)
-                c.setFont("Helvetica-Bold", 22)
-                title_line_height = 24
-                title_block_height = title_line_height * len(title_lines)
-                title_y_start = BOTTOM_MARGIN + (PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN + title_block_height) / 2 - title_line_height
-                for line in title_lines:
-                    c.drawString(LEFT_MARGIN + 10, title_y_start, line)
-                    title_y_start -= title_line_height
+                    left_section_width = PAGE_WIDTH * 0.4
+                    c.setFillColor(colors.white)
+                    c.rect(LEFT_MARGIN, BOTTOM_MARGIN, left_section_width - LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN, fill=True, stroke=False)
+                    title_width = left_section_width - 2 * inch
+                    title_lines = simpleSplit(section_title, "Helvetica-Bold", 20, title_width)
+                    title_y = PAGE_HEIGHT - TOP_MARGIN - 20
+                    c.setFillColor(colors.black)
+                    c.setFont("Helvetica-Bold", 22)
+                    title_line_height = 24
+                    title_block_height = title_line_height * len(title_lines)
+                    title_y_start = BOTTOM_MARGIN + (PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN + title_block_height) / 2 - title_line_height
+                    for line in title_lines:
+                        c.drawString(LEFT_MARGIN + 10, title_y_start, line)
+                        title_y_start -= title_line_height
 
-                text_x = left_section_width + 20
-                text_width = PAGE_WIDTH - text_x - RIGHT_MARGIN
-                c.setStrokeColor(colors.HexColor("#007bff"))
-                c.setLineWidth(8)
-                c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
+                    text_x = left_section_width + 20
+                    text_width = PAGE_WIDTH - text_x - RIGHT_MARGIN
+                    c.setStrokeColor(colors.HexColor("#007bff"))
+                    c.setLineWidth(8)
+                    c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
 
-                #text_y = PAGE_HEIGHT - TOP_MARGIN - 30
-                text_y = PAGE_HEIGHT - 110  # Reduces top margin
+                    #text_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                    text_y = PAGE_HEIGHT - 110  # Reduces top margin
 
-                c.setFont("Helvetica", 14)
-                content_lines = content.strip().split('\n')
-                for paragraph in content_lines:
-                    if paragraph.strip():
-                        wrapped_lines = simpleSplit(paragraph.strip(), "Helvetica", 14, text_width)
-                        for line in wrapped_lines:
+                    c.setFont("Helvetica", 14)
+                    content_lines = content.strip().split('\n')
+                    for paragraph in content_lines:
+                        if paragraph.strip():
+                            wrapped_lines = simpleSplit(paragraph.strip(), "Helvetica", 14, text_width)
+                            for line in wrapped_lines:
                             #if text_y < BOTTOM_MARGIN + 30:
-                            if text_y < 40:
-                                c.showPage()
-                                next_title = sections[i + 1].get("title", "Untitled Section")
-                                adjust_page_height(c, next_title)
+                                if text_y < 40:
+                                    c.showPage()
+                                    next_title = sections[i + 1].get("title", "Untitled Section")
+                                    adjust_page_height(c, next_title)
 
-                                draw_header(c)
-                                text_y = PAGE_HEIGHT - TOP_MARGIN - 30
-                            x_cursor = text_x
-                            for seg_text, is_bold in parse_bold_segments(line):
-                                font_name = "Helvetica-Bold" if is_bold else "Helvetica"
-                                c.setFont(font_name, 14)
-                                c.drawString(x_cursor, text_y, seg_text)
-                                x_cursor += c.stringWidth(seg_text, font_name, 14)
-                            text_y -= 20
-                    else:
-                        text_y -= 8
+                                    draw_header(c)
+                                    text_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                                x_cursor = text_x
+                                for seg_text, is_bold in parse_bold_segments(line):
+                                    font_name = "Helvetica-Bold" if is_bold else "Helvetica"
+                                    c.setFont(font_name, 14)
+                                    c.drawString(x_cursor, text_y, seg_text)
+                                    x_cursor += c.stringWidth(seg_text, font_name, 14)
+                                text_y -= 20
+                        else:
+                            text_y -= 8
 
-                chart_y = BOTTOM_MARGIN + 40
-                for chart_title, chart_buf in charts:
-                    try:
-                        img = ImageReader(chart_buf)
-                        c.drawImage(img, LEFT_MARGIN + 300, chart_y, width=500, height=240, preserveAspectRatio=True)
-                        chart_y += 260
-                    except Exception as e:
-                        print(f"⚠️ Could not render chart '{chart_title}': {str(e)}")
+                    chart_y = BOTTOM_MARGIN + 40
+                    for chart_title, chart_buf in charts:
+                        try:
+                            img = ImageReader(chart_buf)
+                            c.drawImage(img, LEFT_MARGIN + 300, chart_y, width=500, height=240, preserveAspectRatio=True)
+                            chart_y += 260
+                        except Exception as e:
+                            print(f"⚠️ Could not render chart '{chart_title}': {str(e)}")
 
-            #draw_footer_cta(c)
-            if draw_footer:
-                draw_footer_cta(c)
+                #draw_footer_cta(c)
+                if draw_footer:
+                    draw_footer_cta(c)
 
-            if i < len(sections) - 1:
-                c.showPage()
-                next_title = sections[i + 1].get("title", "Untitled Section")
-                adjust_page_height(c, next_title)
+                if i < len(sections) - 1:
+                    
+                    c.showPage()
+                    next_title = sections[i + 1].get("title", "Untitled Section")
+                    adjust_page_height(c, next_title)
 
 
         c.save()

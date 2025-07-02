@@ -75,7 +75,7 @@ def generate_chart_1(ad_insights_df):
     ax1.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
 
     #fig.tight_layout()
-    fig.subplots_adjust(left=0.1, right=0.85, bottom=0.2, top=0.9)
+    #fig.subplots_adjust(left=0.1, right=0.85, bottom=0.2, top=0.9)
     return fig
 
 
