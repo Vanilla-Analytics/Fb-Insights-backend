@@ -551,14 +551,14 @@ async def check_account_status(account_id, token):
 #         print(f"🔍 Response: {acc_resp.text}")
 #         return []
 
-async def fetch_ad_insights(page_token: str):
+async def fetch_ad_insights(user_token: str):
     """Fetch Facebook ad insights"""
     try:
         url = f"https://graph.facebook.com/v22.0/me/adaccounts"
         async with httpx.AsyncClient() as client:
             # First get accounts with more detailed fields
             acc_resp = await client.get(url, params={
-                "access_token": page_token,
+                "access_token":user_token,
                 "fields": "id,name,account_status,disable_reason,adsets{id,name}"
             })
             acc_resp.raise_for_status()
@@ -579,13 +579,15 @@ async def fetch_ad_insights(page_token: str):
                         continue
                         
                     # Get insights with broader time range and simpler fields first
-                    ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    #ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    ad_url = f"https://graph.facebook.com/v22.0/me/adaccounts?fields=id,name,account_status,adsets{id}&access_token=<EAAcIf6mRqdcBOZBncynonfReAZAzoJmkfkYXZAFqnZCzlhgPk823WHQ60WG6JMiMwBnYYriLP6IxJuJMn63puvANFyA69E1xm1MrGmoZAM5BkxnJKRZBZC9SdyXp8gBQLk2QnmLAtzzJR4MkHsywDCBreI61kp0OjlUhDyv73q3mcjmxahnZAFjeaMotPgyR3LWxPtFUfMnXjI1viFPTAJVlU1ylZAG546ZCLSpQZDZD>"
+
                     params = {
                         "fields": "spend,impressions,date_start",
                         "date_preset": "maximum",  # Get all available data
                         "time_increment": 1,
                         "level": "ad",
-                        "access_token": page_token
+                        "access_token": user_token
                     }
                     
                     print(f"📡 Initial insights request for account {acc['id']}")
@@ -608,7 +610,7 @@ async def fetch_ad_insights(page_token: str):
                         }),
                         "time_increment": 1,
                         "level": "ad",
-                        "access_token": page_token
+                        "access_token": user_token
                     }
                     
                     detailed_response = await client.get(ad_url, params=detailed_params)
@@ -690,7 +692,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
         if not ad_data:
             print("🚨 Raw ad_data returned from Facebook:")
-            ad_raw = await fetch_ad_insights(user_token)  # re-fetch without filter
+            print(f"🔍 Raw ad_data: {await fetch_ad_insights(user_token)}")
             print(ad_raw[:2])  # Log a couple of entries for debugging
 
         if not ad_data:
