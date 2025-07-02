@@ -25,6 +25,18 @@ LOGO_HEIGHT = 45
 LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
 
 LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
+def adjust_page_height(c, title: str):
+    """
+    Dynamically adjust PAGE_HEIGHT based on section title.
+    Also resets LOGO_Y_OFFSET for header rendering.
+    """
+    global PAGE_HEIGHT, LOGO_Y_OFFSET
+
+    tall_sections = ["KEY METRICS", "COST BY CAMPAIGNS"]  # Add more titles as needed
+    PAGE_HEIGHT = 1000 if title.strip().upper() in tall_sections else 600
+    LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+    c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+
 
 def parse_bold_segments(text):
     segments = []
@@ -60,30 +72,6 @@ def draw_footer_cta(c):
     c.drawCentredString(sticker_x + sticker_width / 2, sticker_y + 12, "STRATEGY SESSION")
     c.linkURL(link_url, (sticker_x, sticker_y, sticker_x + sticker_width, sticker_y + sticker_height), relative=0)
 
-# def draw_metrics_grid(c, metrics, start_y):
-#     card_width = 200
-#     card_height = 50
-#     padding_x = 20
-#     padding_y = 20
-#     cols = 3
-#     x_start = LEFT_MARGIN
-#     y = start_y
-#     c.setFont("Helvetica-Bold", 14)
-
-#     for i, (label, value) in enumerate(metrics.items()):
-#         col = i % cols
-#         row = i // cols
-#         x = x_start + col * (card_width + padding_x)
-#         y_offset = row * (card_height + padding_y)
-#         card_y = y - y_offset
-
-#         c.setFillColor(colors.HexColor("#d4fcd7"))
-#         c.roundRect(x, card_y - card_height, card_width, card_height, 6, fill=1, stroke=0)
-#         c.setFillColor(colors.black)
-#         c.drawString(x + 10, card_y - 18, label)
-#         c.setFont("Helvetica", 12)
-#         c.drawString(x + 10, card_y - 36, str(value))
-#         c.setFont("Helvetica-Bold", 14)
 def draw_metrics_grid(c, metrics, start_y):
     card_width = 180
     card_height = 60
@@ -124,9 +112,13 @@ def draw_metrics_grid(c, metrics, start_y):
 def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol="$", split_charts=None) -> StreamingResponse:
     try:
         buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
+        c = canvas.Canvas(buffer)   
+        #c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
 
-        for i, section in enumerate(sections):
+        for i, section in enumerate(sections):  
+            section_title = section.get("title", "Untitled Section")
+            adjust_page_height(c, section_title)  # Adjust page height based on section title
+            
             draw_footer = True  # ✅ Set default at start of each section
             section_title = section.get("title", "Untitled Section")
             content = section.get("content", "No content available.")
@@ -148,6 +140,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
+                    next_title = sections[i + 1].get("title", "Untitled Section")
+                    adjust_page_height(c, next_title)
                     draw_header(c)
 
                     c.setFont("Helvetica-Bold", 20)
@@ -199,6 +193,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # Page 4: Chart 2 — Purchases vs ROAS
                     if len(charts) > 1:
                         c.showPage()
+                        next_title = sections[i + 1].get("title", "Untitled Section")
+                        adjust_page_height(c, next_title)
+
                         draw_header(c)
                         try:
                             chart_title = "Purchases vs ROAS"
@@ -214,27 +211,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #img2 = ImageReader(charts[0][1])
                             img2 =   ImageReader(charts[1][1])
                             c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-                            # c.setFont("Helvetica-Bold", 14)
-                            # #c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Purchases vs ROAS")
-                            # img2 = ImageReader(charts[1][1])
-                            # #c.drawImage(img2, LEFT_MARGIN + 20, BOTTOM_MARGIN + 40, width=1000, height=300, preserveAspectRatio=True)
-                            # # Page 4: Chart 2 — Heading + Centered Chart
-                            # chart_title = "Purchases vs ROAS"
-                            # c.setFont("Helvetica-Bold", 16)
-                            # c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, chart_title)
-
-                            # chart_width = 1000
-                            # chart_height = 300
-                            # chart_x = (PAGE_WIDTH - chart_width) / 2
-                            # chart_y = BOTTOM_MARGIN + 60
-
-                            # c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
                         except Exception as e:
                             print(f"⚠️ Chart 2 render error: {str(e)}")  
 
                     if len(charts) > 2:
                         c.showPage()
+                        next_title = sections[i + 1].get("title", "Untitled Section")
+                        adjust_page_height(c, next_title)
+
                         draw_header(c)
                         try:
                             chart_title = "CPA vs Link CPC"
@@ -254,6 +239,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if len(charts) > 3:
                         c.showPage()
+                        next_title = sections[i + 1].get("title", "Untitled Section")
+                        adjust_page_height(c, next_title)
+
                         draw_header(c)
                         try:
                             chart_title = "Click to Conversion vs CTR"
@@ -275,6 +263,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
                         c.showPage()
+                        next_title = sections[i + 1].get("title", "Untitled Section")
+                        adjust_page_height(c, next_title)
+
                         draw_header(c)
                         
                         # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
@@ -358,6 +349,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if full_ad_insights_df is not None and 'campaign_name' in full_ad_insights_df.columns:
                         c.showPage()
+                        next_title = sections[i + 1].get("title", "Untitled Section")
+                        adjust_page_height(c, next_title)
+
                         draw_header(c)
                         df = full_ad_insights_df.copy()
 
@@ -475,12 +469,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 roas_width = chart_width + 60
                                 c.drawImage(img3, x3, chart_y, width=roas_width, height=chart_height)
 
-
-
-
-
                     else:
                         c.showPage()
+                        next_title = sections[i + 1].get("title", "Untitled Section")
+                        adjust_page_height(c, next_title)
+
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 16)
                         c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
@@ -524,6 +517,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #if text_y < BOTTOM_MARGIN + 30:
                             if text_y < 40:
                                 c.showPage()
+                                next_title = sections[i + 1].get("title", "Untitled Section")
+                                adjust_page_height(c, next_title)
+
                                 draw_header(c)
                                 text_y = PAGE_HEIGHT - TOP_MARGIN - 30
                             x_cursor = text_x
@@ -551,6 +547,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
             if i < len(sections) - 1:
                 c.showPage()
+                next_title = sections[i + 1].get("title", "Untitled Section")
+                adjust_page_height(c, next_title)
+
 
         c.save()
         buffer.seek(0)
