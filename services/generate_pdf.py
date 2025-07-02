@@ -14,7 +14,7 @@ import re
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PAGE_WIDTH = 1000
-PAGE_HEIGHT = 600
+PAGE_HEIGHT = 700
 LEFT_MARGIN = inch
 RIGHT_MARGIN = inch
 TOP_MARGIN = 1.2 * inch
@@ -180,8 +180,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             title_y = text_y - 10
                             #c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
-                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 320
+                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            chart_height = 350
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             #chart_y = title_y - chart_height - 30 
                             #chart_y = max(BOTTOM_MARGIN + 40, title_y - chart_height - 30)
@@ -206,8 +206,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             title_y = text_y - 10
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
-                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 320
+                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            chart_height = 360
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = title_y - chart_height - 30 
 
@@ -242,8 +242,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             title_y = PAGE_HEIGHT - TOP_MARGIN - 80
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
-                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 320
+                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            chart_height = 360
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 40
 
@@ -261,8 +261,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             title_y = PAGE_HEIGHT - TOP_MARGIN - 80
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
-                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
-                            chart_height = 320
+                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            chart_height = 360
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 40
 
@@ -341,18 +341,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                         ]))
 
-                        # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
-                        # table_max_height = PAGE_HEIGHT - TOP_MARGIN - 100
-                        # estimated_height = 15 * len(table_data[:30])
-                        # table_y = table_max_height - estimated_height
-                        # table_y = max(BOTTOM_MARGIN + 60, PAGE_HEIGHT / 2 - estimated_height / 2)
-
                         # Reserve fixed margin from top
                         max_table_height = PAGE_HEIGHT - TOP_MARGIN - 80  # Header space
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
-                        table_y = max(BOTTOM_MARGIN + 30, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 20)
+                        table_y = max(BOTTOM_MARGIN + 10, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 40)
 
 
 
@@ -439,7 +433,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 160
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 210
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -457,8 +451,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             chart_y = BOTTOM_MARGIN + 40
             
                         # First two charts (donuts) side by side
-                            chart_width = 220
-                            chart_height = 220
+                            chart_width = 230
+                            chart_height = 230
                             padding = 40
 
                             x1 = LEFT_MARGIN
