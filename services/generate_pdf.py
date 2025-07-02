@@ -33,9 +33,6 @@ def adjust_page_height(c, section: dict):
     """
     global PAGE_HEIGHT, LOGO_Y_OFFSET
 
-    has_charts = bool(section.get("charts"))
-    is_table_only_section = not has_charts and section.get("contains_table", False)
-
     # More explicit condition for table pages
     is_table_page = (
         "Daily Campaign Performance Summary" in section.get("title", "") or 
@@ -358,7 +355,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         min_table_y = BOTTOM_MARGIN + 50
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
-                        table_y = max(BOTTOM_MARGIN + 50, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 120)
+                        table_y = max(BOTTOM_MARGIN + 150, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 220)
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -460,7 +457,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             #chart_y = table_y - performance_table._height - 10  # Start charts below table
-                            chart_y = BOTTOM_MARGIN + 70
+                            chart_y = BOTTOM_MARGIN + 120
             
                         # First two charts (donuts) side by side
                             chart_width = 200
@@ -512,7 +509,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, section_title)
 
                     if charts:
-                        chart_y = BOTTOM_MARGIN + 60
+                        chart_y = BOTTOM_MARGIN + 100
                         chart_height = 420
                         chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN
                         chart_x = LEFT_MARGIN
