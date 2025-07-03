@@ -42,7 +42,7 @@ def adjust_page_height(c, section: dict):
 
     # Dynamically increase height based on table rows
     if is_table_page:
-        PAGE_HEIGHT = 1200
+        PAGE_HEIGHT = 1000
     else:
         PAGE_HEIGHT = 600
 
@@ -281,6 +281,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
+                        PAGE_HEIGHT = 1200
+                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         c.showPage()
                         next_section = sections[i + 1]
                         adjust_page_height(c, next_section)
@@ -471,13 +474,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
-                            chart_y = table_y - 260 # Start charts below table
+                            chart_y = table_y - 280 # Start charts below table
                             #chart_y = BOTTOM_MARGIN + 60
             
                         # First two charts (donuts) side by side
-                            chart_width = 200
-                            chart_height = 200
+                            chart_width = 220
+                            chart_height = 220
                             padding = 40
+                            total_width = chart_width * 3 + padding * 2
+                            start_x = (PAGE_WIDTH - total_width) / 2  # ✅ Center-align the 3 charts
 
                             x1 = LEFT_MARGIN
                             x2 = x1 + chart_width + padding
@@ -520,10 +525,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     draw_header(c)
 
-                    c.setFont("Helvetica-Bold", 22)
-                    c.setFillColor(colors.black)
-                    heading_y = PAGE_HEIGHT - TOP_MARGIN - 30
-                    c.drawString(LEFT_MARGIN, heading_y, section_title)
+                    # c.setFont("Helvetica-Bold", 22)
+                    # c.setFillColor(colors.black)
+                    # heading_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                    # c.drawString(LEFT_MARGIN, heading_y, section_title)
 
                     if charts:
 
@@ -543,6 +548,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         except Exception as e:
                             print(f"⚠️ Could not render COST BY CAMPAIGNS chart: {str(e)}")
                     draw_footer_cta(c)
+                    continue
                 else:
                 
                 # Default layout

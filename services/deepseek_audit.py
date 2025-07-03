@@ -330,7 +330,8 @@ def generate_campaign_split_charts(df, currency_symbol=None):
             top_spend, 
             labels=top_spend.index, 
             autopct='%1.1f%%', 
-            startangle=90
+            startangle=90,
+            textprops={'fontsize': 9}
         )
         centre_circle = plt.Circle((0, 0), 0.70, fc='white')
         fig1.gca().add_artist(centre_circle)
