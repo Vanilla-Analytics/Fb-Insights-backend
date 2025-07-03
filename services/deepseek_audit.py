@@ -774,8 +774,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         # currency_symbol = "₹" if currency == "INR" else "$"
 
         # Detect currency more reliably
-        currency = "INR"  # Default
-        currency_symbol = "₹"
+        currency = "USD"  # Default
+        currency_symbol = "$"
 
         # if 'account_currency' in original_df.columns:
         # # Get the most frequent non-null currency
@@ -791,25 +791,34 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #             currency_symbol = "₹" if currency == "INR" else "$"
 
         def detect_currency(df):
-            
             if 'account_currency' not in df.columns:
-                print(":warning: No 'account_currency' column found in the DataFrame")
+                print("⚠️ No 'account_currency' column found in the DataFrame")
                 return "USD", "$"
+    
+            # Simple mapping of currency codes to symbols
+            currency_symbols = {
+                "INR": "₹",  # Indian Rupee
+                "USD": "$",  # US Dollar
+                # Add more currencies as needed
+            }
+            
+            # Get most frequent currency from the data
             currencies = df['account_currency'].dropna().astype(str).str.strip().str.upper()
             if currencies.empty:
-                print(":warning: No valid currency values found in 'account_currency' column")
+                print("⚠️ No valid currency values found in 'account_currency' column")
                 return "USD", "$"
-            # Print all unique currency values for debugging
+            
+            # Print unique currencies for debugging
             unique_currencies = currencies.unique()
-            print(f":magnifying_glass: Unique currency values found: {unique_currencies}")
-            # Check specifically for INR first
-            if "INR" in currencies.values:
-                print(":white_tick: INR currency detected")
-                return "INR", "₹"
-            # Get most frequent currency
+            print(f"🔍 Unique currency values found: {unique_currencies}")
+            
+            # Get the most frequent currency
             currency = currencies.mode()[0] if not currencies.mode().empty else "USD"
-            currency_symbol = "₹" if currency == "INR" else "$"
-            print(f":white_tick: Using most frequent currency: {currency}")
+            
+            # Get the symbol for this currency (default to $ if not in our mapping)
+            currency_symbol = currency_symbols.get(currency, "$")
+            
+            print(f"✅ Using currency: {currency} with symbol: {currency_symbol}")
             return currency, currency_symbol
 
         currency, currency_symbol = detect_currency(original_df)

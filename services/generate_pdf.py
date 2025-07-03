@@ -272,7 +272,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_height = 420
+                            chart_height = 400
                             chart_x = (PAGE_WIDTH - chart_width) / 2
                             chart_y = BOTTOM_MARGIN + 40
 
