@@ -286,9 +286,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         PAGE_HEIGHT = 1200
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                        # next_section = sections[i + 1]
+                        # adjust_page_height(c, next_section)
+                        table_section = {"title": "Daily Campaign Performance Summary", "contains_table": True}
+                        adjust_page_height(c, table_section)
                         c.showPage()
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
+                        
 
 
                         draw_header(c)
