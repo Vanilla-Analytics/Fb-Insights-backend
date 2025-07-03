@@ -774,8 +774,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         # currency_symbol = "₹" if currency == "INR" else "$"
 
         # Detect currency more reliably
-        currency = "USD"  # Default
-        currency_symbol = "$"
+        currency = "INR"  # Default
+        currency_symbol = "₹"
 
         # if 'account_currency' in original_df.columns:
         # # Get the most frequent non-null currency
@@ -814,7 +814,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         currency, currency_symbol = detect_currency(original_df)
 
-        #print(f"💰 Detected account currency: {currency} → Using symbol: {currency_symbol}")
+        print(f"💰 Detected account currency: {currency} → Using symbol: {currency_symbol}")
 
 
         combined_data = {
