@@ -42,8 +42,7 @@ def adjust_page_height(c, section: dict):
 
     # Dynamically increase height based on table rows
     if is_table_page:
-        max_rows = section.get("table_rows", 0)
-        PAGE_HEIGHT = min(1600, 600 + max(20 * max_rows, 400))  # Cap height at 1600
+        PAGE_HEIGHT = 1200
     else:
         PAGE_HEIGHT = 600
 
@@ -458,7 +457,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 360
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 430
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -472,7 +471,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
-                            chart_y = table_y - 240 # Start charts below table
+                            chart_y = table_y - 260 # Start charts below table
                             #chart_y = BOTTOM_MARGIN + 60
             
                         # First two charts (donuts) side by side
