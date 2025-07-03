@@ -258,7 +258,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             print(f"⚠️ Chart 3 render error: {str(e)}")
 
                     if len(charts) > 3:
-                        adjust_page_height(c, {"title": "Click to Conversion vs CTR", "contains_table": False})
+                        PAGE_HEIGHT = 600  # Force standard height
+                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         c.showPage()
 
 
@@ -282,7 +284,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
-                        PAGE_HEIGHT = 1200
+                        PAGE_HEIGHT = 1100
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         # next_section = sections[i + 1]
@@ -296,7 +298,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 180
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 250
                         c.drawCentredString(PAGE_WIDTH / 2, title_y, "Daily Campaign Performance Summary")
 
                         
