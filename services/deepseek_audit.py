@@ -791,19 +791,36 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #             currency_symbol = "₹" if currency == "INR" else "$"
 
         def detect_currency(df):
+            print("\n--- Detecting Currency ---")
+            print("DataFrame Columns:", df.columns.tolist())
+            # Check if column exists
             if 'account_currency' not in df.columns:
+                print(":warning: 'account_currency' column not found. Defaulting to USD.")
                 return "USD", "$"
-    
+    # Drop nulls, strip whitespace, and standardize casing
             currencies = df['account_currency'].dropna().astype(str).str.strip().str.upper()
+            print(":magnifying_glass: Cleaned Currencies:", currencies.tolist())
+    # Check if any valid currency data remains
             if currencies.empty:
+                print(":warning: No valid currency entries found after cleaning. Defaulting to USD.")
                 return "USD", "$"
-            
+    # Print frequency count
+            currency_counts = currencies.value_counts()
+            print(":bar_chart: Currency Frequency Count:\n", currency_counts)
+    # Directly check for INR
             if "INR" in currencies.values:
+                print(":white_tick: Detected 'INR' in values. Using INR.")
                 return "INR", "₹"
-    
-            # Get most frequent currency
-            currency = currencies.mode()[0] if not currencies.mode().empty else "USD"
-            return currency, "₹" if currency == "INR" else "$"
+    # Fallback to mode
+            if not currencies.mode().empty:
+                currency = currencies.mode()[0]
+                print(f":information_source: Using most frequent currency: {currency}")
+            else:
+                print(":warning: No mode found. Defaulting to USD.")
+                currency = "USD"
+            symbol = "₹" if currency == "INR" else "$"
+            print(f":moneybag: Final Decision: Currency = {currency}, Symbol = {symbol}")
+            return currency, symbol
 
         currency, currency_symbol = detect_currency(original_df)
 
