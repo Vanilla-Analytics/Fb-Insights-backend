@@ -307,6 +307,18 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # c.setFont("Helvetica-Bold", 16)
                         # c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Summary")
                         ad_insights_df = ad_insights_df.sort_values('date')
+                        
+                        totals = {
+                            'spend': ad_insights_df['spend'].sum(),
+                            'purchases': ad_insights_df['purchases'].sum(),
+                            'purchase_value': ad_insights_df['purchase_value'].sum(),
+                            'cpa': ad_insights_df['cpa'].mean(),  # or weighted average
+                            'impressions': ad_insights_df['impressions'].sum(),
+                            'ctr': ad_insights_df['ctr'].mean(),
+                            'clicks': ad_insights_df['clicks'].sum(),
+                            'click_to_conversion': ad_insights_df['click_to_conversion'].mean(),
+                            'roas': ad_insights_df['roas'].mean()
+                        }
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
@@ -332,17 +344,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         print("🖨 PDF row date:", row['date'], type(row['date']))
 
                         # Calculate grand totals
-                        totals = {
-                            'spend': ad_insights_df['spend'].sum(),
-                            'purchases': ad_insights_df['purchases'].sum(),
-                            'purchase_value': ad_insights_df['purchase_value'].sum(),
-                            'cpa': ad_insights_df['cpa'].mean(),  # or weighted average
-                            'impressions': ad_insights_df['impressions'].sum(),
-                            'ctr': ad_insights_df['ctr'].mean(),
-                            'clicks': ad_insights_df['clicks'].sum(),
-                            'click_to_conversion': ad_insights_df['click_to_conversion'].mean(),
-                            'roas': ad_insights_df['roas'].mean()
-                        }
+                        # totals = {
+                        #     'spend': ad_insights_df['spend'].sum(),
+                        #     'purchases': ad_insights_df['purchases'].sum(),
+                        #     'purchase_value': ad_insights_df['purchase_value'].sum(),
+                        #     'cpa': ad_insights_df['cpa'].mean(),  # or weighted average
+                        #     'impressions': ad_insights_df['impressions'].sum(),
+                        #     'ctr': ad_insights_df['ctr'].mean(),
+                        #     'clicks': ad_insights_df['clicks'].sum(),
+                        #     'click_to_conversion': ad_insights_df['click_to_conversion'].mean(),
+                        #     'roas': ad_insights_df['roas'].mean()
+                        # }
 
                         # Append grand total row
                         table_data.append([
