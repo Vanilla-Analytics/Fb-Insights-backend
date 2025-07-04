@@ -261,20 +261,20 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.showPage()
                         next_section = sections[i + 1]
                         adjust_page_height(c, next_section)
-                        
-
 
                         draw_header(c)
                         try:
                             chart_title = "Click to Conversion vs CTR"
                             c.setFont("Helvetica-Bold", 16)
-                            title_y = PAGE_HEIGHT - TOP_MARGIN - 80
+                            # Place header just below top margin
+                            title_y = PAGE_HEIGHT - TOP_MARGIN - 30
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                             chart_height = 400
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = BOTTOM_MARGIN + 40
+                            # Place chart directly below header, with minimal gap
+                            chart_y = title_y - chart_height - 20
 
                             img4 = ImageReader(charts[3][1])
                             c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
