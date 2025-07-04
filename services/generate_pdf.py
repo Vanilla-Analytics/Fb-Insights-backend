@@ -423,7 +423,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #draw_footer = False  # Skip footer for table page
 
                     if full_ad_insights_df is not None and 'campaign_name' in full_ad_insights_df.columns:
-                        PAGE_HEIGHT = 800
+                        PAGE_HEIGHT = 1800
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 
@@ -511,7 +511,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 300
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 350
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -611,7 +611,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                                 chart_height = 420
                                 chart_x = (PAGE_WIDTH - chart_width) / 2
-                                chart_y = BOTTOM_MARGIN + 60
+                                chart_y = BOTTOM_MARGIN + 100
 
                                 c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
@@ -661,6 +661,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             except Exception as e:
                                 print(f"⚠️ LLM Summary generation failed: {str(e)}")
+                                
+                            PAGE_HEIGHT = 700
+                            LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                            c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 
 
 
