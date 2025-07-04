@@ -457,12 +457,18 @@ async def fetch_ad_insights(user_token: str):
                         continue
 
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    now = datetime.now(timezone.utc)
+                    safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+                    safe_since = (now - timedelta(days=60)).strftime("%Y-%m-%d")
+
 
                     params = {
                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
                         "time_range": json.dumps({
-                            "since": (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d"),
-                            "until": datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                            # "since": (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d"),
+                            # "until": datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                            "since": safe_since,
+                            "until": safe_until
                         }),
                         "time_increment": 1,
                         "level": "ad",
