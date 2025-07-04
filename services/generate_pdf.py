@@ -522,8 +522,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             # --- Donut charts (side by side, top row) ---
-                            chart_width = 280
-                            chart_height = 280
+                            chart_width = 350
+                            chart_height = 350
                             padding = 60
                             # Center the two donut charts
                             total_width = chart_width * 2 + padding
@@ -549,6 +549,39 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 roas_height = 250
                                 roas_x = start_x
                                 c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
+                                
+                            # ✅ Clean new page for "Cost by Campaigns"
+                            try:
+                                c.showPage()
+                                PAGE_HEIGHT = 600
+                                TOP_MARGIN = 1.2 * inch
+                                LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                                c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                                draw_header(c)
+
+                                from services.deepseek_audit import generate_cost_by_campaign_chart  # Only if not already imported
+                                cost_by_campaign_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
+
+                                # Draw title
+                                chart_title = "Cost by Campaigns"
+                                c.setFont("Helvetica-Bold", 16)
+                                title_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                                c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+
+                                # Draw chart image
+                                img = ImageReader(cost_by_campaign_chart[1])
+                                chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                                chart_height = 420
+                                chart_x = (PAGE_WIDTH - chart_width) / 2
+                                chart_y = BOTTOM_MARGIN + 60
+
+                                c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                            except Exception as e:
+                                print(f"⚠️ Error rendering Cost by Campaigns chart: {str(e)}")
+
+                                
+                    
                     else:
                         c.showPage()
                         next_section = sections[i + 1]
@@ -563,38 +596,38 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
              
                     
-            else:
-                if section_title.strip().upper() == "COST BY CAMPAIGNS":
-                    adjust_page_height(c, section)
-                    c.showPage()
+            # else:
+            #     if section_title.strip().upper() == "COST BY CAMPAIGNS":
+            #         adjust_page_height(c, section)
+            #         c.showPage()
                     
-                    draw_header(c)
+            #         draw_header(c)
 
-                    # c.setFont("Helvetica-Bold", 22)
-                    # c.setFillColor(colors.black)
-                    # heading_y = PAGE_HEIGHT - TOP_MARGIN - 30
-                    # c.drawString(LEFT_MARGIN, heading_y, section_title)
+            #         # c.setFont("Helvetica-Bold", 22)
+            #         # c.setFillColor(colors.black)
+            #         # heading_y = PAGE_HEIGHT - TOP_MARGIN - 30
+            #         # c.drawString(LEFT_MARGIN, heading_y, section_title)
 
-                    if charts:
+            #         if charts:
 
-                        try:
-                            # Chart image
-                            chart_image = charts[0][1]
-                            img = ImageReader(chart_image)
+            #             try:
+            #                 # Chart image
+            #                 chart_image = charts[0][1]
+            #                 img = ImageReader(chart_image)
 
-                             # Chart sizing
-                            chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN - 60
-                            chart_height = 400
-                            chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = (PAGE_HEIGHT - chart_height) / 2 - 20  # Vertical center with spacing
+            #                  # Chart sizing
+            #                 chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN - 60
+            #                 chart_height = 400
+            #                 chart_x = (PAGE_WIDTH - chart_width) / 2
+            #                 chart_y = (PAGE_HEIGHT - chart_height) / 2 - 20  # Vertical center with spacing
 
-                            c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+            #                 c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                        except Exception as e:
-                            print(f"⚠️ Could not render COST BY CAMPAIGNS chart: {str(e)}")
-                    draw_footer_cta(c)
-                    continue
-                else:
+            #             except Exception as e:
+            #                 print(f"⚠️ Could not render COST BY CAMPAIGNS chart: {str(e)}")
+            #         draw_footer_cta(c)
+            #         continue
+            else:
                 
                 # Default layout
                     left_section_width = PAGE_WIDTH * 0.4

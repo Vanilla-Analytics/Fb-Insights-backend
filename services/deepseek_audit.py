@@ -352,16 +352,25 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     # 2. Revenue Split (Donut) - only if we have data
     if not top_revenue.empty:
-        fig2, ax2 = plt.subplots(figsize=(4, 3.5))
-        wedges2, texts2, autotexts2 = ax2.pie(
-            top_revenue, 
-            labels=top_revenue.index, 
-            autopct='%1.1f%%', 
-            startangle=90
+        fig2, ax2 = plt.subplots(figsize=(6, 6))
+        percentages = 100 * top_spend / top_spend.sum()
+        labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
+        # wedges2, texts2, autotexts2 = ax2.pie(
+        #     top_revenue, 
+        #     labels=top_revenue.index, 
+        #     autopct='%1.1f%%', 
+        #     startangle=90
+        # )
+        wedges, texts = ax2.pie(
+            top_spend,
+            labels=labels,
+            startangle=90,
+            textprops={'fontsize': 8}  # Smaller font size to fit
         )
         centre_circle = plt.Circle((0, 0), 0.70, fc='white')
         fig2.gca().add_artist(centre_circle)
         ax2.set_title('Revenue Split', fontsize=14)
+        fig1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
         figs.append(("Revenue Split", generate_chart_image(fig2)))
     else:
         print("⚠️ No revenue data available for revenue split chart")
@@ -428,7 +437,9 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         plt.subplots_adjust(left=0.3, right=0.95)  # More space for labels
     
         ax3.set_title('ROAS Split', fontsize=14)
-        ax3.set_xlabel("ROAS")
+        ax3.set_xlabel("ROAS", fontsize=12)  # Added fontsize
+        ax3.tick_params(axis='both', labelsize=12)
+        ax3.yaxis.label.set_size(12)
         plt.tight_layout()
         figs.append(("ROAS Split", generate_chart_image(fig3)))
         
@@ -934,24 +945,24 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             key_metrics
         ]
         cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
-        sections.append({
-            "title": "COST BY CAMPAIGNS",
-            "content": "",  # No paragraph needed
-            "charts": [cost_by_campaign_chart],
-            "contains_table": False
-        })
-        sections.append({
-            "title": "Daily Campaign Performance Summary",
-            "content": "",
-            "charts": [],
-            "contains_table": True  # ✅ mark table-only pages like this
-        })
-        sections.append({
-            "title": "CAMPAIGN PERFORMANCE SUMMARY",
-            "content": "",
-            "charts": [],
-            "contains_table": True  # ✅ mark table-only pages like this
-        })
+        # sections.append({
+        #     "title": "COST BY CAMPAIGNS",
+        #     "content": "",  # No paragraph needed
+        #     "charts": [cost_by_campaign_chart],
+        #     "contains_table": False
+        # })
+        # sections.append({
+        #     "title": "Daily Campaign Performance Summary",
+        #     "content": "",
+        #     "charts": [],
+        #     "contains_table": True  # ✅ mark table-only pages like this
+        # })
+        # sections.append({
+        #     "title": "CAMPAIGN PERFORMANCE SUMMARY",
+        #     "content": "",
+        #     "charts": [],
+        #     "contains_table": True  # ✅ mark table-only pages like this
+        # })
 
         print("📄 Generating PDF report...")
         pdf_response = generate_pdf_report(
