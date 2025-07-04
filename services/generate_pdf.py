@@ -525,34 +525,68 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
-                            # --- Donut charts (side by side, top row) ---
-                            chart_width = 350
-                            chart_height = 350
-                            padding = 60
-                            # Center the two donut charts
-                            total_width = chart_width * 2 + padding
-                            start_x = (PAGE_WIDTH - total_width) / 2
-                            donut_y = table_y - 350  # 🆙 Push both donut charts lower
-                            bar_y = donut_y - chart_height - 60  # 🆙 Push ROAS bar lower too
-                            chart_y = table_y - 240  # Place above the bar chart
+                            # 🎯 All three charts on the same row inside a card
+                            chart_width = 250
+                            chart_height = 250
+                            padding_x = 40
 
-                            # Donut Chart 1 (Cost Split)
+                            total_width = chart_width * 3 + padding_x * 2
+                            start_x = (PAGE_WIDTH - total_width) / 2
+                            chart_y = table_y - chart_height - 60
+
+                            # Optional: Light gray card-style background
+                            card_padding = 20
+                            card_x = start_x - card_padding
+                            card_y = chart_y - card_padding
+                            card_w = total_width + 2 * card_padding
+                            card_h = chart_height + 2 * card_padding
+
+                            c.setFillColor(colors.whitesmoke)
+                            c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
+
+                            # Chart 1 - Cost Split
                             if len(split_charts) > 0:
                                 img1 = ImageReader(split_charts[0][1])
-                                c.drawImage(img1, start_x, donut_y, width=chart_width, height=chart_height)
+                                c.drawImage(img1, start_x, chart_y, width=chart_width, height=chart_height)
 
-                            # Donut Chart 2 (Revenue Split)
+                            # Chart 2 - Revenue Split
                             if len(split_charts) > 1:
                                 img2 = ImageReader(split_charts[1][1])
-                                c.drawImage(img2, start_x + chart_width + padding, donut_y, width=chart_width, height=chart_height)
+                                c.drawImage(img2, start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
 
-                            # --- Horizontal bar chart (ROAS Split, below donuts) ---
+                            # Chart 3 - ROAS Split (horizontal bar)
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
-                                roas_width = chart_width * 2 + padding + 40
-                                roas_height = 250
-                                roas_x = start_x
-                                c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
+                                c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
+
+                            
+                            # chart_width = 350
+                            # chart_height = 350
+                            # padding = 60
+                            # # Center the two donut charts
+                            # total_width = chart_width * 2 + padding
+                            # start_x = (PAGE_WIDTH - total_width) / 2
+                            # donut_y = table_y - 350  # 🆙 Push both donut charts lower
+                            # bar_y = donut_y - chart_height - 60  # 🆙 Push ROAS bar lower too
+                            # chart_y = table_y - 240  # Place above the bar chart
+
+                            # # Donut Chart 1 (Cost Split)
+                            # if len(split_charts) > 0:
+                            #     img1 = ImageReader(split_charts[0][1])
+                            #     c.drawImage(img1, start_x, donut_y, width=chart_width, height=chart_height)
+
+                            # # Donut Chart 2 (Revenue Split)
+                            # if len(split_charts) > 1:
+                            #     img2 = ImageReader(split_charts[1][1])
+                            #     c.drawImage(img2, start_x + chart_width + padding, donut_y, width=chart_width, height=chart_height)
+
+                            # # --- Horizontal bar chart (ROAS Split, below donuts) ---
+                            # if len(split_charts) > 2:
+                            #     img3 = ImageReader(split_charts[2][1])
+                            #     roas_width = chart_width * 2 + padding + 40
+                            #     roas_height = 250
+                            #     roas_x = start_x
+                            #     c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
                                 
                             # ✅ Clean new page for "Cost by Campaigns"
                             try:

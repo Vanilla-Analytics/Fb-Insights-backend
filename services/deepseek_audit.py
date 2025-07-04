@@ -294,6 +294,12 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
 def generate_campaign_split_charts(df, currency_symbol=None):
+    def truncate_label(label, max_words=4):
+        tokens = label.split()
+        if len(tokens) > max_words:
+            return " ".join(tokens[:max_words]) + "..."
+        return label
+
     if currency_symbol is None:
         currency_symbol = "₹"  # or "$" if you prefer USD fallback
 
@@ -325,26 +331,26 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     #1. Cost Split (Donut) - only if we have data
     if not top_spend.empty:
-        fig1, ax1 = plt.subplots(figsize=(6, 6))
+        fig1, ax1 = plt.subplots(figsize=(5, 5))
         percentages = 100 * top_spend / top_spend.sum()
-        labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
-        # wedges, texts, autotexts = ax1.pie(
-        #     top_spend, 
-        #     labels=top_spend.index, 
-        #     autopct='%1.1f%%', 
-        #     startangle=90,
-        #     textprops={'fontsize': 8}
-        # )
-        wedges, texts = ax1.pie(
-            top_spend,
+        #labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
+        labels = [f"{truncate_label(name)}" for name in top_spend.index]
+        sizes = top_spend.values
+        colors = plt.get_cmap('tab20c').colors
+
+        
+        wedges, texts, autotexts = ax1.pie(
+            sizes,
             labels=labels,
+            autopct='%1.1f%%',
             startangle=90,
-            textprops={'fontsize': 8}  # Smaller font size to fit
-        )
+            textprops={'fontsize': 8},
+            colors=colors
+       )
+        plt.setp(autotexts, size=9, weight="bold", color="white")
         centre_circle = plt.Circle((0, 0), 0.70, fc='white')
         fig1.gca().add_artist(centre_circle)
         ax1.set_title('Cost Split', fontsize=14)
-        fig1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
         figs.append(("Cost Split", generate_chart_image(fig1)))
         
     else:
@@ -417,7 +423,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     
     # 3. ROAS Split (Horizontal bar)
     if not top_roas.empty:
-        fig3, ax3 = plt.subplots(figsize=(8, 4))  # Wider figure (was 5.5)
+        fig3, ax3 = plt.subplots(figsize=(7, 4))  # Wider figure (was 5.5)
     
     # Get max ROAS value and add 25% padding
         max_val = top_roas.max() 
@@ -427,7 +433,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
             top_roas.index[::-1],
             top_roas.values[::-1],
             color='#ff00aa',
-            height=0.8  # Keep bar thickness same
+            height=0.6  # Keep bar thickness same
         )
     
         # Critical change - set axis limits to maximize bar lengths
@@ -436,9 +442,9 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         # Adjust layout to prevent cutting off
         plt.subplots_adjust(left=0.3, right=0.95)  # More space for labels
     
-        ax3.set_title('ROAS Split', fontsize=14)
-        ax3.set_xlabel("ROAS", fontsize=12)  # Added fontsize
-        ax3.tick_params(axis='both', labelsize=12)
+        ax3.set_title('ROAS Split', fontsize=12)
+        ax3.set_xlabel("ROAS", fontsize=10)  # Added fontsize
+        ax3.tick_params(axis='both', labelsize=10)
         ax3.yaxis.label.set_size(12)
         plt.tight_layout()
         figs.append(("ROAS Split", generate_chart_image(fig3)))
