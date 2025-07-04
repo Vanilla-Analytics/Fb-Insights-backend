@@ -291,7 +291,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
-                        PAGE_HEIGHT = 1400
+                        PAGE_HEIGHT = 1500
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         # next_section = sections[i + 1]
@@ -305,7 +305,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 300
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 100
                         c.drawCentredString(PAGE_WIDTH / 2, title_y, "Daily Campaign Performance Summary")
 
                         
