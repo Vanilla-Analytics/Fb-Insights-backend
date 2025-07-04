@@ -256,15 +256,22 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             print(f"⚠️ Chart 3 render error: {str(e)}")
 
                     if len(charts) > 3:
+                        dummy_section = {"title": "CHART PAGE", "contains_table": False}
+                        adjust_page_height(c, dummy_section)
                         c.showPage()
                         # dummy_section = {"title": "CHART PAGE", "contains_table": False}
                         # adjust_page_height(c, dummy_section)
+                        # ✅ 3. Reduce top margin for this page only
+                        original_top_margin = TOP_MARGIN
+                        original_logo_y_offset = LOGO_Y_OFFSET
+                        TOP_MARGIN = 0.3 * inch
+                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
             
                         draw_header(c)
                         try:
                             chart_title = "Click to Conversion vs CTR"
                             c.setFont("Helvetica-Bold", 16)
-                            title_y = PAGE_HEIGHT - TOP_MARGIN - 80
+                            title_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 5
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
@@ -276,6 +283,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
                         except Exception as e:
                             print(f"⚠️ Chart 4 render error: {str(e)}")
+                            
+                        # ✅ 7. Restore original margins for next pages
+                        TOP_MARGIN = original_top_margin
+                        LOGO_Y_OFFSET = original_logo_y_offset
                         
                     
                     # New Page: Full Table Summary
@@ -379,10 +390,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ]))
 
                         # Reserve fixed margin from top
-                        # Place table below logo + pink line
-                        table_top = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  # 20px gap below logo/line
-                        estimated_height = 16 * len(table_data[:30])
-                        table_y = table_top - estimated_height
+                        # Place table below logo + pink line (fixed position)
+                        table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  # 30px gap below logo/line
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
