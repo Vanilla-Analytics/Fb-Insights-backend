@@ -257,6 +257,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if len(charts) > 3:
                         PAGE_HEIGHT = 600
+                        TOP_MARGIN = 1.2 * inch
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         c.showPage()
