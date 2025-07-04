@@ -350,7 +350,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     # 2. Revenue Split (Donut) - only if we have data
     if not top_revenue.empty:
-        fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
+        fig2, ax2 = plt.subplots(figsize=(7, 3.5))
         wedges2, texts2, autotexts2 = ax2.pie(
             top_revenue, 
             labels=top_revenue.index, 
