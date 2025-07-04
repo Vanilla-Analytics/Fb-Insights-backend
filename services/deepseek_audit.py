@@ -324,37 +324,62 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     figs = []
 
     # 1. Cost Split (Donut) - only if we have data
+    # if not top_spend.empty:
+    #     fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
+    #     wedges, texts, autotexts = ax1.pie(
+    #         top_spend, 
+    #         labels=top_spend.index, 
+    #         autopct='%1.1f%%', 
+    #         startangle=90,
+    #         textprops={'fontsize': 9}
+    #     )
+    #     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+    #     fig1.gca().add_artist(centre_circle)
+    #     ax1.set_title('Cost Split', fontsize=14)
+    #     figs.append(("Cost Split", generate_chart_image(fig1)))
+    # else:
+    #     print("⚠️ No spend data available for cost split chart")
+
+    # # 2. Revenue Split (Donut) - only if we have data
+    # if not top_revenue.empty:
+    #     fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
+    #     wedges2, texts2, autotexts2 = ax2.pie(
+    #         top_revenue, 
+    #         labels=top_revenue.index, 
+    #         autopct='%1.1f%%', 
+    #         startangle=90
+    #     )
+    #     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+    #     fig2.gca().add_artist(centre_circle)
+    #     ax2.set_title('Revenue Split', fontsize=14)
+    #     figs.append(("Revenue Split", generate_chart_image(fig2)))
+    # else:
+    #     print("⚠️ No revenue data available for revenue split chart")
+    
+    # 1. Cost Split (Donut) - only if we have data
     if not top_spend.empty:
         fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
-        wedges, texts, autotexts = ax1.pie(
-            top_spend, 
-            labels=top_spend.index, 
-            autopct='%1.1f%%', 
+
+    # Generate labels with percentage included
+        percentages = 100 * top_spend / top_spend.sum()
+        labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
+
+        wedges, texts = ax1.pie(
+            top_spend,
+            labels=labels,
             startangle=90,
             textprops={'fontsize': 9}
         )
+
+    # Add donut hole
         centre_circle = plt.Circle((0, 0), 0.70, fc='white')
         fig1.gca().add_artist(centre_circle)
         ax1.set_title('Cost Split', fontsize=14)
+
         figs.append(("Cost Split", generate_chart_image(fig1)))
     else:
         print("⚠️ No spend data available for cost split chart")
 
-    # 2. Revenue Split (Donut) - only if we have data
-    if not top_revenue.empty:
-        fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
-        wedges2, texts2, autotexts2 = ax2.pie(
-            top_revenue, 
-            labels=top_revenue.index, 
-            autopct='%1.1f%%', 
-            startangle=90
-        )
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-        fig2.gca().add_artist(centre_circle)
-        ax2.set_title('Revenue Split', fontsize=14)
-        figs.append(("Revenue Split", generate_chart_image(fig2)))
-    else:
-        print("⚠️ No revenue data available for revenue split chart")
 
     # 3. ROAS Split (Horizontal bar) - only if we have data
     if not top_roas.empty:

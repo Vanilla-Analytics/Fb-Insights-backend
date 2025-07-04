@@ -223,9 +223,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ]
 
                         chart_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                        chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                        chart_height = 250
-                        chart_spacing = 40  # space between charts
+                        chart_width = PAGE_WIDTH - 1.2 * LEFT_MARGIN
+                        chart_height = 300
+                        chart_spacing = 70  # space between charts
 
                         for idx, (title, chart_buf) in enumerate(charts[1:4]):
                             
@@ -546,7 +546,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
                                 roas_width = chart_width * 2 + padding + 60
-                                roas_height = 220
+                                roas_height = 300
                                 roas_x = start_x
                                 c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
                     else:
