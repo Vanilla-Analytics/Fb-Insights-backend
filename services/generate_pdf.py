@@ -157,8 +157,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
-                    next_section = sections[i + 1]
-                    adjust_page_height(c, next_section)
+                    if i < len(sections) - 1:
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
+
+                    # next_section = sections[i + 1]
+                    # adjust_page_height(c, next_section)
 
                     draw_header(c)
 
@@ -584,8 +588,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     else:
                         c.showPage()
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
+                        if i < len(sections) - 1:
+                            next_section = sections[i + 1]
+                            adjust_page_height(c, next_section)
+
+                        # next_section = sections[i + 1]
+                        # adjust_page_height(c, next_section)
 
 
                         draw_header(c)
@@ -663,8 +671,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #if text_y < BOTTOM_MARGIN + 30:
                                 if text_y < 40:
                                     c.showPage()
-                                    next_section = sections[i + 1]
-                                    adjust_page_height(c, next_section)
+                                    if i < len(sections) - 1:
+                                        next_section = sections[i + 1]
+                                        adjust_page_height(c, next_section)
+
+                                    # next_section = sections[i + 1]
+                                    # adjust_page_height(c, next_section)
 
 
                                     draw_header(c)
@@ -696,8 +708,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                 #if i < len(sections) - 1:
 
                         c.showPage()
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
+                        if i < len(sections) - 1:
+                            next_section = sections[i + 1]
+                            adjust_page_height(c, next_section)
+
+                        # next_section = sections[i + 1]
+                        # adjust_page_height(c, next_section)
 
 
 
