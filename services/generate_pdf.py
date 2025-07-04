@@ -31,7 +31,7 @@ def adjust_page_height(c, section: dict):
     - If charts are present → PAGE_HEIGHT = 600
     - If no charts, but tables are drawn → PAGE_HEIGHT = 1000
     """
-    global PAGE_HEIGHT, LOGO_Y_OFFSET
+    global PAGE_HEIGHT, LOGO_Y_OFFSET, TOP_MARGIN
 
     # More explicit condition for table pages
     is_table_page = (
@@ -257,8 +257,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if len(charts) > 3:
                         c.showPage()
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
+                        dummy_section = {"title": "CHART PAGE", "contains_table": False}
+                        adjust_page_height(c, dummy_section)
                         # --- Reduce top margin and logo offset for this page only ---
                         original_top_margin = TOP_MARGIN
                         original_logo_y_offset = LOGO_Y_OFFSET
