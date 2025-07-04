@@ -291,7 +291,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
-                        PAGE_HEIGHT = 1100
+                        PAGE_HEIGHT = 1200
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         # next_section = sections[i + 1]
@@ -378,7 +378,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 800  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1000  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
