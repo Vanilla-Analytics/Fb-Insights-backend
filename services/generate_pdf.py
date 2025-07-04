@@ -42,7 +42,7 @@ def adjust_page_height(c, section: dict):
 
     # Dynamically increase height based on table rows
     if is_table_page:
-        PAGE_HEIGHT = 1000
+        PAGE_HEIGHT = 1600
     else:
         PAGE_HEIGHT = 600
 
@@ -378,7 +378,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1400  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1200  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
