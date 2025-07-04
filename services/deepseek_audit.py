@@ -325,7 +325,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     #1. Cost Split (Donut) - only if we have data
     if not top_spend.empty:
-        fig1, ax1 = plt.subplots(figsize=(4, 3.5))
+        fig1, ax1 = plt.subplots(figsize=(6, 6))
         percentages = 100 * top_spend / top_spend.sum()
         labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
         # wedges, texts, autotexts = ax1.pie(
@@ -344,7 +344,9 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         centre_circle = plt.Circle((0, 0), 0.70, fc='white')
         fig1.gca().add_artist(centre_circle)
         ax1.set_title('Cost Split', fontsize=14)
+        fig1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
         figs.append(("Cost Split", generate_chart_image(fig1)))
+        
     else:
         print("⚠️ No spend data available for cost split chart")
 
@@ -406,7 +408,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     
     # 3. ROAS Split (Horizontal bar)
     if not top_roas.empty:
-        fig3, ax3 = plt.subplots(figsize=(7, 4))  # Wider figure (was 5.5)
+        fig3, ax3 = plt.subplots(figsize=(8, 4))  # Wider figure (was 5.5)
     
     # Get max ROAS value and add 25% padding
         max_val = top_roas.max() 
@@ -416,7 +418,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
             top_roas.index[::-1],
             top_roas.values[::-1],
             color='#ff00aa',
-            height=0.6  # Keep bar thickness same
+            height=0.8  # Keep bar thickness same
         )
     
         # Critical change - set axis limits to maximize bar lengths
