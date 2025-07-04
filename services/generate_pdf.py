@@ -349,19 +349,6 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         print("🖨 PDF row date:", row['date'], type(row['date']))
 
-                        # Calculate grand totals
-                        # totals = {
-                        #     'spend': ad_insights_df['spend'].sum(),
-                        #     'purchases': ad_insights_df['purchases'].sum(),
-                        #     'purchase_value': ad_insights_df['purchase_value'].sum(),
-                        #     'cpa': ad_insights_df['cpa'].mean(),  # or weighted average
-                        #     'impressions': ad_insights_df['impressions'].sum(),
-                        #     'ctr': ad_insights_df['ctr'].mean(),
-                        #     'clicks': ad_insights_df['clicks'].sum(),
-                        #     'click_to_conversion': ad_insights_df['click_to_conversion'].mean(),
-                        #     'roas': ad_insights_df['roas'].mean()
-                        # }
-
                         # Append grand total row
                         table_data.append([
                             "Grand Total",
@@ -389,9 +376,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                         ]))
 
-                        # Reserve fixed margin from top
-                        # Place table below logo + pink line (fixed position)
-                        table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  # 30px gap below logo/line
+                        
+                        #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
+                        table_y = PAGE_HEIGHT - 350  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
