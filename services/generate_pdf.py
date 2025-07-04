@@ -259,9 +259,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     if len(charts) > 3:
                         c.showPage()
-                        PAGE_HEIGHT = 600  # Force standard height
-                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
                         
 
 
@@ -389,7 +388,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         estimated_height = 16 * len(table_data[:30])
                         #table_y = max(min_table_y, max_table_height - estimated_height)
                         #table_y = max(BOTTOM_MARGIN + 80, PAGE_HEIGHT - TOP_MARGIN - estimated_height - 220)
-                        table_y = PAGE_HEIGHT - TOP_MARGIN - 180 - estimated_height
+                        table_y = PAGE_HEIGHT - TOP_MARGIN - 240 - estimated_height  # ⬅ push table further down
+
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -499,9 +499,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             # --- Donut charts (side by side, top row) ---
-                            chart_width = 220
-                            chart_height = 220
-                            padding = 40
+                            chart_width = 250
+                            chart_height = 250
+                            padding = 60
                             # Center the two donut charts
                             total_width = chart_width * 2 + padding
                             start_x = (PAGE_WIDTH - total_width) / 2
@@ -520,8 +520,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # --- Horizontal bar chart (ROAS Split, below donuts) ---
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
-                                roas_width = chart_width * 2 + padding
-                                roas_height = 160
+                                roas_width = chart_width * 2 + padding + 40
+                                roas_height = 170
                                 roas_x = start_x
                                 roas_y = chart_y - roas_height - 30  # 30px gap below donuts
                                 c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
