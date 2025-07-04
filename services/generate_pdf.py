@@ -511,7 +511,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 400
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 300
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -532,7 +532,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             total_width = chart_width * 3 + padding_x * 2
                             start_x = (PAGE_WIDTH - total_width) / 2
-                            chart_y = table_y - chart_height - 60
+                            chart_y = table_y - chart_height - 80
 
                             # Optional: Light gray card-style background
                             card_padding = 20
@@ -590,12 +590,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 
                             # ✅ Clean new page for "Cost by Campaigns"
                             try:
-                                c.showPage()
-                                PAGE_HEIGHT = 600
-                                TOP_MARGIN = 1.2 * inch
-                                LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                                c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
-                                draw_header(c)
+                                #c.showPage()
+                                #PAGE_HEIGHT = 600
+                                #TOP_MARGIN = 1.2 * inch
+                                #LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                                #c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                                #draw_header(c)
 
                                 from services.deepseek_audit import generate_cost_by_campaign_chart  # Only if not already imported
                                 cost_by_campaign_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
@@ -617,6 +617,52 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             except Exception as e:
                                 print(f"⚠️ Error rendering Cost by Campaigns chart: {str(e)}")
+                                
+                            # Draw Revenue by Campaigns on same page (below)
+                            try:
+                                from services.deepseek_audit import generate_revenue_by_campaign_chart
+
+                                chart_title = "Revenue by Campaigns"
+                                c.setFont("Helvetica-Bold", 16)
+                                revenue_chart_y = chart_y - chart_height - 50  # Spaced below Cost chart
+                                c.drawCentredString(PAGE_WIDTH / 2, revenue_chart_y + 20, chart_title)
+
+                                rev_chart = generate_revenue_by_campaign_chart(full_ad_insights_df)
+                                rev_img = ImageReader(rev_chart[1])
+
+                                revenue_chart_height = 300
+                                revenue_chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                                chart_x = (PAGE_WIDTH - revenue_chart_width) / 2
+                                chart_y = revenue_chart_y - revenue_chart_height
+
+                                c.drawImage(rev_img, chart_x, chart_y, width=revenue_chart_width, height=revenue_chart_height, preserveAspectRatio=True)
+
+                            except Exception as e:
+                                print(f"⚠️ Error rendering Revenue by Campaigns chart: {str(e)}")
+                                
+                            # LLM summary paragraph after Revenue by Campaigns
+                            try:
+                                from services.deepseek_audit import generate_roas_summary_text
+                                import asyncio
+
+                                summary_text = asyncio.run(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+                                print("📄 LLM Summary Generated")
+
+                                paragraph_lines = summary_text.strip().split("\n")
+                                text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+                                c.setFont("Helvetica", 12)
+                                summary_y = chart_y - 40
+
+                                for line in paragraph_lines:
+                                    wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
+                                    for wline in wrapped:
+                                        c.drawString(LEFT_MARGIN, summary_y, wline)
+                                        summary_y -= 14
+
+                            except Exception as e:
+                                print(f"⚠️ LLM Summary generation failed: {str(e)}")
+
+
 
                                 
                     

@@ -476,6 +476,73 @@ def generate_cost_by_campaign_chart(df):
     fig.tight_layout()
     return ("Cost By Campaigns", generate_chart_image(fig))
 
+def generate_revenue_by_campaign_chart(df):
+    
+
+    df['date'] = pd.to_datetime(df['date'])
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['campaign_name'] = df['campaign_name'].fillna("Unknown Campaign")
+
+    grouped = df.groupby(['campaign_name', 'date'])['purchase_value'].sum().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='campaign_name', values='purchase_value').fillna(0)
+
+    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5, marker='o', markersize=3)
+
+    ax.set_title("Revenue By Campaigns", fontsize=16, weight='bold')
+    ax.set_ylabel("Revenue")
+    ax.set_xlabel("Day")
+    ax.legend(loc="upper left", fontsize=8, ncol=3)
+    ax.grid(True, linestyle='--', alpha=0.5)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+
+    fig.tight_layout()
+    return ("Revenue By Campaigns", generate_chart_image(fig))
+
+
+async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str) -> str:
+    from services.prompts import RESULTS_SETUP_PROMPT
+    from services.deepseek_audit import generate_llm_content
+
+    # Reduce data to relevant fields
+    if full_df.empty or 'campaign_name' not in full_df.columns:
+        return "⚠️ No campaign data available to summarize."
+
+    df = full_df[['campaign_name', 'spend', 'purchase_value', 'purchases']].copy()
+    df = df[df['campaign_name'].notna()]
+    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+
+    # Sort by performance
+    df = df.sort_values('roas', ascending=False)
+    df['spend'] = df['spend'].round(2)
+    df['purchase_value'] = df['purchase_value'].round(2)
+    df['roas'] = df['roas'].round(2)
+    df['cpa'] = df['cpa'].round(2)
+
+    # Convert to dict for prompt
+    records = df.to_dict(orient='records')
+    summary_data = {
+        "summary_metrics": {
+            "total_spend": float(df['spend'].sum()),
+            "total_revenue": float(df['purchase_value'].sum()),
+            "total_purchases": int(df['purchases'].sum()),
+            "avg_roas": float(df['roas'].mean()),
+            "avg_cpa": float(df['cpa'].mean())
+        },
+        "campaigns": records
+    }
+
+    prompt = (
+        "Write a concise 1-paragraph summary about Meta Ads campaign performance. "
+        "It should include total spend, revenue, purchases, average ROAS, and CPA. "
+        "Mention 1-2 top-performing campaigns (with high ROAS) and 1-2 poor ones (low ROAS or high CPA). "
+        "Conclude with 1 recommendation to improve overall performance."
+    )
+
+    return await generate_llm_content(prompt, summary_data)
 
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
