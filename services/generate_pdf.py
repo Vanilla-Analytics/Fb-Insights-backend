@@ -206,79 +206,118 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                         except Exception as e:
-                            print(f"⚠️ Chart 1 render error: {str(e)}")  
-
-                    # Page 4: Chart 2 — Purchases vs ROAS
+                            print(f"⚠️ Chart 1 render error: {str(e)}") 
+                    #------------------------------------------------------------
+                            
                     if len(charts) > 1:
                         c.showPage()
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
-
-
-                        draw_header(c)
-                        try:
-                            chart_title = "Purchases vs ROAS"
-                            c.setFont("Helvetica-Bold", 16)
-                            title_y = text_y - 10
-                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
-
-                            chart_width = PAGE_WIDTH - 1 * LEFT_MARGIN
-                            chart_height = 420
-                            chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = title_y - chart_height - 30 
-
-                            #img2 = ImageReader(charts[0][1])
-                            img2 =   ImageReader(charts[1][1])
-                            c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
-                        except Exception as e:
-                            print(f"⚠️ Chart 2 render error: {str(e)}")  
-
-                    if len(charts) > 2:
-                        c.showPage()
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
-                        draw_header(c)
-                        try:
-                            chart_title = "CPA vs Link CPC"
-                            c.setFont("Helvetica-Bold", 16)
-                            title_y = PAGE_HEIGHT - TOP_MARGIN - 80
-                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
-
-                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_height = 420
-                            chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = BOTTOM_MARGIN + 40
-
-                            img3 = ImageReader(charts[2][1])
-                            c.drawImage(img3, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-                        except Exception as e:
-                            print(f"⚠️ Chart 3 render error: {str(e)}")
-
-                    if len(charts) > 3:
-                        PAGE_HEIGHT = 600
-                        TOP_MARGIN = 1.2 * inch
+                        PAGE_HEIGHT = 1200  # Increase to fit 3 charts
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
-                        c.showPage()
-            
                         draw_header(c)
-                        try:
-                            chart_title = "Click to Conversion vs CTR"
-                            c.setFont("Helvetica-Bold", 16)
-                            #title_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 5
-                            title_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
-                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_height = 420
-                            chart_x = (PAGE_WIDTH - chart_width) / 2
-                            chart_y = BOTTOM_MARGIN + 40
+                        chart_titles = [
+                            "Purchases vs ROAS",
+                            "CPA vs Link CPC",
+                            "Click to Conversion vs CTR"
+                        ]
 
-                            img4 = ImageReader(charts[3][1])
-                            c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-                        except Exception as e:
-                            print(f"⚠️ Chart 4 render error: {str(e)}")
+                        chart_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                        chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                        chart_height = 250
+                        chart_spacing = 40  # space between charts
+
+                        for idx, (title, chart_buf) in enumerate(charts[1:4]):
+                            
+                            try:
+                                c.setFont("Helvetica-Bold", 14)
+                                c.drawCentredString(PAGE_WIDTH / 2, chart_y, title)
+
+                                img = ImageReader(chart_buf)
+                                c.drawImage(
+                                    img,
+                                    (PAGE_WIDTH - chart_width) / 2,
+                                    chart_y - chart_height - 10,
+                                    width=chart_width,
+                                    height=chart_height,
+                                    preserveAspectRatio=True
+                                )
+                                chart_y -= chart_height + chart_spacing + 30
+                            except Exception as e:
+                                print(f"⚠️ Error rendering chart {title}: {str(e)}")
+ 
+                #----------------------------------------------------------------------------
+                    # Page 4: Chart 2 — Purchases vs ROAS
+                    # if len(charts) > 1:
+                    #     c.showPage()
+                    #     next_section = sections[i + 1]
+                    #     adjust_page_height(c, next_section)
+
+
+                    #     draw_header(c)
+                    #     try:
+                    #         chart_title = "Purchases vs ROAS"
+                    #         c.setFont("Helvetica-Bold", 16)
+                    #         title_y = text_y - 10
+                    #         c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+
+                    #         chart_width = PAGE_WIDTH - 1 * LEFT_MARGIN
+                    #         chart_height = 420
+                    #         chart_x = (PAGE_WIDTH - chart_width) / 2
+                    #         chart_y = title_y - chart_height - 30 
+
+                    #         #img2 = ImageReader(charts[0][1])
+                    #         img2 =   ImageReader(charts[1][1])
+                    #         c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                    #     except Exception as e:
+                    #         print(f"⚠️ Chart 2 render error: {str(e)}")  
+
+                    # if len(charts) > 2:
+                    #     c.showPage()
+                    #     next_section = sections[i + 1]
+                    #     adjust_page_height(c, next_section)
+                    #     draw_header(c)
+                    #     try:
+                    #         chart_title = "CPA vs Link CPC"
+                    #         c.setFont("Helvetica-Bold", 16)
+                    #         title_y = PAGE_HEIGHT - TOP_MARGIN - 80
+                    #         c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+
+                    #         chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                    #         chart_height = 420
+                    #         chart_x = (PAGE_WIDTH - chart_width) / 2
+                    #         chart_y = BOTTOM_MARGIN + 40
+
+                    #         img3 = ImageReader(charts[2][1])
+                    #         c.drawImage(img3, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                    #     except Exception as e:
+                    #         print(f"⚠️ Chart 3 render error: {str(e)}")
+
+                    # if len(charts) > 3:
+                    #     PAGE_HEIGHT = 600
+                    #     TOP_MARGIN = 1.2 * inch
+                    #     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                    #     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                    #     c.showPage()
+            
+                    #     draw_header(c)
+                    #     try:
+                    #         chart_title = "Click to Conversion vs CTR"
+                    #         c.setFont("Helvetica-Bold", 16)
+                    #         #title_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 5
+                    #         title_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                    #         c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+
+                    #         chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                    #         chart_height = 420
+                    #         chart_x = (PAGE_WIDTH - chart_width) / 2
+                    #         chart_y = BOTTOM_MARGIN + 40
+
+                    #         img4 = ImageReader(charts[3][1])
+                    #         c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                    #     except Exception as e:
+                    #         print(f"⚠️ Chart 4 render error: {str(e)}")
                             
                         
                         
