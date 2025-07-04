@@ -256,8 +256,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             print(f"⚠️ Chart 3 render error: {str(e)}")
 
                     if len(charts) > 3:
-                        dummy_section = {"title": "CHART PAGE", "contains_table": False}
-                        adjust_page_height(c, dummy_section)
+                        PAGE_HEIGHT = 600
+                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         c.showPage()
             
                         draw_header(c)
