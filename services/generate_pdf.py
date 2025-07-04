@@ -238,8 +238,6 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.showPage()
                         next_section = sections[i + 1]
                         adjust_page_height(c, next_section)
-
-
                         draw_header(c)
                         try:
                             chart_title = "CPA vs Link CPC"
@@ -261,26 +259,30 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.showPage()
                         next_section = sections[i + 1]
                         adjust_page_height(c, next_section)
-
+                        # --- Reduce top margin and logo offset for this page only ---
+                        original_top_margin = TOP_MARGIN
+                        original_logo_y_offset = LOGO_Y_OFFSET
+                        TOP_MARGIN = 0.3 * inch  # Smaller top margin for this page
+                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         draw_header(c)
                         try:
                             chart_title = "Click to Conversion vs CTR"
                             c.setFont("Helvetica-Bold", 16)
-                            # Place header just below top margin
-                            title_y = PAGE_HEIGHT - TOP_MARGIN - 30
+                            title_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 10
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_height = 400
+                            chart_height = 420
                             chart_x = (PAGE_WIDTH - chart_width) / 2
-                            # Place chart directly below header, with minimal gap
                             chart_y = title_y - chart_height - 20
 
                             img4 = ImageReader(charts[3][1])
                             c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
                         except Exception as e:
                             print(f"⚠️ Chart 4 render error: {str(e)}")
-
+                        # --- Restore original margin/offset ---
+                        TOP_MARGIN = original_top_margin
+                        LOGO_Y_OFFSET = original_logo_y_offset
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
