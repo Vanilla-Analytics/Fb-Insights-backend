@@ -292,6 +292,48 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 #     return figs
 
+def draw_donut_chart(values, labels, title):
+    import matplotlib.pyplot as plt
+
+    # Truncate labels to 4 words
+    def truncate_label(label, max_words=4):
+        tokens = label.split()
+        return " ".join(tokens[:max_words]) + "..." if len(tokens) > max_words else label
+
+    truncated_labels = [truncate_label(label) for label in labels]
+    percentages = 100 * values / values.sum()
+    color_map = plt.get_cmap('tab20c')
+    colors = color_map.colors[:len(truncated_labels)]
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    
+    # Pie chart with no labels
+    wedges, _ = ax.pie(
+        values,
+        colors=colors,
+        startangle=90,
+        wedgeprops=dict(width=0.4)
+    )
+
+    # Centered total percentage text
+    ax.text(0, 0, "100%", ha='center', va='center', fontsize=14, weight='bold')
+
+    # Add legend to the right
+    ax.legend(
+        wedges,
+        [f"{label} ({pct:.1f}%)" for label, pct in zip(truncated_labels, percentages)],
+        title="Campaigns",
+        loc="center left",
+        bbox_to_anchor=(1.05, 0.5),
+        fontsize=8,
+        title_fontsize=9
+    )
+
+    ax.set_title(title, fontsize=14)
+    plt.tight_layout()
+    return fig
+
+
 
 def generate_campaign_split_charts(df, currency_symbol=None):
     def truncate_label(label, max_words=4):
@@ -329,97 +371,57 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     figs = []
 
-    #1. Cost Split (Donut) - only if we have data
-    if not top_spend.empty:
-        fig1, ax1 = plt.subplots(figsize=(5, 5))
-        percentages = 100 * top_spend / top_spend.sum()
-        #labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
-        labels = [f"{truncate_label(name)}" for name in top_spend.index]
-        sizes = top_spend.values
-        colors = plt.get_cmap('tab20c').colors
+    #1. Cost Split (Donut) - only if we have data  ---- new one
+    fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
+    figs.append(("Cost Split", generate_chart_image(fig1)))
 
-        
-        wedges, texts, autotexts = ax1.pie(
-            sizes,
-            labels=labels,
-            autopct='%1.1f%%',
-            startangle=90,
-            textprops={'fontsize': 8},
-            colors=colors
-       )
-        plt.setp(autotexts, size=9, weight="bold", color="white")
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-        fig1.gca().add_artist(centre_circle)
-        ax1.set_title('Cost Split', fontsize=14)
-        figs.append(("Cost Split", generate_chart_image(fig1)))
-        
-    else:
-        print("⚠️ No spend data available for cost split chart")
-
-    # 2. Revenue Split (Donut) - only if we have data
-    if not top_revenue.empty:
-        fig2, ax2 = plt.subplots(figsize=(6, 6))
-        percentages = 100 * top_spend / top_spend.sum()
-        labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
-        # wedges2, texts2, autotexts2 = ax2.pie(
-        #     top_revenue, 
-        #     labels=top_revenue.index, 
-        #     autopct='%1.1f%%', 
-        #     startangle=90
-        # )
-        wedges, texts = ax2.pie(
-            top_spend,
-            labels=labels,
-            startangle=90,
-            textprops={'fontsize': 8}  # Smaller font size to fit
-        )
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-        fig2.gca().add_artist(centre_circle)
-        ax2.set_title('Revenue Split', fontsize=14)
-        fig1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
-        figs.append(("Revenue Split", generate_chart_image(fig2)))
-    else:
-        print("⚠️ No revenue data available for revenue split chart")
-    
-    # # 1. Cost Split (Donut) - only if we have data
     # if not top_spend.empty:
-    #     fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
-
-    # # Generate labels with percentage included
+    #     fig1, ax1 = plt.subplots(figsize=(5, 5))
     #     percentages = 100 * top_spend / top_spend.sum()
-    #     labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
-
-    #     wedges, texts = ax1.pie(
-    #         top_spend,
+    #     #labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
+    #     labels = [f"{truncate_label(name)}" for name in top_spend.index]
+    #     sizes = top_spend.values
+    #     colors = plt.get_cmap('tab20c').colors       
+    #     wedges, texts, autotexts = ax1.pie(
+    #         sizes,
     #         labels=labels,
+    #         autopct='%1.1f%%',
     #         startangle=90,
-    #         textprops={'fontsize': 9}
-    #     )
-
-    # # Add donut hole
+    #         textprops={'fontsize': 8},
+    #         colors=colors
+    #    )
+    #     plt.setp(autotexts, size=9, weight="bold", color="white")
     #     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
     #     fig1.gca().add_artist(centre_circle)
     #     ax1.set_title('Cost Split', fontsize=14)
-
     #     figs.append(("Cost Split", generate_chart_image(fig1)))
+        
     # else:
     #     print("⚠️ No spend data available for cost split chart")
 
+    # 2. Revenue Split (Donut) - only if we have data---- newone
+    fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
+    figs.append(("Revenue Split", generate_chart_image(fig2)))
 
-    # 3. ROAS Split (Horizontal bar) - only if we have data
-    # if not top_roas.empty:
-    #     fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
-    #     #ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
-    #     scaled_values = top_roas.values[::-1] * 1.5  # Adjust this multiplier as needed
-    #     ax3.barh(top_roas.index[::-1], scaled_values, color='#ff00aa', height=0.5)
-    #     ax3.set_title('ROAS Split', fontsize=14)
-    #     ax3.set_xlabel("ROAS")
-    #     plt.tight_layout()
-    #     figs.append(("ROAS Split", generate_chart_image(fig3)))
+    # if not top_revenue.empty:
+    #     fig2, ax2 = plt.subplots(figsize=(6, 6))
+    #     percentages = 100 * top_spend / top_spend.sum()
+    #     labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
+    #     wedges, texts = ax2.pie(
+    #         top_spend,
+    #         labels=labels,
+    #         startangle=90,
+    #         textprops={'fontsize': 8}  # Smaller font size to fit
+    #     )
+    #     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+    #     fig2.gca().add_artist(centre_circle)
+    #     ax2.set_title('Revenue Split', fontsize=14)
+    #     fig1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+    #     figs.append(("Revenue Split", generate_chart_image(fig2)))
     # else:
-    #     print("⚠️ No ROAS data available for ROAS split chart")
+    #     print("⚠️ No revenue data available for revenue split chart")
+#------------------------------------------------------------------------------
 
-    # return figs
     
     # 3. ROAS Split (Horizontal bar)
     if not top_roas.empty:
@@ -433,7 +435,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
             top_roas.index[::-1],
             top_roas.values[::-1],
             color='#ff00aa',
-            height=0.6  # Keep bar thickness same
+            height=0.5  # Keep bar thickness same
         )
     
         # Critical change - set axis limits to maximize bar lengths
@@ -445,7 +447,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         ax3.set_title('ROAS Split', fontsize=12)
         ax3.set_xlabel("ROAS", fontsize=10)  # Added fontsize
         ax3.tick_params(axis='both', labelsize=10)
-        ax3.yaxis.label.set_size(12)
+        ax3.yaxis.label.set_size(10)
         plt.tight_layout()
         figs.append(("ROAS Split", generate_chart_image(fig3)))
         
