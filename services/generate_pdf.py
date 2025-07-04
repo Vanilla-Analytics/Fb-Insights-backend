@@ -522,14 +522,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             # --- Donut charts (side by side, top row) ---
-                            chart_width = 290
-                            chart_height = 290
-                            padding = 150
+                            chart_width = 240
+                            chart_height = 240
+                            padding = 120
                             # Center the two donut charts
                             total_width = chart_width * 2 + padding
                             start_x = (PAGE_WIDTH - total_width) / 2
-                            donut_y = table_y - 350  # 🆙 Push both donut charts lower
-                            bar_y = donut_y - chart_height - 40  # 🆙 Push ROAS bar lower too
+                            donut_y = table_y - 250  # 🆙 Push both donut charts lower
+                            bar_y = donut_y - chart_height - 60  # 🆙 Push ROAS bar lower too
                             chart_y = table_y - 240  # Place above the bar chart
 
                             # Donut Chart 1 (Cost Split)
