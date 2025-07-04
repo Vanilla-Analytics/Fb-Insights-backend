@@ -522,9 +522,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             # --- Donut charts (side by side, top row) ---
-                            chart_width = 240
-                            chart_height = 240
-                            padding = 100
+                            chart_width = 280
+                            chart_height = 280
+                            padding = 60
                             # Center the two donut charts
                             total_width = chart_width * 2 + padding
                             start_x = (PAGE_WIDTH - total_width) / 2

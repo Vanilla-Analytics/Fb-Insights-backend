@@ -390,18 +390,46 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
 
     # 3. ROAS Split (Horizontal bar) - only if we have data
+    # if not top_roas.empty:
+    #     fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
+    #     #ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
+    #     scaled_values = top_roas.values[::-1] * 1.5  # Adjust this multiplier as needed
+    #     ax3.barh(top_roas.index[::-1], scaled_values, color='#ff00aa', height=0.5)
+    #     ax3.set_title('ROAS Split', fontsize=14)
+    #     ax3.set_xlabel("ROAS")
+    #     plt.tight_layout()
+    #     figs.append(("ROAS Split", generate_chart_image(fig3)))
+    # else:
+    #     print("⚠️ No ROAS data available for ROAS split chart")
+
+    # return figs
+    
+    # 3. ROAS Split (Horizontal bar)
     if not top_roas.empty:
-        fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
-        #ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
-        scaled_values = top_roas.values[::-1] * 1.5  # Adjust this multiplier as needed
-        ax3.barh(top_roas.index[::-1], scaled_values, color='#ff00aa', height=0.5)
+        fig3, ax3 = plt.subplots(figsize=(7, 4))  # Wider figure (was 5.5)
+    
+    # Get max ROAS value and add 25% padding
+        max_val = top_roas.max() 
+        x_limit = max_val * 1.25
+    
+        ax3.barh(
+            top_roas.index[::-1],
+            top_roas.values[::-1],
+            color='#ff00aa',
+            height=0.6  # Keep bar thickness same
+        )
+    
+        # Critical change - set axis limits to maximize bar lengths
+        ax3.set_xlim(0, x_limit)
+    
+        # Adjust layout to prevent cutting off
+        plt.subplots_adjust(left=0.3, right=0.95)  # More space for labels
+    
         ax3.set_title('ROAS Split', fontsize=14)
         ax3.set_xlabel("ROAS")
         plt.tight_layout()
         figs.append(("ROAS Split", generate_chart_image(fig3)))
-    else:
-        print("⚠️ No ROAS data available for ROAS split chart")
-
+        
     return figs
 
 def generate_cost_by_campaign_chart(df):
