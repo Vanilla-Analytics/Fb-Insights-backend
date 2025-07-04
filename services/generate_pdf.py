@@ -211,7 +211,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             
                     if len(charts) > 1:
                         c.showPage()
-                        PAGE_HEIGHT = 1200  # Increase to fit 3 charts
+                        PAGE_HEIGHT = 1100  # Increase to fit 3 charts
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         draw_header(c)
@@ -507,7 +507,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 430
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 400
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -524,21 +524,23 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # --- Donut charts (side by side, top row) ---
                             chart_width = 250
                             chart_height = 250
-                            padding = 60
+                            padding = 100
                             # Center the two donut charts
                             total_width = chart_width * 2 + padding
                             start_x = (PAGE_WIDTH - total_width) / 2
+                            donut_y = table_y - 300  # 🆙 Push both donut charts lower
+                            bar_y = donut_y - chart_height - 80  # 🆙 Push ROAS bar lower too
                             chart_y = table_y - 240  # Place above the bar chart
 
                             # Donut Chart 1 (Cost Split)
                             if len(split_charts) > 0:
                                 img1 = ImageReader(split_charts[0][1])
-                                c.drawImage(img1, start_x, chart_y, width=chart_width, height=chart_height)
+                                c.drawImage(img1, start_x, donut_y, width=chart_width, height=chart_height)
 
                             # Donut Chart 2 (Revenue Split)
                             if len(split_charts) > 1:
                                 img2 = ImageReader(split_charts[1][1])
-                                c.drawImage(img2, start_x + chart_width + padding, chart_y, width=chart_width, height=chart_height)
+                                c.drawImage(img2, start_x + chart_width + padding, donut_y, width=chart_width, height=chart_height)
 
                             # --- Horizontal bar chart (ROAS Split, below donuts) ---
                             if len(split_charts) > 2:
@@ -546,8 +548,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 roas_width = chart_width * 2 + padding + 40
                                 roas_height = 170
                                 roas_x = start_x
-                                roas_y = chart_y - roas_height - 30  # 30px gap below donuts
-                                c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
+                                c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
                     else:
                         c.showPage()
                         next_section = sections[i + 1]
