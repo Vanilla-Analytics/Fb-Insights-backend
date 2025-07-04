@@ -325,7 +325,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     #1. Cost Split (Donut) - only if we have data
     if not top_spend.empty:
-        fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
+        fig1, ax1 = plt.subplots(figsize=(4, 3.5))
         percentages = 100 * top_spend / top_spend.sum()
         labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
         # wedges, texts, autotexts = ax1.pie(
@@ -350,7 +350,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     # 2. Revenue Split (Donut) - only if we have data
     if not top_revenue.empty:
-        fig2, ax2 = plt.subplots(figsize=(7, 3.5))
+        fig2, ax2 = plt.subplots(figsize=(4, 3.5))
         wedges2, texts2, autotexts2 = ax2.pie(
             top_revenue, 
             labels=top_revenue.index, 
@@ -392,7 +392,9 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     # 3. ROAS Split (Horizontal bar) - only if we have data
     if not top_roas.empty:
         fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
-        ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
+        #ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
+        scaled_values = top_roas.values[::-1] * 1.5  # Adjust this multiplier as needed
+        ax3.barh(top_roas.index[::-1], scaled_values, color='#ff00aa', height=0.5)
         ax3.set_title('ROAS Split', fontsize=14)
         ax3.set_xlabel("ROAS")
         plt.tight_layout()

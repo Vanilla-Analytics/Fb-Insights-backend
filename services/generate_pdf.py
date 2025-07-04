@@ -522,9 +522,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Draw Split Charts below the table
                         if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
                             # --- Donut charts (side by side, top row) ---
-                            chart_width = 300
+                            chart_width = 240
                             chart_height = 240
-                            padding = 140
+                            padding = 100
                             # Center the two donut charts
                             total_width = chart_width * 2 + padding
                             start_x = (PAGE_WIDTH - total_width) / 2
@@ -545,8 +545,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # --- Horizontal bar chart (ROAS Split, below donuts) ---
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
-                                roas_width = chart_width * 2 + padding + 60
-                                roas_height = 300
+                                roas_width = chart_width * 2 + padding + 40
+                                roas_height = 250
                                 roas_x = start_x
                                 c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
                     else:
