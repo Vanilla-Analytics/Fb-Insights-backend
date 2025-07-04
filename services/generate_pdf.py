@@ -689,15 +689,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             print(f"⚠️ Could not render chart '{chart_title}': {str(e)}")
 
                 #draw_footer_cta(c)
-                if draw_footer:
-                    draw_footer_cta(c)
+                    if draw_footer:
+                        draw_footer_cta(c)
 
-                if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
+                    if i < len(sections) - 1 and section_title.strip().upper() != "COST BY CAMPAIGNS":
                 #if i < len(sections) - 1:
 
-                    c.showPage()
-                    next_section = sections[i + 1]
-                    adjust_page_height(c, next_section)
+                        c.showPage()
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
 
 
 
