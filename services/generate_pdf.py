@@ -305,7 +305,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         draw_header(c)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 100
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 60
                         c.drawCentredString(PAGE_WIDTH / 2, title_y, "Daily Campaign Performance Summary")
 
                         
@@ -378,7 +378,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1200  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1350  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
