@@ -278,9 +278,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         except Exception as e:
                             print(f"⚠️ Chart 4 render error: {str(e)}")
                             
-                        # ✅ 7. Restore original margins for next pages
-                        TOP_MARGIN = original_top_margin
-                        LOGO_Y_OFFSET = original_logo_y_offset
+                        
+                        
                         
                     
                     # New Page: Full Table Summary
