@@ -59,7 +59,9 @@ def adjust_page_height(c, section: dict):
 
     if "CAMPAIGN PERFORMANCE SUMMARY" in title:
         PAGE_HEIGHT = 1800
-    elif "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title:
+    elif "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title :
+        PAGE_HEIGHT = 1400
+    elif  "KEY METRICS" in title:
         PAGE_HEIGHT = 1400
     else:
         PAGE_HEIGHT = 600
@@ -680,9 +682,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             except Exception as e:
                                 print(f"⚠️ LLM Summary generation failed: {str(e)}")
                                 
-                            PAGE_HEIGHT = 700
-                            LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                            c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                            # PAGE_HEIGHT = 700
+                            # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                            # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 
 
 
