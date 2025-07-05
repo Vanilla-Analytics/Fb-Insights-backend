@@ -641,11 +641,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             try:
                                 from services.deepseek_audit import generate_revenue_by_campaign_chart
 
-                                chart_title = "Revenue by Campaigns"
-                                c.setFont("Helvetica-Bold", 16)
+                                #chart_title = "Revenue by Campaigns"
+                                #c.setFont("Helvetica-Bold", 16)
                                 #revenue_chart_y = chart_y - chart_height - 50
                                 revenue_chart_y = chart_y - 30
-                                c.drawCentredString(PAGE_WIDTH / 2, revenue_chart_y + 20, chart_title)
+                                #c.drawCentredString(PAGE_WIDTH / 2, revenue_chart_y + 20, chart_title)
 
                                 rev_chart = generate_revenue_by_campaign_chart(full_ad_insights_df)
                                 rev_img = ImageReader(rev_chart[1])
