@@ -25,23 +25,41 @@ LOGO_HEIGHT = 45
 LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
 
 LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
+# def adjust_page_height(c, section: dict):
+#     """
+#     Adjust PAGE_HEIGHT based on whether the section contains a table (no charts).
+#     - If charts are present → PAGE_HEIGHT = 600
+#     - If no charts, but tables are drawn → PAGE_HEIGHT = 1000
+#     """
+#     global PAGE_HEIGHT, LOGO_Y_OFFSET, TOP_MARGIN
+
+#     # More explicit condition for table pages
+#     is_table_page = (
+#         "Daily Campaign Performance Summary" in section.get("title", "") or 
+#         "CAMPAIGN PERFORMANCE SUMMARY" in section.get("title", "") or
+#         section.get("contains_table", False)
+#     )
+#     if is_table_page:
+#         PAGE_HEIGHT = 1400
+#     else:
+#         PAGE_HEIGHT = 600
+
+#     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+#     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 def adjust_page_height(c, section: dict):
     """
-    Adjust PAGE_HEIGHT based on whether the section contains a table (no charts).
-    - If charts are present → PAGE_HEIGHT = 600
-    - If no charts, but tables are drawn → PAGE_HEIGHT = 1000
+    Adjust PAGE_HEIGHT based on section title/content.
+    - "Campaign Performance Summary" → PAGE_HEIGHT = 1800
+    - "Daily Campaign Performance Summary" → PAGE_HEIGHT = 1400
+    - Else → PAGE_HEIGHT = 600
     """
     global PAGE_HEIGHT, LOGO_Y_OFFSET, TOP_MARGIN
 
-    # More explicit condition for table pages
-    is_table_page = (
-        "Daily Campaign Performance Summary" in section.get("title", "") or 
-        "CAMPAIGN PERFORMANCE SUMMARY" in section.get("title", "") or
-        section.get("contains_table", False)
-    )
+    title = section.get("title", "").upper()
 
-    # Dynamically increase height based on table rows
-    if is_table_page:
+    if "CAMPAIGN PERFORMANCE SUMMARY" in title:
+        PAGE_HEIGHT = 1800
+    elif "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title:
         PAGE_HEIGHT = 1400
     else:
         PAGE_HEIGHT = 600
@@ -423,13 +441,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #draw_footer = False  # Skip footer for table page
 
                     if full_ad_insights_df is not None and 'campaign_name' in full_ad_insights_df.columns:
-                        PAGE_HEIGHT = 1800
-                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
-
                         table_section = {"title": "Campaign Performance Summary", "contains_table": True}
-                        adjust_page_height(c, table_section)
+                        adjust_page_height(c, table_section)  # ✅ this will now set PAGE_HEIGHT = 1800 automatically
                         c.showPage()
+
+                        #table_section = {"title": "Campaign Performance Summary", "contains_table": True}
+                        #adjust_page_height(c, table_section)
+                        #c.showPage()
                        
 
 
