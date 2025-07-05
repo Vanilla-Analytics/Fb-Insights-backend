@@ -312,16 +312,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         adjust_page_height(c, table_section)
                         
                 
-                        draw_header(c)
-                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10
+                        #draw_header(c)
+                        #metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10
                         
-                        metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
-                        metrics = dict(line.split(":", 1) for line in metric_lines)
-                        #draw_metrics_grid(c, metrics, PAGE_HEIGHT - 180) 
-                        draw_metrics_grid(c, metrics, metric_top_y)
+                        #metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
+                        #metrics = dict(line.split(":", 1) for line in metric_lines)
+                        #draw_metrics_grid(c, metrics, metric_top_y)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 20
                         c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Overview")
 
                         
@@ -396,16 +395,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1000  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 900  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
                         #draw_footer = False  # Skip footer for table page
 
                     if full_ad_insights_df is not None and 'campaign_name' in full_ad_insights_df.columns:
+                        c.showPage()
                         table_section = {"title": "Campaign Performance Summary", "contains_table": True}
                         adjust_page_height(c, table_section)  # ✅ this will now set PAGE_HEIGHT = 1800 automatically
-                        c.showPage()
+                        
 
                         #table_section = {"title": "Campaign Performance Summary", "contains_table": True}
                         #adjust_page_height(c, table_section)
