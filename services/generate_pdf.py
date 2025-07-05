@@ -57,10 +57,10 @@ def adjust_page_height(c, section: dict):
 
     title = section.get("title", "").upper()
 
-    if "CAMPAIGN PERFORMANCE SUMMARY" in title:
-        PAGE_HEIGHT = 1800
-    elif "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title :
+    if "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title:
         PAGE_HEIGHT = 1400
+    elif "CAMPAIGN PERFORMANCE SUMMARY" in title :
+        PAGE_HEIGHT = 1800
     else:
         PAGE_HEIGHT = 600
 
