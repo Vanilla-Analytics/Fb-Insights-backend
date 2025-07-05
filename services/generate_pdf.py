@@ -250,10 +250,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     #------------------------------------------------------------
                             
                     if len(charts) > 1:
+                        c.showPage()
                         section = {"title": "3 Charts Section", "contains_table": False}
                         adjust_page_height(c, section)
 
-                        c.showPage()
+                        
                         PAGE_HEIGHT = 1400  # Increase to fit 3 charts
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
@@ -385,7 +386,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1400  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 900  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
