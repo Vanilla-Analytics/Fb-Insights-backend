@@ -59,7 +59,7 @@ def adjust_page_height(c, section: dict):
 
     if "LAST 60 DAYS SUMMARY" in title:
         PAGE_HEIGHT = 1400
-    elif "CAMPAIGN PERFORMANCE SUMMARY" in title :
+    elif title.strip() == "CAMPAIGN PERFORMANCE SUMMARY" :
         PAGE_HEIGHT = 1800
     else:
         PAGE_HEIGHT = 600
@@ -618,10 +618,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 cost_by_campaign_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
 
                                 # Draw title
-                                chart_title = "Cost by Campaigns"
-                                c.setFont("Helvetica-Bold", 16)
+                                #chart_title = "Cost by Campaigns"
+                                #c.setFont("Helvetica-Bold", 16)
                                 title_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                                c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+                                #c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                                 # Draw chart image
                                 img = ImageReader(cost_by_campaign_chart[1])
@@ -644,13 +644,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_title = "Revenue by Campaigns"
                                 c.setFont("Helvetica-Bold", 16)
                                 #revenue_chart_y = chart_y - chart_height - 50
-                                revenue_chart_y = chart_y - 40
+                                revenue_chart_y = chart_y - 30
                                 c.drawCentredString(PAGE_WIDTH / 2, revenue_chart_y + 20, chart_title)
 
                                 rev_chart = generate_revenue_by_campaign_chart(full_ad_insights_df)
                                 rev_img = ImageReader(rev_chart[1])
 
-                                revenue_chart_height = 300
+                                revenue_chart_height = 420
                                 revenue_chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                                 chart_x = (PAGE_WIDTH - revenue_chart_width) / 2
                                 chart_y = revenue_chart_y - revenue_chart_height
@@ -671,7 +671,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 paragraph_lines = summary_text.strip().split("\n")
                                 text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
                                 c.setFont("Helvetica", 12)
-                                summary_y = chart_y - 40
+                                #summary_y = chart_y - 40
+                                summary_y = chart_y - 20  # Place below the Revenue chart
 
                                 for line in paragraph_lines:
                                     wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
