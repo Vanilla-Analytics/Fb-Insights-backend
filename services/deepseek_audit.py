@@ -176,18 +176,44 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
     # Chart 2: Purchases vs ROAS
-    fig2, ax3 = plt.subplots(figsize=(13, 7))
-    ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
-    ax4 = ax3.twinx()
-    ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
-    ax3.set_title("Purchases vs ROAS")
-    ax3.xaxis.set_major_locator(MaxNLocator(nbins=10))
-    ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    ax3.tick_params(axis='x', rotation=45, labelsize=10)
-    # ax3.set_ylabel("Purchases")
-    # ax4.set_ylabel("ROAS")  
+    # fig2, ax3 = plt.subplots(figsize=(13, 7))
+    # ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
+    # ax4 = ax3.twinx()
+    # ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
+    # ax3.set_title("Purchases vs ROAS")
+    # ax3.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    # ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    # ax3.tick_params(axis='x', rotation=45, labelsize=10)
+    # # ax3.set_ylabel("Purchases")
+    # # ax4.set_ylabel("ROAS")  
 
+    # chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
+    
+    # Chart 2: Purchases vs ROAS
+    purchases_df = ad_insights_df.sort_values("date")[-30:]
+
+    fig2, ax3 = plt.subplots(figsize=(12, 4.5))
+    bar_width = 0.8
+
+    ax3.bar(purchases_df["date"], purchases_df["purchases"], width=bar_width, color="#0d0c42", label="Purchases")
+    ax3.set_ylabel("Purchases", color="#0d0c42")
+    ax3.tick_params(axis='y', labelcolor="#0d0c42")
+    ax3.set_ylim(0, purchases_df["purchases"].max() * 1.2)
+    ax3.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    plt.xticks(rotation=45)
+    ax4 = ax3.twinx()
+    ax4.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
+    ax4.set_ylabel("ROAS", color="#ff00aa")
+    ax4.tick_params(axis='y', labelcolor="#ff00aa")
+    ax4.set_ylim(0, purchases_df["roas"].max() * 1.2)
+
+    ax3.grid(True, axis='y', linestyle='--', alpha=0.3)
+    plt.title("Purchases vs ROAS", fontsize=14)
+
+    plt.tight_layout()
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
+
 
     # Chart 3: CPA vs Link CPC (Dual Y-Axis)
     fig3, ax5 = plt.subplots(figsize=(13, 7))

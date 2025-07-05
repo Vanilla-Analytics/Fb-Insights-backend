@@ -57,7 +57,7 @@ def adjust_page_height(c, section: dict):
 
     title = section.get("title", "").upper()
 
-    if "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title:
+    if "LAST 60 DAYS SUMMARY" in title:
         PAGE_HEIGHT = 1400
     elif "CAMPAIGN PERFORMANCE SUMMARY" in title :
         PAGE_HEIGHT = 1800
@@ -245,7 +245,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ]
 
                         chart_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                        chart_width = PAGE_WIDTH - 1.2 * LEFT_MARGIN
+                        chart_width = PAGE_WIDTH - 0.5 * LEFT_MARGIN
                         chart_height = 300
                         chart_spacing = 70  # space between charts
 
@@ -351,7 +351,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                        
-                        table_section = {"title": "Daily Campaign Performance Summary", "contains_table": True}
+                        table_section = {"title": "LAST 60 DAYS SUMMARY", "contains_table": True}
                         adjust_page_height(c, table_section)
                         c.showPage()
                         
@@ -361,7 +361,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
                         title_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                        c.drawCentredString(PAGE_WIDTH / 2, title_y, "Daily Campaign Performance Summary")
+                        c.drawCentredString(PAGE_WIDTH / 2, title_y, "Last 60 Days Summary")
 
                         
                         # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
