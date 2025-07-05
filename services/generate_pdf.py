@@ -445,12 +445,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                             ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
                             #("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                            ("FONTNAME", (0, 0), (-1, 0), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
+                            ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ("FONTSIZE", (0, 0), (-1, -1), 8),
                             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),  # Last row = Grand Total
                             #("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
-                            ("FONTNAME", (0, -1), (-1, -1), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
+                            ("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                         ]))
 
                         
@@ -544,12 +544,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
                                 #("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                                ("FONTNAME", (0, 0), (-1, 0), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
+                                ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                                 #("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
-                                ("FONTNAME", (0, -1), (-1, -1), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
+                                ("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ]))
 
                             table_y = PAGE_HEIGHT - TOP_MARGIN - 350
@@ -700,7 +700,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 for line in paragraph_lines:
                                     #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
-                                    wrapped = simpleSplit(line.strip(), "Arial" if currency_symbol == "₹" else "Helvetica", 12, text_width)
+                                    wrapped = simpleSplit(line.strip(), "DejaVuSans" if currency_symbol == "₹" else "Helvetica", 12, text_width)
                                     for wline in wrapped:
                                         c.drawString(LEFT_MARGIN, summary_y, wline)
                                         summary_y -= 14
