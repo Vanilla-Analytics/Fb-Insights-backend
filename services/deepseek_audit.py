@@ -552,10 +552,12 @@ async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str
     }
 
     prompt = (
-        "Write a concise 1-paragraph summary about Meta Ads campaign performance. "
-        "It should include total spend, revenue, purchases, average ROAS, and CPA. "
-        "Mention 1-2 top-performing campaigns (with high ROAS) and 1-2 poor ones (low ROAS or high CPA). "
-        "Conclude with 1 recommendation to improve overall performance."
+        f"Write a concise 1-paragraph summary about Meta Ads campaign performance. "
+        f"Use {currency_symbol} for monetary values. "
+        f"Include total spend, revenue, purchases, average ROAS, and CPA. "
+        f"Mention 1-2 top-performing campaigns (with high ROAS) and 1-2 poor ones (low ROAS or high CPA). "
+        f"Conclude with 1 recommendation to improve overall performance."
+        
     )
 
     return await generate_llm_content(prompt, summary_data)

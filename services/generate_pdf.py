@@ -612,6 +612,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
                                 #c.setFont("Helvetica", 12)
                                 set_font_with_currency(c, currency_symbol, size=12)
+                                c.setFillColor(colors.black) 
                                 summary_y = chart_y - 60  
 
                                 for line in paragraph_lines:
