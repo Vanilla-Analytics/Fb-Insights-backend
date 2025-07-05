@@ -15,7 +15,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Point to your uploaded font file
+
 font_path = os.path.join("assets", "fonts", "DejaVuSans.ttf")
 pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
 
@@ -69,7 +69,7 @@ def adjust_page_height(c, section: dict):
 
     title = section.get("title", "").upper()
 
-    if "LAST 60 DAYS SUMMARY" in title:
+    if "Campaign Performance Overview" in title:
         PAGE_HEIGHT = 1400
     elif title.strip() == "CAMPAIGN PERFORMANCE SUMMARY" :
         PAGE_HEIGHT = 1800
@@ -284,82 +284,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             except Exception as e:
                                 print(f"⚠️ Error rendering chart {title}: {str(e)}")
  
-                #----------------------------------------------------------------------------
-                    # Page 4: Chart 2 — Purchases vs ROAS
-                    # if len(charts) > 1:
-                    #     c.showPage()
-                    #     next_section = sections[i + 1]
-                    #     adjust_page_height(c, next_section)
-
-
-                    #     draw_header(c)
-                    #     try:
-                    #         chart_title = "Purchases vs ROAS"
-                    #         c.setFont("Helvetica-Bold", 16)
-                    #         title_y = text_y - 10
-                    #         c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
-
-                    #         chart_width = PAGE_WIDTH - 1 * LEFT_MARGIN
-                    #         chart_height = 420
-                    #         chart_x = (PAGE_WIDTH - chart_width) / 2
-                    #         chart_y = title_y - chart_height - 30 
-
-                    #         #img2 = ImageReader(charts[0][1])
-                    #         img2 =   ImageReader(charts[1][1])
-                    #         c.drawImage(img2, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
-                    #     except Exception as e:
-                    #         print(f"⚠️ Chart 2 render error: {str(e)}")  
-
-                    # if len(charts) > 2:
-                    #     c.showPage()
-                    #     next_section = sections[i + 1]
-                    #     adjust_page_height(c, next_section)
-                    #     draw_header(c)
-                    #     try:
-                    #         chart_title = "CPA vs Link CPC"
-                    #         c.setFont("Helvetica-Bold", 16)
-                    #         title_y = PAGE_HEIGHT - TOP_MARGIN - 80
-                    #         c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
-
-                    #         chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                    #         chart_height = 420
-                    #         chart_x = (PAGE_WIDTH - chart_width) / 2
-                    #         chart_y = BOTTOM_MARGIN + 40
-
-                    #         img3 = ImageReader(charts[2][1])
-                    #         c.drawImage(img3, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-                    #     except Exception as e:
-                    #         print(f"⚠️ Chart 3 render error: {str(e)}")
-
-                    # if len(charts) > 3:
-                    #     PAGE_HEIGHT = 600
-                    #     TOP_MARGIN = 1.2 * inch
-                    #     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                    #     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
-                    #     c.showPage()
-            
-                    #     draw_header(c)
-                    #     try:
-                    #         chart_title = "Click to Conversion vs CTR"
-                    #         c.setFont("Helvetica-Bold", 16)
-                    #         #title_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 5
-                    #         title_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                    #         c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
-
-                    #         chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                    #         chart_height = 420
-                    #         chart_x = (PAGE_WIDTH - chart_width) / 2
-                    #         chart_y = BOTTOM_MARGIN + 40
-
-                    #         img4 = ImageReader(charts[3][1])
-                    #         c.drawImage(img4, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-                    #     except Exception as e:
-                    #         print(f"⚠️ Chart 4 render error: {str(e)}")
-                            
-                        
-                        
-                        
+                
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
@@ -367,12 +292,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                        
-                        table_section = {"title": "LAST 60 DAYS SUMMARY", "contains_table": True}
+                        table_section = {"title": "Campaign Performance Overview", "contains_table": True}
                         adjust_page_height(c, table_section)
                         c.showPage()
                 
                         draw_header(c)
-                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10 
+                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 60
                         
                         metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                         metrics = dict(line.split(":", 1) for line in metric_lines)
@@ -380,8 +305,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         draw_metrics_grid(c, metrics, metric_top_y)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                        c.drawCentredString(PAGE_WIDTH / 2, title_y, "Last 60 Days Summary")
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 200
+                        c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Overview")
 
                         
                         # title_y = PAGE_HEIGHT - TOP_MARGIN - 100
@@ -445,17 +370,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                             ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
                             #("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                            ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                            ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ("FONTSIZE", (0, 0), (-1, -1), 8),
                             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),  # Last row = Grand Total
                             #("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
-                            ("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                            #("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                         ]))
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1300  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1150  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -544,12 +469,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
                                 #("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                                ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                                ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                                 #("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
-                                ("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                                #("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ]))
 
                             table_y = PAGE_HEIGHT - TOP_MARGIN - 350
@@ -601,35 +526,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
 
                             
-                            # chart_width = 350
-                            # chart_height = 350
-                            # padding = 60
-                            # # Center the two donut charts
-                            # total_width = chart_width * 2 + padding
-                            # start_x = (PAGE_WIDTH - total_width) / 2
-                            # donut_y = table_y - 350  # 🆙 Push both donut charts lower
-                            # bar_y = donut_y - chart_height - 60  # 🆙 Push ROAS bar lower too
-                            # chart_y = table_y - 240  # Place above the bar chart
-
-                            # # Donut Chart 1 (Cost Split)
-                            # if len(split_charts) > 0:
-                            #     img1 = ImageReader(split_charts[0][1])
-                            #     c.drawImage(img1, start_x, donut_y, width=chart_width, height=chart_height)
-
-                            # # Donut Chart 2 (Revenue Split)
-                            # if len(split_charts) > 1:
-                            #     img2 = ImageReader(split_charts[1][1])
-                            #     c.drawImage(img2, start_x + chart_width + padding, donut_y, width=chart_width, height=chart_height)
-
-                            # # --- Horizontal bar chart (ROAS Split, below donuts) ---
-                            # if len(split_charts) > 2:
-                            #     img3 = ImageReader(split_charts[2][1])
-                            #     roas_width = chart_width * 2 + padding + 40
-                            #     roas_height = 250
-                            #     roas_x = start_x
-                            #     c.drawImage(img3, roas_x, bar_y, width=roas_width, height=roas_height)
-                                
-                            # ✅ Clean new page for "Cost by Campaigns"
+                            
                             try:
                                 #c.showPage()
                                 #PAGE_HEIGHT = 600
@@ -723,43 +620,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             adjust_page_height(c, next_section)
 
                         # next_section = sections[i + 1]
-                        # adjust_page_height(c, next_section)
-
-
-                        
-             
-                    
-            # else:
-            #     if section_title.strip().upper() == "COST BY CAMPAIGNS":
-            #         adjust_page_height(c, section)
-            #         c.showPage()
-                    
-            #         draw_header(c)
-
-            #         # c.setFont("Helvetica-Bold", 22)
-            #         # c.setFillColor(colors.black)
-            #         # heading_y = PAGE_HEIGHT - TOP_MARGIN - 30
-            #         # c.drawString(LEFT_MARGIN, heading_y, section_title)
-
-            #         if charts:
-
-            #             try:
-            #                 # Chart image
-            #                 chart_image = charts[0][1]
-            #                 img = ImageReader(chart_image)
-
-            #                  # Chart sizing
-            #                 chart_width = PAGE_WIDTH - 2 * LEFT_MARGIN - 60
-            #                 chart_height = 400
-            #                 chart_x = (PAGE_WIDTH - chart_width) / 2
-            #                 chart_y = (PAGE_HEIGHT - chart_height) / 2 - 20  # Vertical center with spacing
-
-            #                 c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
-            #             except Exception as e:
-            #                 print(f"⚠️ Could not render COST BY CAMPAIGNS chart: {str(e)}")
-            #         draw_footer_cta(c)
-            #         continue
+                        # adjust_page_height(c, next_section)            
             else:
                 
                 # Default layout
