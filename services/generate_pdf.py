@@ -395,7 +395,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1200  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1230  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -602,7 +602,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 from services.deepseek_audit import generate_roas_summary_text
                                 import asyncio
 
-                                summary_text = asyncio.run(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+                                summary_text = await generate_roas_summary_text(full_ad_insights_df, currency_symbol)
                                 print("📄 LLM Summary Generated")
 
                                 paragraph_lines = summary_text.strip().split("\n")
