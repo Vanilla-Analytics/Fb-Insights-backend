@@ -245,7 +245,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ]
 
                         chart_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                        chart_width = PAGE_WIDTH - 0.5 * LEFT_MARGIN
+                        chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                         chart_height = 300
                         chart_spacing = 70  # space between charts
 
@@ -354,10 +354,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         table_section = {"title": "LAST 60 DAYS SUMMARY", "contains_table": True}
                         adjust_page_height(c, table_section)
                         c.showPage()
-                        
-
-
+                
                         draw_header(c)
+                        
+                        metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
+                        metrics = dict(line.split(":", 1) for line in metric_lines)
+                        draw_metrics_grid(c, metrics, PAGE_HEIGHT - 180) 
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
                         title_y = PAGE_HEIGHT - TOP_MARGIN - 60

@@ -15,7 +15,8 @@ from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
 from services.prompts import RESULTS_SETUP_PROMPT
 import matplotlib.ticker as mticker
-import matplotlib.dates as mdates
+import matplotli
+b.dates as mdates
 from services.generate_pdf import generate_pdf_report
 from datetime import datetime, timedelta , timezone
 import json
@@ -168,40 +169,39 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     # Chart 1: Amount Spent vs Purchase Conversion Value
     
     fig1 = generate_chart_1(ad_insights_df)
-    chart_imgs.append(("", generate_chart_image(fig1)))
+    chart_imgs.append(("# ", generate_chart_image(fig1)))
 
 
-
-    #chart_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
+   #cha# rt_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
 
 
     # Chart 2: Purchases vs ROAS
-    # fig2, ax3 = plt.subplots(figsize=(13, 7))
-    # ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
+    # fig2, ax3 = plt.subplots(figsize=(13, 5))
+    # ax3.bar(ad_insights_df['date'], ad_insights_df['# purchases'], color='darkblue', label='P# urchases')
     # ax4 = ax3.twinx()
     # ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
-    # ax3.set_title("Purchases vs ROAS")
-    # ax3.xaxis.set_major_locator(MaxNLocator(nbins=10))
+    # ax3.set_title("Purchases vs ROAS"# )
+    # ax3.xaxis.set_major_locator (MaxNLocator(nbins=10))
     # ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    # ax3.tick_params(axis='x', rotation=45, labelsize=10)
-    # # ax3.set_ylabel("Purchases")
-    # # ax4.set_ylabel("ROAS")  
-
-    # chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
-    
-    # Chart 2: Purchases vs ROAS
+    # ax3.t
+   
+   # Chart 2: Purchases vs ROAS    
+   
     purchases_df = ad_insights_df.sort_values("date")[-30:]
 
-    fig2, ax3 = plt.subplots(figsize=(12, 5.5))
+    fig2, ax3 = plt.subplots(figsize=(13, 5))
     bar_width = 0.8
 
     ax3.bar(purchases_df["date"], purchases_df["purchases"], width=bar_width, color="#0d0c42", label="Purchases")
     ax3.set_ylabel("Purchases", color="#0d0c42")
     ax3.tick_params(axis='y', labelcolor="#0d0c42")
     ax3.set_ylim(0, purchases_df["purchases"].max() * 1.2)
+
+    # Format x-axis
     ax3.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45)
+
     ax4 = ax3.twinx()
     ax4.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
     ax4.set_ylabel("ROAS", color="#ff00aa")
@@ -216,22 +216,19 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
     # Chart 3: CPA vs Link CPC (Dual Y-Axis)
-    # fig3, ax5 = plt.subplots(figsize=(13, 7))
-    # ax5.bar(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
-    # #ax5.plot(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
-    # ax6 = ax5.twinx()
-    # ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link CPC')
-    # ax5.set_title("CPA vs Link CPC")
-    # ax5.xaxis.set_major_locator(MaxNLocator(nbins=10))
-    # ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    # ax5.tick_params(axis='x', rotation=45, labelsize=10)
-
-    # chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
-    
-    # Chart 3: CPA vs Link CPC
+#     fig3, ax5 = plt.subp# lots(figsize=(13, 5))
+#     ax5.bar(ad_insights_df['date'], ad_insights_df['cpa'], color='blu# e', label='CPA')
+#     #ax5.plot(ad_in# sights_df['date'], ad_insights_df['cpa'], color='blue',label='CPA')
+#     ax6 = ax5.twinx()
+#     ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link#  CPC')
+#     ax5.set_title("CPA vs Link CPC")
+#     ax5.xaxis.set_ma
+   
+   # Chart 3: CPA vs Link CPC
+   
     cpa_df = ad_insights_df.sort_values("date")[-30:]
 
-    fig3, ax5 = plt.subplots(figsize=(12, 5.5))
+    fig3, ax5 = plt.subplots(figsize=(13, 5))
     bar_width = 0.8
 
     ax5.bar(cpa_df["date"], cpa_df["cpa"], width=bar_width, color="blue", label="CPA")
@@ -254,26 +251,23 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     plt.tight_layout()
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
-
     
+
     
 
 
     # Chart 4: Click to Conversion vs CTR
-    # fig4, ax7 = plt.subplots(figsize=(13, 7))
-    # ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
-    # ax7.bar(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
-    # ax8 = ax7.twinx()
-    # ax8.plot(ad_insights_df['date'], ad_insights_df['ctr'], color='darkblue', label='CTR')
-    # ax7.set_title("Click to Conversion vs CTR")
-    # ax7.xaxis.set_major_locator(MaxNLocator(nbins=10))
-    # ax7.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    # ax7.tick_params(axis='x', rotation=45, labelsize=10)
-    # chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
-    # Chart 4: Click to Conversion vs CTR
+    # fig4, ax7 = plt# .subplots(figsize=(13,#  5))
+    # #ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='p# ink', label='Click to Conversion')
+    # ax7.bar(# ad_insights_df['date'], ad_insights_df['click_to_conver# sion'], color='pink', label='Click to Conversion')
+    # ax8 = ax7# .twinx()
+    # ax8.plot(ad_insights_df['date'], ad_inights# _df['ctr'], color='darkblue', label='CTR')
+    # ax7.set_title("Click to Conve
+      
+# Chart 4: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
 
-    fig4, ax7 = plt.subplots(figsize=(12, 5.5))
+    fig4, ax7 = plt.subplots(figsize=(13, 5))
     bar_width = 0.8
 
     ax7.bar(click_df["date"], click_df["click_to_conversion"], width=bar_width, color="pink", label="Click to Conversion")
@@ -297,7 +291,6 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     plt.tight_layout()
     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
 
-    
 
     # Table summary
     table_html = ad_insights_df.to_html(index=False, border=0)
@@ -357,15 +350,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 #     figs.append(("Revenue Split", generate_chart_image(fig2)))
 
 #     # 3. ROAS Split (Horizontal bar)
-#     fig3, ax3 = plt.subplots(figsize=(5.5, 3.5))
-#     ax3.barh(top_roas.index[::-1], top_roas.values[::-1], color='#ff00aa')
-#     ax3.set_title('ROAS Split', fontsize=14)
-#     ax3.set_xlabel("ROAS")
-#     plt.tight_layout()
-#     figs.append(("ROAS Split", generate_chart_image(fig3)))
-
-#     return figs
-
+#     fig3, ax3 = plt.su
 def draw_donut_chart(values, labels, title):
     import matplotlib.pyplot as plt
 
@@ -407,15 +392,23 @@ def draw_donut_chart(values, labels, title):
     plt.tight_layout()
     return fig
 
+# bplots(figsize=(5.5, 3.5))
+# #     ax3.barh(top_roas.index[::-1],
+#    def truncate_label(label, max_words=4):
+#         tokens = label.split()
+#         if len(tokens) > max_words:
+#             return " ".join(tokens[:max_words]) + "..."
+#         return label
+#   top_roas.values[::-1], color='#ff00aa')
+# #     ax3.set_title('ROAS Split', fontsize=14)
+# #     ax3.set_xlabel("ROAS")
+# #     plt.tight_layout()
+# #     figs.append(("ROAS Split", generate_chart_image(fig3)))
+
+# #     return figs
 
 
 def generate_campaign_split_charts(df, currency_symbol=None):
-    def truncate_label(label, max_words=4):
-        tokens = label.split()
-        if len(tokens) > max_words:
-            return " ".join(tokens[:max_words]) + "..."
-        return label
-
     if currency_symbol is None:
         currency_symbol = "₹"  # or "$" if you prefer USD fallback
 
@@ -437,81 +430,32 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     # Handle division by zero for ROAS calculation
     roas_split = revenue_split / spend_split.replace(0, 1)
     roas_split = roas_split.dropna()
-
     # Get top campaigns (but ensure we have data)
     top_spend = spend_split.head(8) if not spend_split.empty else pd.Series(dtype=float)
     top_revenue = revenue_split.head(8) if not revenue_split.empty else pd.Series(dtype=float)
     top_roas = roas_split.sort_values(ascending=False).head(10) if not roas_split.empty else pd.Series(dtype=float)
-
     figs = []
 
     #1. Cost Split (Donut) - only if we have data  ---- new one
     fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
     figs.append(("Cost Split", generate_chart_image(fig1)))
-
-    # if not top_spend.empty:
-    #     fig1, ax1 = plt.subplots(figsize=(5, 5))
-    #     percentages = 100 * top_spend / top_spend.sum()
-    #     #labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
-    #     labels = [f"{truncate_label(name)}" for name in top_spend.index]
-    #     sizes = top_spend.values
-    #     colors = plt.get_cmap('tab20c').colors       
-    #     wedges, texts, autotexts = ax1.pie(
-    #         sizes,
-    #         labels=labels,
-    #         autopct='%1.1f%%',
-    #         startangle=90,
-    #         textprops={'fontsize': 8},
-    #         colors=colors
-    #    )
-    #     plt.setp(autotexts, size=9, weight="bold", color="white")
-    #     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-    #     fig1.gca().add_artist(centre_circle)
-    #     ax1.set_title('Cost Split', fontsize=14)
-    #     figs.append(("Cost Split", generate_chart_image(fig1)))
-        
-    # else:
-    #     print("⚠️ No spend data available for cost split chart")
-
-    # 2. Revenue Split (Donut) - only if we have data---- newone
     fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
     figs.append(("Revenue Split", generate_chart_image(fig2)))
 
-    # if not top_revenue.empty:
-    #     fig2, ax2 = plt.subplots(figsize=(6, 6))
-    #     percentages = 100 * top_spend / top_spend.sum()
-    #     labels = [f"{name} ({pct:.1f}%)" for name, pct in zip(top_spend.index, percentages)]
-    #     wedges, texts = ax2.pie(
-    #         top_spend,
-    #         labels=labels,
-    #         startangle=90,
-    #         textprops={'fontsize': 8}  # Smaller font size to fit
-    #     )
-    #     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-    #     fig2.gca().add_artist(centre_circle)
-    #     ax2.set_title('Revenue Split', fontsize=14)
-    #     fig1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
-    #     figs.append(("Revenue Split", generate_chart_image(fig2)))
-    # else:
-    #     print("⚠️ No revenue data available for revenue split chart")
-#------------------------------------------------------------------------------
-
     
-    # 3. ROAS Split (Horizontal bar)
+   
+   # 3. ROAS Split (Horizontal bar)    
     if not top_roas.empty:
         fig3, ax3 = plt.subplots(figsize=(7, 4))  # Wider figure (was 5.5)
-    
-    # Get max ROAS value and add 25% padding
+        # Get max ROAS value and add 25% padding
         max_val = top_roas.max() 
         x_limit = max_val * 1.25
-    
         ax3.barh(
             top_roas.index[::-1],
             top_roas.values[::-1],
             color='#ff00aa',
             height=0.5  # Keep bar thickness same
         )
-    
         # Critical change - set axis limits to maximize bar lengths
         ax3.set_xlim(0, x_limit)
     
@@ -524,8 +468,8 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         ax3.yaxis.label.set_size(10)
         plt.tight_layout()
         figs.append(("ROAS Split", generate_chart_image(fig3)))
-        
     return figs
+     
 
 def generate_cost_by_campaign_chart(df):
 
@@ -575,7 +519,6 @@ def generate_revenue_by_campaign_chart(df):
     fig.tight_layout()
     return ("Revenue By Campaigns", generate_chart_image(fig))
 
-
 async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str) -> str:
     from services.prompts import RESULTS_SETUP_PROMPT
     from services.deepseek_audit import generate_llm_content
@@ -617,7 +560,6 @@ async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str
     )
 
     return await generate_llm_content(prompt, summary_data)
-
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
@@ -719,7 +661,9 @@ async def fetch_ad_insights(user_token: str):
                     print(f"📊 Total detailed insights: {len(ad_results)}")
 
                     for ad in ad_results:
-                        ad["account_currency"] = acc.get("account_currency", "USD")
+                        if 'account_currency' not in ad:
+                            ad["account_currency"] = acc.get("account_currency", "USD") 
+                        #ad["account_currency"] = acc.get("account_currency", "USD")
                         insights_data.append(ad)
 
                 except Exception as e:
@@ -1139,3 +1083,4 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         error_msg = f"Error generating audit: {str(e)}"
         print(f"❌ {error_msg}")
         raise Exception(error_msg)
+#------------------------------------------------------------------------------------
