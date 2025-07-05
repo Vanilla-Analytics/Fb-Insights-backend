@@ -680,12 +680,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # adjust_page_height(c, next_section)
 
 
-                        draw_header(c)
-                        c.setFont("Helvetica-Bold", 16)
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Campaign Performance Summary")
-                        c.setFont("Helvetica", 12)
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠ No ad data available to display the summary table.") 
-                    
+                        
              
                     
             # else:
