@@ -16,7 +16,7 @@ from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
 from services.prompts import RESULTS_SETUP_PROMPT
 import matplotlib.ticker as mticker
- import matplotlib.dates as mdates
+import matplotlib.dates as mdates
 from services.generate_pdf import generate_pdf_report
 from datetime import datetime, timedelta , timezone
 import json
