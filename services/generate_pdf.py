@@ -5,6 +5,8 @@ from reportlab.lib.units import inch
 from reportlab.lib.utils import simpleSplit
 import io
 import os
+import asyncio
+import threading
 from fastapi.responses import StreamingResponse
 from reportlab.lib.utils import ImageReader
 from reportlab.platypus import Table, TableStyle
@@ -31,27 +33,6 @@ LOGO_HEIGHT = 45
 LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
 
 LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
-# def adjust_page_height(c, section: dict):
-#     """
-#     Adjust PAGE_HEIGHT based on whether the section contains a table (no charts).
-#     - If charts are present → PAGE_HEIGHT = 600
-#     - If no charts, but tables are drawn → PAGE_HEIGHT = 1000
-#     """
-#     global PAGE_HEIGHT, LOGO_Y_OFFSET, TOP_MARGIN
-
-#     # More explicit condition for table pages
-#     is_table_page = (
-#         "Daily Campaign Performance Summary" in section.get("title", "") or 
-#         "CAMPAIGN PERFORMANCE SUMMARY" in section.get("title", "") or
-#         section.get("contains_table", False)
-#     )
-#     if is_table_page:
-#         PAGE_HEIGHT = 1400
-#     else:
-#         PAGE_HEIGHT = 600
-
-#     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-#     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 def set_font_with_currency(c, currency_symbol, fallback_font="Helvetica", size=12):
     if currency_symbol == "₹":
         c.setFont("DejaVuSans", size)
@@ -124,6 +105,20 @@ def draw_footer_cta(c):
     c.drawCentredString(sticker_x + sticker_width / 2, sticker_y + 24, "CLAIM YOUR FREE")
     c.drawCentredString(sticker_x + sticker_width / 2, sticker_y + 12, "STRATEGY SESSION")
     c.linkURL(link_url, (sticker_x, sticker_y, sticker_x + sticker_width, sticker_y + sticker_height), relative=0)
+    
+
+def run_async_in_thread(coro):
+    result = {}
+    def runner():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result["value"] = loop.run_until_complete(coro)
+        loop.close()
+    t = threading.Thread(target=runner)
+    t.start()
+    t.join()
+    return result["value"]
+
 
 def draw_metrics_grid(c, metrics, start_y):
     card_width = 180
@@ -298,6 +293,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_y -= chart_height + chart_spacing + 30
                             except Exception as e:
                                 print(f"⚠️ Error rendering chart {title}: {str(e)}")
+                                
+                        # Draw footer CTA   
+                        draw_footer_cta(c)
  
                 
                     
@@ -600,19 +598,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # LLM summary paragraph after Revenue by Campaigns
                             try:
                                 from services.deepseek_audit import generate_roas_summary_text
-                                import asyncio
-                                #loop = asyncio.get_event_loop()
-                                #summary_text = await generate_roas_summary_text(full_ad_insights_df, currency_symbol)
+                               
 
-                                import asyncio
+                                from services.deepseek_audit import generate_roas_summary_text
 
-                                try:
-                                    loop = asyncio.get_running_loop()
-                                    summary_text = loop.run_until_complete(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
-                                except RuntimeError:
-                                    loop = asyncio.new_event_loop()
-                                    asyncio.set_event_loop(loop)
-                                    summary_text = loop.run_until_complete(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+                                summary_text = run_async_in_thread(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+
+
 
                                 print("📄 LLM Summary Generated")
 
@@ -628,6 +620,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     for wline in wrapped:
                                         c.drawString(LEFT_MARGIN, summary_y, wline)
                                         summary_y -= 14
+                                        
+                                draw_footer_cta(c)  # Draw footer CTA after LLM summary
 
                             except Exception as e:
                                 print(f"⚠️ LLM Summary generation failed: {str(e)}")
