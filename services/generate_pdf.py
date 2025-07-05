@@ -10,8 +10,14 @@ from reportlab.lib.utils import ImageReader
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 import re
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Point to your uploaded font file
+font_path = os.path.join("assets", "fonts", "aerial.ttf")
+pdfmetrics.registerFont(TTFont("Arial", font_path))
 
 PAGE_WIDTH = 1000
 PAGE_HEIGHT = 700
@@ -46,6 +52,12 @@ LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
 
 #     LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
 #     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+def set_font_with_currency(c, currency_symbol, fallback_font="Helvetica", size=12):
+    if currency_symbol == "₹":
+        c.setFont("Arial", size)
+    else:
+        c.setFont(fallback_font, size)
+
 def adjust_page_height(c, section: dict):
     """
     Adjust PAGE_HEIGHT based on section title/content.
@@ -133,9 +145,13 @@ def draw_metrics_grid(c, metrics, start_y):
                 c.setFillColor(colors.HexColor("#222222"))
                 c.setFont("Helvetica-Bold", 12)
                 c.drawCentredString(x + card_width / 2, card_y - 18, label.strip())
-
-                c.setFont("Helvetica", 12)
+                
+                set_font_with_currency(c, value_cleaned.strip()[0], size=12)
                 c.drawCentredString(x + card_width / 2, card_y - 38, value_cleaned)
+
+
+                # c.setFont("Helvetica", 12)
+                # c.drawCentredString(x + card_width / 2, card_y - 38, value_cleaned)
 
         
 
@@ -356,10 +372,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.showPage()
                 
                         draw_header(c)
+                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 60 
                         
                         metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                         metrics = dict(line.split(":", 1) for line in metric_lines)
-                        draw_metrics_grid(c, metrics, PAGE_HEIGHT - 180) 
+                        #draw_metrics_grid(c, metrics, PAGE_HEIGHT - 180) 
+                        draw_metrics_grid(c, metrics, metric_top_y)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
                         title_y = PAGE_HEIGHT - TOP_MARGIN - 60
@@ -426,11 +444,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                             ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            #("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            ("FONTNAME", (0, 0), (-1, 0), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ("FONTSIZE", (0, 0), (-1, -1), 8),
                             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),  # Last row = Grand Total
-                            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
+                            #("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
+                            ("FONTNAME", (0, -1), (-1, -1), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
                         ]))
 
                         
@@ -523,11 +543,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             performance_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                                #("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                                ("FONTNAME", (0, 0), (-1, 0), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
-                                ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
+                                #("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold")
+                                ("FONTNAME", (0, -1), (-1, -1), "Arial" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ]))
 
                             table_y = PAGE_HEIGHT - TOP_MARGIN - 350
@@ -672,12 +694,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 paragraph_lines = summary_text.strip().split("\n")
                                 text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
-                                c.setFont("Helvetica", 12)
-                                #summary_y = chart_y - 40
-                                summary_y = chart_y - 20  # Place below the Revenue chart
+                                #c.setFont("Helvetica", 12)
+                                set_font_with_currency(c, currency_symbol, size=12)
+                                summary_y = chart_y - 20  
 
                                 for line in paragraph_lines:
-                                    wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
+                                    #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
+                                    wrapped = simpleSplit(line.strip(), "Arial" if currency_symbol == "₹" else "Helvetica", 12, text_width)
                                     for wline in wrapped:
                                         c.drawString(LEFT_MARGIN, summary_y, wline)
                                         summary_y -= 14
