@@ -16,7 +16,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Point to your uploaded font file
-font_path = os.path.join("assets", "fonts", "aerial.ttf")
+font_path = os.path.join("assets", "fonts", "DejaVuSans.ttf")
 pdfmetrics.registerFont(TTFont("Arial", font_path))
 
 PAGE_WIDTH = 1000
@@ -54,7 +54,7 @@ LOGO_PATH = os.path.join(BASE_DIR, "..", "assets", "Data_Vinci_Logo.png")
 #     c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
 def set_font_with_currency(c, currency_symbol, fallback_font="Helvetica", size=12):
     if currency_symbol == "₹":
-        c.setFont("Arial", size)
+        c.setFont("DejaVuSans", size)
     else:
         c.setFont(fallback_font, size)
 
@@ -372,7 +372,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.showPage()
                 
                         draw_header(c)
-                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 60 
+                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10 
                         
                         metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                         metrics = dict(line.split(":", 1) for line in metric_lines)
