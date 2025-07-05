@@ -601,10 +601,19 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             try:
                                 from services.deepseek_audit import generate_roas_summary_text
                                 import asyncio
-                                loop = asyncio.get_event_loop()
+                                #loop = asyncio.get_event_loop()
                                 #summary_text = await generate_roas_summary_text(full_ad_insights_df, currency_symbol)
 
-                                summary_text = asyncio.run(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+                                import asyncio
+
+                                try:
+                                    loop = asyncio.get_running_loop()
+                                    summary_text = loop.run_until_complete(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+                                except RuntimeError:
+                                    loop = asyncio.new_event_loop()
+                                    asyncio.set_event_loop(loop)
+                                    summary_text = loop.run_until_complete(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+
                                 print("📄 LLM Summary Generated")
 
                                 paragraph_lines = summary_text.strip().split("\n")
