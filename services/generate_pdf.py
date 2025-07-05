@@ -17,7 +17,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Point to your uploaded font file
 font_path = os.path.join("assets", "fonts", "DejaVuSans.ttf")
-pdfmetrics.registerFont(TTFont("Arial", font_path))
+pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
 
 PAGE_WIDTH = 1000
 PAGE_HEIGHT = 700
