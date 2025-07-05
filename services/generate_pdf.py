@@ -61,8 +61,6 @@ def adjust_page_height(c, section: dict):
         PAGE_HEIGHT = 1800
     elif "DAILY CAMPAIGN PERFORMANCE SUMMARY" in title :
         PAGE_HEIGHT = 1400
-    elif  "KEY METRICS" in title:
-        PAGE_HEIGHT = 1400
     else:
         PAGE_HEIGHT = 600
 
@@ -349,11 +347,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     # New Page: Full Table Summary
                     if ad_insights_df is not None and not ad_insights_df.empty:
-                        PAGE_HEIGHT = 1400
-                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
-                        # next_section = sections[i + 1]
-                        # adjust_page_height(c, next_section)
+                        # PAGE_HEIGHT = 1400
+                        # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                        # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                       
                         table_section = {"title": "Daily Campaign Performance Summary", "contains_table": True}
                         adjust_page_height(c, table_section)
                         c.showPage()
@@ -631,7 +628,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                                 chart_height = 420
                                 chart_x = (PAGE_WIDTH - chart_width) / 2
-                                chart_y = BOTTOM_MARGIN + 100
+                                #chart_y = BOTTOM_MARGIN + 100
+                                chart_y = chart_y - chart_height - 40 
+                                #chart_y = table_y - chart_height - 80
 
                                 c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
