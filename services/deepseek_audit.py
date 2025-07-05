@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from io import BytesIO
 import base64
+import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import matplotlib.dates as mdates
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
@@ -15,8 +16,7 @@ from services.prompts import TESTING_ACTIVITY_PROMPT
 from services.prompts import REMARKETING_ACTIVITY_PROMPT
 from services.prompts import RESULTS_SETUP_PROMPT
 import matplotlib.ticker as mticker
-import matplotli
-b.dates as mdates
+ import matplotlib.dates as mdates
 from services.generate_pdf import generate_pdf_report
 from datetime import datetime, timedelta , timezone
 import json
@@ -25,8 +25,8 @@ DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def generate_chart_1(ad_insights_df):
-    import matplotlib.dates as mdates
-    import matplotlib.pyplot as plt
+   
+  
 
     fig, ax1 = plt.subplots(figsize=(20, 8), dpi=200, constrained_layout=True)
 
@@ -352,7 +352,6 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 #     # 3. ROAS Split (Horizontal bar)
 #     fig3, ax3 = plt.su
 def draw_donut_chart(values, labels, title):
-    import matplotlib.pyplot as plt
 
     # Truncate labels to 4 words
     def truncate_label(label, max_words=4):
