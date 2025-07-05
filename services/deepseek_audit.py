@@ -176,7 +176,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
     # Chart 2: Purchases vs ROAS
-    fig2, ax3 = plt.subplots(figsize=(13, 5))
+    fig2, ax3 = plt.subplots(figsize=(13, 7))
     ax3.bar(ad_insights_df['date'], ad_insights_df['purchases'], color='darkblue', label='Purchases')
     ax4 = ax3.twinx()
     ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
@@ -190,7 +190,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
 
     # Chart 3: CPA vs Link CPC (Dual Y-Axis)
-    fig3, ax5 = plt.subplots(figsize=(13, 5))
+    fig3, ax5 = plt.subplots(figsize=(13, 7))
     ax5.bar(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
     #ax5.plot(ad_insights_df['date'], ad_insights_df['cpa'], color='blue', label='CPA')
     ax6 = ax5.twinx()
@@ -209,7 +209,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
     # Chart 4: Click to Conversion vs CTR
-    fig4, ax7 = plt.subplots(figsize=(13, 5))
+    fig4, ax7 = plt.subplots(figsize=(13, 7))
     #ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
     ax7.bar(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='pink', label='Click to Conversion')
     ax8 = ax7.twinx()
