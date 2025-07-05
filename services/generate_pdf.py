@@ -312,7 +312,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         adjust_page_height(c, table_section)
                         
                 
-                        #draw_header(c)
+                        draw_header(c)
                         #metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10
                         
                         #metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
@@ -395,7 +395,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1000  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1200  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -609,7 +609,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
                                 #c.setFont("Helvetica", 12)
                                 set_font_with_currency(c, currency_symbol, size=12)
-                                summary_y = chart_y - 20  
+                                summary_y = chart_y - 60  
 
                                 for line in paragraph_lines:
                                     #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
