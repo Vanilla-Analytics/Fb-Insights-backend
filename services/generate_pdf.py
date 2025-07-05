@@ -67,13 +67,22 @@ def adjust_page_height(c, section: dict):
     """
     global PAGE_HEIGHT, LOGO_Y_OFFSET, TOP_MARGIN
 
-    title = section.get("title", "").upper()
+    #title = section.get("title", "").upper()
+    title = section.get("title", "").upper().strip()
 
-    if "Campaign Performance Overview" in title:
+    # if "Campaign Performance Overview" in title:
+    #      PAGE_HEIGHT = 1400
+    # elif title.strip().upper() == "CAMPAIGN PERFORMANCE SUMMARY" :
+    #     PAGE_HEIGHT = 1800
+    # elif title.strip().upper() == "3 CHARTS SECTION":
+    #     PAGE_HEIGHT = 1400
+    # else:
+    #     PAGE_HEIGHT = 600
+    if "CAMPAIGN PERFORMANCE OVERVIEW" in title:
         PAGE_HEIGHT = 1400
-    elif title.strip() == "CAMPAIGN PERFORMANCE SUMMARY" :
+    elif title == "CAMPAIGN PERFORMANCE SUMMARY":
         PAGE_HEIGHT = 1800
-    elif title.strip() == "3 CHARTS SECTION":
+    elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     else:
         PAGE_HEIGHT = 600
@@ -255,9 +264,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         adjust_page_height(c, section)
 
                         
-                        PAGE_HEIGHT = 1400  # Increase to fit 3 charts
-                        LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                        c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                        #PAGE_HEIGHT = 1400  # Increase to fit 3 charts
+                        #LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
+                        #c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         draw_header(c)
 
                         chart_titles = [
@@ -297,10 +306,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # PAGE_HEIGHT = 1400
                         # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                        c.showPage()
                        
                         table_section = {"title": "Campaign Performance Overview", "contains_table": True}
                         adjust_page_height(c, table_section)
-                        c.showPage()
+                        
                 
                         draw_header(c)
                         metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10
@@ -386,7 +396,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 900  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1000  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
