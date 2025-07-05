@@ -79,9 +79,9 @@ def adjust_page_height(c, section: dict):
     # else:
     #     PAGE_HEIGHT = 600
     if "CAMPAIGN PERFORMANCE OVERVIEW" in title:
-        PAGE_HEIGHT = 1400
+        PAGE_HEIGHT = 1300
     elif title == "CAMPAIGN PERFORMANCE SUMMARY":
-        PAGE_HEIGHT = 1800
+        PAGE_HEIGHT = 1900
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     else:
@@ -395,7 +395,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 900  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1000  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
