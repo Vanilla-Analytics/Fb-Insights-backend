@@ -73,6 +73,8 @@ def adjust_page_height(c, section: dict):
         PAGE_HEIGHT = 1400
     elif title.strip() == "CAMPAIGN PERFORMANCE SUMMARY" :
         PAGE_HEIGHT = 1800
+    elif title.strip() == "3 CHARTS SECTION":
+        PAGE_HEIGHT = 1400
     else:
         PAGE_HEIGHT = 600
 
@@ -248,6 +250,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     #------------------------------------------------------------
                             
                     if len(charts) > 1:
+                        section = {"title": "3 Charts Section", "contains_table": False}
+                        adjust_page_height(c, section)
+
                         c.showPage()
                         PAGE_HEIGHT = 1400  # Increase to fit 3 charts
                         LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
@@ -297,7 +302,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         c.showPage()
                 
                         draw_header(c)
-                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                        metric_top_y = PAGE_HEIGHT - TOP_MARGIN - 10
                         
                         metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                         metrics = dict(line.split(":", 1) for line in metric_lines)
@@ -305,7 +310,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         draw_metrics_grid(c, metrics, metric_top_y)
                         c.setFont("Helvetica-Bold", 18)
                         c.setFillColor(colors.black)
-                        title_y = PAGE_HEIGHT - TOP_MARGIN - 200
+                        title_y = PAGE_HEIGHT - TOP_MARGIN - 60
                         c.drawCentredString(PAGE_WIDTH / 2, title_y, "Campaign Performance Overview")
 
                         
@@ -380,7 +385,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 1150  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 1400  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
