@@ -14,7 +14,7 @@ from reportlab.lib import colors
 import re
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from services.deepseek_audit import draw_donut_chart, generate_chart_image, draw_roas_split_bar_chart
+from services.chart_utils import draw_donut_chart, generate_chart_image, draw_roas_split_bar_chart
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -552,7 +552,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 #c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                                 #draw_header(c)
 
-                                from services.deepseek_audit import generate_cost_by_campaign_chart  # Only if not already imported
+                                from services.chart_utils import generate_cost_by_campaign_chart  # Only if not already imported
                                 cost_by_campaign_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
 
                                 # Draw title
@@ -577,7 +577,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 
                             # Draw Revenue by Campaigns on same page (below)
                             try:
-                                from services.deepseek_audit import generate_revenue_by_campaign_chart
+                                from services.chart_utils import generate_revenue_by_campaign_chart
 
                                 #chart_title = "Revenue by Campaigns"
                                 #c.setFont("Helvetica-Bold", 16)
@@ -733,7 +733,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # c.drawImage(ImageReader(split_charts[2][1]), start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
                             
                             #Cost by Adsets chart
-                            from services.deepseek_audit import generate_cost_by_campaign_chart
+                            from services.chart_utils import generate_cost_by_campaign_chart
                             cost_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
 
                             cost_chart_y = chart_y - chart_height - 40
@@ -743,7 +743,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawImage(ImageReader(cost_chart[1]), chart_x, cost_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
                             
                             #Revenue by Adsets chart
-                            from services.deepseek_audit import generate_revenue_by_campaign_chart
+                            from services.chart_utils import generate_revenue_by_campaign_chart
                             revenue_chart = generate_revenue_by_campaign_chart(full_ad_insights_df)
 
                             rev_chart_y = cost_chart_y - chart_h - 30

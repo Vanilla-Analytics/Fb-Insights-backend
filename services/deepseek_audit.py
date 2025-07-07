@@ -240,23 +240,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     }
 
 
-def draw_donut_chart(values, labels, title):
-    
+def draw_donut_chart(values, labels, title):    
     if values.sum() <= 0 or not np.all(np.isfinite(values)):
         raise ValueError("Invalid values for donut chart.")
-
     # Truncate labels to 4 words
     def truncate_label(label, max_words=4):
         tokens = label.split()
         return " ".join(tokens[:max_words]) + "..." if len(tokens) > max_words else label
-
     truncated_labels = [truncate_label(label) for label in labels]
     percentages = 100 * values / values.sum()
     color_map = plt.get_cmap('tab20c')
     colors = color_map.colors[:len(truncated_labels)]
-
-    fig, ax = plt.subplots(figsize=(5, 5))
-    
+    fig, ax = plt.subplots(figsize=(5, 5))  
     # Pie chart with no labels
     wedges, _ = ax.pie(
         values,
@@ -264,10 +259,7 @@ def draw_donut_chart(values, labels, title):
         startangle=90,
         wedgeprops=dict(width=0.4)
     )
-
-    # Centered total percentage text
     ax.text(0, 0, "100%", ha='center', va='center', fontsize=14, weight='bold')
-
     # Add legend to the right
     ax.legend(
         wedges,
@@ -278,7 +270,6 @@ def draw_donut_chart(values, labels, title):
         fontsize=8,
         title_fontsize=9
     )
-
     ax.set_title(title, fontsize=14)
     plt.tight_layout()
     return fig
