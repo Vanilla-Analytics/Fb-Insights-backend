@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
@@ -89,25 +90,8 @@ def generate_chart_image(fig):
     buf.seek(0)
     plt.close(fig)
     return buf
-    # buf = BytesIO()
-    # fig.savefig(buf, format='png', bbox_inches='tight')
-    # buf.seek(0)
-    # encoded = base64.b64encode(buf.read()).decode('utf-8')
-    # plt.close(fig)
-    # buf = BytesIO()
-    # fig.savefig(buf, format='png', bbox_inches='tight')
-    # buf.seek(0)
-    # plt.close(fig)
-    # return buf
-
 
 def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
-    
-    # if 'account_currency' not in ad_insights_df.columns:
-    #     currency_symbol = "$"  # Default to USD
-    # else:
-    #     currency_symbol = ad_insights_df['account_currency'].mode()[0] if not ad_insights_df['account_currency'].mode().empty else "$"
-    #     currency_symbol = "₹" if currency_symbol == "INR" else "$"
 
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
@@ -134,56 +118,17 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
         "CTR (link)": f"{round((total_clicks / total_impressions), 4) if total_impressions > 0 else 0:.2%}"
     }
 
-    # metrics_summary = {
-    #     "Amount Spent": f"{currency_symbol}{ad_insights_df['spend'].sum():,.2f}",
-    #     "Purchases": int(ad_insights_df['purchases'].sum()),
-    #     "Purchase Value": f"{currency_symbol}{ad_insights_df['purchase_value'].sum():,.2f}",
-    #     "ROAS": round(ad_insights_df['roas'].mean(), 2),
-    #     "CPA": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
-    #     "Cost/Result": f"{currency_symbol}{ad_insights_df['cpa'].mean():.2f}",
-    #     "Impressions": int(ad_insights_df['impressions'].sum()),
-    #     "CPM": f"{currency_symbol}{(ad_insights_df['spend'].sum() / ad_insights_df['impressions'].sum() * 1000):.2f}",
-    #     "Link Clicks": int(ad_insights_df['clicks'].sum()),
-    #     "Link CPC": f"{currency_symbol}{ad_insights_df['cpc'].mean():.2f}",
-    #     "CTR (link)": f"{ad_insights_df['ctr'].mean():.2%}"
-    # }
-    
 
     summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
 
     # Charts
     chart_imgs = []
 
-    # fig1, ax1 = plt.subplots(figsize=(12, 4))  # Wider chart
-    # ax1.bar(ad_insights_df['date'], ad_insights_df['purchase_value'], color='lightgreen', label='Purchase Value')
-
-    # ax2 = ax1.twinx()
-    # ax2.plot(ad_insights_df['date'], ad_insights_df['spend'], color='magenta', marker='o', label='Amount Spent')
-
-    # ax1.set_title("Amount Spent vs Purchase Conversion Value")
-    # ax1.xaxis.set_major_locator(MaxNLocator(nbins=10))  # Limit number of X-axis labels
-    # fig1.autofmt_xdate(rotation=45)  # Rotate X-axis dates to avoid overlap
-
-    #chart_imgs = []
 
     # Chart 1: Amount Spent vs Purchase Conversion Value
     
     fig1 = generate_chart_1(ad_insights_df)
     chart_imgs.append(("# ", generate_chart_image(fig1)))
-
-
-   #cha# rt_imgs.append(("Amount Spent vs Purchase Conversion Value", generate_chart_image(fig1)))
-
-
-    # Chart 2: Purchases vs ROAS
-    # fig2, ax3 = plt.subplots(figsize=(13, 5))
-    # ax3.bar(ad_insights_df['date'], ad_insights_df['# purchases'], color='darkblue', label='P# urchases')
-    # ax4 = ax3.twinx()
-    # ax4.plot(ad_insights_df['date'], ad_insights_df['roas'], color='magenta', marker='o', label='ROAS')
-    # ax3.set_title("Purchases vs ROAS"# )
-    # ax3.xaxis.set_major_locator (MaxNLocator(nbins=10))
-    # ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    # ax3.t
    
    # Chart 2: Purchases vs ROAS    
    
@@ -214,15 +159,6 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     plt.tight_layout()
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
 
-
-    # Chart 3: CPA vs Link CPC (Dual Y-Axis)
-#     fig3, ax5 = plt.subp# lots(figsize=(13, 5))
-#     ax5.bar(ad_insights_df['date'], ad_insights_df['cpa'], color='blu# e', label='CPA')
-#     #ax5.plot(ad_in# sights_df['date'], ad_insights_df['cpa'], color='blue',label='CPA')
-#     ax6 = ax5.twinx()
-#     ax6.plot(ad_insights_df['date'], ad_insights_df['cpc'], color='pink', label='Link#  CPC')
-#     ax5.set_title("CPA vs Link CPC")
-#     ax5.xaxis.set_ma
    
    # Chart 3: CPA vs Link CPC
    
@@ -251,18 +187,6 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     plt.tight_layout()
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
-    
-
-    
-
-
-    # Chart 4: Click to Conversion vs CTR
-    # fig4, ax7 = plt# .subplots(figsize=(13,#  5))
-    # #ax7.plot(ad_insights_df['date'], ad_insights_df['click_to_conversion'], color='p# ink', label='Click to Conversion')
-    # ax7.bar(# ad_insights_df['date'], ad_insights_df['click_to_conver# sion'], color='pink', label='Click to Conversion')
-    # ax8 = ax7# .twinx()
-    # ax8.plot(ad_insights_df['date'], ad_inights# _df['ctr'], color='darkblue', label='CTR')
-    # ax7.set_title("Click to Conve
       
 # Chart 4: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
@@ -315,43 +239,11 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
         "charts": chart_imgs
     }
 
-# def generate_campaign_split_charts(df):
-#     import matplotlib.pyplot as plt
 
-#     # Group by campaign
-#     grouped = df[df['campaign_name'].notna()].copy()
-#     grouped['spend'] = pd.to_numeric(grouped['spend'], errors='coerce').fillna(0)
-#     grouped['purchase_value'] = pd.to_numeric(grouped['purchase_value'], errors='coerce').fillna(0)
-
-#     spend_split = grouped.groupby('campaign_name')['spend'].sum().sort_values(ascending=False)
-#     revenue_split = grouped.groupby('campaign_name')['purchase_value'].sum().sort_values(ascending=False)
-#     roas_split = revenue_split / spend_split.replace(0, 1)
-
-#     top_spend = spend_split.head(8)
-#     top_revenue = revenue_split.head(8)
-#     top_roas = roas_split.dropna().sort_values(ascending=False).head(10)
-
-#     figs = []
-
-#     # 1. Cost Split (Donut)
-#     fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
-#     wedges, texts, autotexts = ax1.pie(top_spend, labels=top_spend.index, autopct='%1.1f%%', startangle=90)
-#     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-#     fig1.gca().add_artist(centre_circle)
-#     ax1.set_title('Cost Split', fontsize=14)
-#     figs.append(("Cost Split", generate_chart_image(fig1)))
-
-#     # 2. Revenue Split (Donut)
-#     fig2, ax2 = plt.subplots(figsize=(3.5, 3.5))
-#     wedges2, texts2, autotexts2 = ax2.pie(top_revenue, labels=top_revenue.index, autopct='%1.1f%%', startangle=90)
-#     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-#     fig2.gca().add_artist(centre_circle)
-#     ax2.set_title('Revenue Split', fontsize=14)
-#     figs.append(("Revenue Split", generate_chart_image(fig2)))
-
-#     # 3. ROAS Split (Horizontal bar)
-#     fig3, ax3 = plt.su
 def draw_donut_chart(values, labels, title):
+    
+    if values.sum() <= 0 or not np.all(np.isfinite(values)):
+        raise ValueError("Invalid values for donut chart.")
 
     # Truncate labels to 4 words
     def truncate_label(label, max_words=4):
@@ -391,21 +283,6 @@ def draw_donut_chart(values, labels, title):
     plt.tight_layout()
     return fig
 
-# bplots(figsize=(5.5, 3.5))
-# #     ax3.barh(top_roas.index[::-1],
-#    def truncate_label(label, max_words=4):
-#         tokens = label.split()
-#         if len(tokens) > max_words:
-#             return " ".join(tokens[:max_words]) + "..."
-#         return label
-#   top_roas.values[::-1], color='#ff00aa')
-# #     ax3.set_title('ROAS Split', fontsize=14)
-# #     ax3.set_xlabel("ROAS")
-# #     plt.tight_layout()
-# #     figs.append(("ROAS Split", generate_chart_image(fig3)))
-
-# #     return figs
-
 
 def generate_campaign_split_charts(df, currency_symbol=None):
     if currency_symbol is None:
@@ -435,11 +312,23 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     top_roas = roas_split.sort_values(ascending=False).head(10) if not roas_split.empty else pd.Series(dtype=float)
     figs = []
 
-    #1. Cost Split (Donut) - only if we have data  ---- new one
-    fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
-    figs.append(("Cost Split", generate_chart_image(fig1)))
-    fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
-    figs.append(("Revenue Split", generate_chart_image(fig2)))
+    #1. Cost Split (Donut) - only if we have data  ---- new change
+    # fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
+    # figs.append(("Cost Split", generate_chart_image(fig1)))
+    # fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
+    # figs.append(("Revenue Split", generate_chart_image(fig2)))
+    if not top_spend.empty and top_spend.values.sum() > 0 and np.all(np.isfinite(top_spend.values)):
+        fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
+        figs.append(("Cost Split", generate_chart_image(fig1)))
+    else:
+        print("⚠️ Skipping Cost Split chart — no valid spend data.")
+
+    if not top_revenue.empty and top_revenue.values.sum() > 0 and np.all(np.isfinite(top_revenue.values)):
+        fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
+        figs.append(("Revenue Split", generate_chart_image(fig2)))
+    else:
+        print("⚠️ Skipping Revenue Split chart — no valid revenue data.")
+
 
     
    
@@ -846,32 +735,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             print("⚠️ No data in last 30 days. Using last available 30 records.")
             ad_insights_df = grouped_df.tail(30)
 
-
-
-        # Detect currency-----------------------
-        # if 'account_currency' in original_df.columns:
-        #     valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
-        #     currency = valid_currencies.mode()[0] if not valid_currencies.empty else "USD"
-        # else:
-        #     currency = "USD"
-        # currency_symbol = "₹" if currency == "INR" else "$"
-
-        # Detect currency more reliably
         currency = "USD"  # Default
         currency_symbol = "$"
-
-        # if 'account_currency' in original_df.columns:
-        # # Get the most frequent non-null currency
-        #     valid_currencies = original_df['account_currency'].dropna().astype(str).str.upper()
-        #     if not valid_currencies.empty:
-        #     # Check for any INR occurrences first
-        #         if "INR" in valid_currencies.values:
-        #             currency = "INR"
-        #             currency_symbol = "₹"
-        #         else:
-        #         # Fall back to mode if no INR found
-        #             currency = valid_currencies.mode()[0]
-        #             currency_symbol = "₹" if currency == "INR" else "$"
 
         def detect_currency(df):
             if 'account_currency' not in df.columns:
@@ -946,24 +811,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             key_metrics
         ]
         cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
-        # sections.append({
-        #     "title": "COST BY CAMPAIGNS",
-        #     "content": "",  # No paragraph needed
-        #     "charts": [cost_by_campaign_chart],
-        #     "contains_table": False
-        # })
-        # sections.append({
-        #     "title": "Daily Campaign Performance Summary",
-        #     "content": "",
-        #     "charts": [],
-        #     "contains_table": True  # ✅ mark table-only pages like this
-        # })
-        # sections.append({
-        #     "title": "CAMPAIGN PERFORMANCE SUMMARY",
-        #     "content": "",
-        #     "charts": [],
-        #     "contains_table": True  # ✅ mark table-only pages like this
-        # })
+        
 
         print("📄 Generating PDF report...")
         pdf_response = generate_pdf_report(
