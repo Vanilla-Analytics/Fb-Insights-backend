@@ -283,6 +283,22 @@ def draw_donut_chart(values, labels, title):
     plt.tight_layout()
     return fig
 
+def draw_roas_split_bar_chart(roas_series):
+    fig, ax = plt.subplots(figsize=(5, 3.5))
+    bars = ax.barh(roas_series.index, roas_series.values, color="#007fff", height=0.4)
+
+    ax.set_xlabel("ROAS")
+    ax.set_title("ROAS Split by Adset")
+
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + 0.05, bar.get_y() + bar.get_height()/2,
+                f"{width:.2f}", va='center', fontsize=8)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    plt.tight_layout()
+    return fig
 
 def generate_campaign_split_charts(df, currency_symbol=None):
     if currency_symbol is None:
@@ -450,6 +466,53 @@ async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str
     )
 
     return await generate_llm_content(prompt, summary_data)
+
+async def generate_adset_summary(full_df: pd.DataFrame, currency_symbol: str) -> str:
+    from services.prompts import RESULTS_SETUP_PROMPT
+    from services.deepseek_audit import generate_llm_content
+
+    if full_df.empty or 'adset_name' not in full_df.columns:
+        return "⚠️ No ad set data available to summarize."
+
+    df = full_df[['adset_name', 'spend', 'purchase_value', 'purchases']].copy()
+    df = df[df['adset_name'].notna()]
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+
+    df = df.sort_values('roas', ascending=False)
+    df['spend'] = df['spend'].round(2)
+    df['purchase_value'] = df['purchase_value'].round(2)
+    df['roas'] = df['roas'].round(2)
+    df['cpa'] = df['cpa'].round(2)
+
+    records = df.to_dict(orient='records')
+
+    summary_data = {
+        "summary_metrics": {
+            "total_spend": float(df['spend'].sum()),
+            "total_revenue": float(df['purchase_value'].sum()),
+            "total_purchases": int(df['purchases'].sum()),
+            "avg_roas": float(df['roas'].mean()),
+            "avg_cpa": float(df['cpa'].mean())
+        },
+        "adsets": records
+    }
+
+    prompt = (
+        f"Write a detailed summary of Meta Ads *ad set performance* in about 150–200 words. "
+        f"Use {currency_symbol} for all money values.\n\n"
+        f"1. Identify and mention top-performing ad sets (with ROAS > 2.5 and CPA < {currency_symbol}500).\n"
+        f"2. Point out poor-performing ad sets (ROAS < 0.5 or CPA > {currency_symbol}5000).\n"
+        f"3. Summarize trends (like remarketing, lookalikes, interest-based, funnel stage, etc.).\n"
+        f"4. Give 1–2 practical recommendations based on insights.\n\n"
+        f"Make it professional and concise. Mention adset names. Avoid listing all rows."
+    )
+
+    return await generate_llm_content(prompt, summary_data)
+
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""

@@ -14,6 +14,7 @@ from reportlab.lib import colors
 import re
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from services.deepseek_audit import draw_donut_chart, generate_chart_image, draw_roas_split_bar_chart
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -633,6 +634,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                             # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                             
+                            
+                            #New Page - Adset Level Performance
                             c.showPage()
                             adjust_page_height(c, {"title": "Adset Level Performance", "contains_table": True})
                             draw_header(c)
@@ -652,6 +655,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 'roas': 'mean',
                                 'cpa': 'mean'
                             }).reset_index()
+                            
+                            # Prepare top 6 adsets by spend, revenue, and ROAS
+                            top_spend = grouped.set_index('adset_name')['spend'].sort_values(ascending=False).head(6)
+                            top_revenue = grouped.set_index('adset_name')['purchase_value'].sort_values(ascending=False).head(6)
+                            top_roas = grouped.set_index('adset_name')['roas'].sort_values(ascending=False).head(6)
+
 
                             table_data = [["Adset Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
                             for _, row in grouped.iterrows():
@@ -674,27 +683,54 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            table_y = PAGE_HEIGHT - 180
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 350
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
                             
+                            
                             # Row with 2 donut + 1 ROAS bar chart
-                            chart_width = 200
-                            chart_height = 200
-                            padding_x = 30
+                            chart_width = 250
+                            chart_height = 250
+                            padding_x = 40
                             total_width = chart_width * 3 + padding_x * 2
                             start_x = (PAGE_WIDTH - total_width) / 2
-                            chart_y = table_y - chart_height - 60
+                            chart_y = table_y - chart_height - 80
 
                             # Optional background card
                             card_padding = 10
+                            card_x = start_x - card_padding
+                            card_y = chart_y - card_padding
+                            card_w = total_width + 2 * card_padding
+                            card_h = chart_height + 2 * card_padding
                             c.setFillColor(colors.whitesmoke)
-                            c.roundRect(start_x - card_padding, chart_y - card_padding, total_width + 2*card_padding, chart_height + 2*card_padding, radius=10, fill=1, stroke=0)
+                            c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
+                            
+                            # Render charts and draw on canvas
+                            try:
+                                fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
+                                img1 = ImageReader(generate_chart_image(fig1))
+                                c.drawImage(img1, start_x, chart_y, width=chart_width, height=chart_height)
+                            except Exception as e:
+                                print(f"⚠️ Error rendering Cost Split: {str(e)}")
+
+                            try:
+                                fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
+                                img2 = ImageReader(generate_chart_image(fig2))
+                                c.drawImage(img2, start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
+                            except Exception as e:
+                                print(f"⚠️ Error rendering Revenue Split: {str(e)}")
+
+                            try:
+                                fig3 = draw_roas_split_bar_chart(top_roas)
+                                img3 = ImageReader(generate_chart_image(fig3))
+                                c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
+                            except Exception as e:
+                                print(f"⚠️ Error rendering ROAS Split: {str(e)}")
 
                             # 3 Split charts: Cost, Revenue, ROAS
-                            c.drawImage(ImageReader(split_charts[0][1]), start_x, chart_y, width=chart_width, height=chart_height)
-                            c.drawImage(ImageReader(split_charts[1][1]), start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
-                            c.drawImage(ImageReader(split_charts[2][1]), start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
+                            # c.drawImage(ImageReader(split_charts[0][1]), start_x, chart_y, width=chart_width, height=chart_height)
+                            # c.drawImage(ImageReader(split_charts[1][1]), start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
+                            # c.drawImage(ImageReader(split_charts[2][1]), start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
                             
                             #Cost by Adsets chart
                             from services.deepseek_audit import generate_cost_by_campaign_chart
@@ -714,16 +750,37 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawImage(ImageReader(revenue_chart[1]), chart_x, rev_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
                             
                             #Summary paragraph
-                            from services.deepseek_audit import generate_roas_summary_text
-                            summary_text = run_async_in_thread(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+                            # LLM summary paragraph after Adset level Campaigns
+                            try:
+                                from services.deepseek_audit import generate_adset_summary
+                               
 
-                            set_font_with_currency(c, currency_symbol, size=12)
-                            text_lines = summary_text.strip().split("\n")
-                            text_y = rev_chart_y - 60
+                                from services.deepseek_audit import generate_adset_summary
 
-                            for line in text_lines:
-                                c.drawString(LEFT_MARGIN, text_y, line.strip())
-                                text_y -= 14
+                                summary_text = run_async_in_thread(generate_adset_summary(full_ad_insights_df, currency_symbol))
+
+
+
+                                print("📄 LLM Summary Generated")
+
+                                paragraph_lines = summary_text.strip().split("\n")
+                                text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+                                #c.setFont("Helvetica", 12)
+                                set_font_with_currency(c, currency_symbol, size=12)
+                                c.setFillColor(colors.black) 
+                                summary_y = chart_y - 60  
+
+                                for line in paragraph_lines:
+                                    #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
+                                    wrapped = simpleSplit(line.strip(), "DejaVuSans" if currency_symbol == "₹" else "Helvetica", 12, text_width)
+                                    for wline in wrapped:
+                                        c.drawString(LEFT_MARGIN, summary_y, wline)
+                                        summary_y -= 14
+                                        
+                                draw_footer_cta(c)  # Draw footer CTA after LLM summary
+
+                            except Exception as e:
+                                print(f"⚠️ LLM Summary generation failed: {str(e)}")
 
 
 
