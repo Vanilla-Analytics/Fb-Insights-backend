@@ -1,25 +1,19 @@
-import httpx
 import os
-import requests
-from datetime import datetime, timedelta
-from fastapi.responses import StreamingResponse
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from io import BytesIO
-import base64
-import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import matplotlib.dates as mdates
-from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT
-from services.prompts import TESTING_ACTIVITY_PROMPT
-from services.prompts import REMARKETING_ACTIVITY_PROMPT
-from services.prompts import RESULTS_SETUP_PROMPT
-import matplotlib.ticker as mticker
-import matplotlib.dates as mdates
-from services.generate_pdf import generate_pdf_report
-from datetime import datetime, timedelta , timezone
-import json
+
+from services.prompts import (
+    EXECUTIVE_SUMMARY_PROMPT,
+    ACCOUNT_NAMING_STRUCTURE_PROMPT,
+    TESTING_ACTIVITY_PROMPT,
+    REMARKETING_ACTIVITY_PROMPT,
+    RESULTS_SETUP_PROMPT
+)
+
 
 def generate_chart_image(fig):
     buf = BytesIO()

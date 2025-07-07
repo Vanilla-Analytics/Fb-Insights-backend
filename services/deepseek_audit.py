@@ -18,7 +18,7 @@ from services.prompts import REMARKETING_ACTIVITY_PROMPT
 from services.prompts import RESULTS_SETUP_PROMPT
 import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
-from services.generate_pdf import generate_pdf_report
+#from services.generate_pdf import generate_pdf_report
 from datetime import datetime, timedelta , timezone
 import json
 
@@ -688,6 +688,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
 
 
 async def generate_audit(page_id: str, user_token: str, page_token: str):
+    from services.generate_pdf import generate_pdf_report
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
