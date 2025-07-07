@@ -65,6 +65,8 @@ def adjust_page_height(c, section: dict):
         PAGE_HEIGHT = 1900
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
+    elif title == "ADSET LEVEL PERFORMANCE":
+        PAGE_HEIGHT = 1900
     else:
         PAGE_HEIGHT = 600
 
@@ -515,7 +517,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             chart_y = table_y - chart_height - 80
 
                             # Optional: Light gray card-style background
-                            card_padding = 20
+                            card_padding = 10
                             card_x = start_x - card_padding
                             card_y = chart_y - card_padding
                             card_w = total_width + 2 * card_padding
@@ -630,6 +632,103 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # PAGE_HEIGHT = 700
                             # LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                             # c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
+                            
+                            c.showPage()
+                            adjust_page_height(c, {"title": "Adset Level Performance", "contains_table": True})
+                            draw_header(c)
+                            
+                            df = full_ad_insights_df.copy()
+                            df = df[df['adset_name'].notna()]
+                            df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+                            df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+                            df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+                            df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+                            df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+
+                            grouped = df.groupby('adset_name').agg({
+                                'spend': 'sum',
+                                'purchase_value': 'sum',
+                                'purchases': 'sum',
+                                'roas': 'mean',
+                                'cpa': 'mean'
+                            }).reset_index()
+
+                            table_data = [["Adset Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
+                            for _, row in grouped.iterrows():
+                                table_data.append([
+                                    
+                                    row['adset_name'],
+                                    f"{currency_symbol}{row['spend']:.2f}",
+                                    f"{currency_symbol}{row['purchase_value']:.2f}",
+                                    int(row['purchases']),
+                                    f"{row['roas']:.2f}",
+                                    f"{currency_symbol}{row['cpa']:.2f}"
+                                ])
+
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[95, 90, 90, 70, 60, 60])
+                            summary_table.setStyle(TableStyle([
+                                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                                ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
+                            ]))
+                            table_y = PAGE_HEIGHT - 180
+                            summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                            summary_table.drawOn(c, LEFT_MARGIN, table_y)
+                            
+                            # Row with 2 donut + 1 ROAS bar chart
+                            chart_width = 200
+                            chart_height = 200
+                            padding_x = 30
+                            total_width = chart_width * 3 + padding_x * 2
+                            start_x = (PAGE_WIDTH - total_width) / 2
+                            chart_y = table_y - chart_height - 60
+
+                            # Optional background card
+                            card_padding = 10
+                            c.setFillColor(colors.whitesmoke)
+                            c.roundRect(start_x - card_padding, chart_y - card_padding, total_width + 2*card_padding, chart_height + 2*card_padding, radius=10, fill=1, stroke=0)
+
+                            # 3 Split charts: Cost, Revenue, ROAS
+                            c.drawImage(ImageReader(split_charts[0][1]), start_x, chart_y, width=chart_width, height=chart_height)
+                            c.drawImage(ImageReader(split_charts[1][1]), start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
+                            c.drawImage(ImageReader(split_charts[2][1]), start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
+                            
+                            #Cost by Adsets chart
+                            from services.deepseek_audit import generate_cost_by_campaign_chart
+                            cost_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
+
+                            cost_chart_y = chart_y - chart_height - 40
+                            chart_w = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            chart_h = 300
+                            chart_x = (PAGE_WIDTH - chart_w) / 2
+                            c.drawImage(ImageReader(cost_chart[1]), chart_x, cost_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
+                            
+                            #Revenue by Adsets chart
+                            from services.deepseek_audit import generate_revenue_by_campaign_chart
+                            revenue_chart = generate_revenue_by_campaign_chart(full_ad_insights_df)
+
+                            rev_chart_y = cost_chart_y - chart_h - 30
+                            c.drawImage(ImageReader(revenue_chart[1]), chart_x, rev_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
+                            
+                            #Summary paragraph
+                            from services.deepseek_audit import generate_roas_summary_text
+                            summary_text = run_async_in_thread(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
+
+                            set_font_with_currency(c, currency_symbol, size=12)
+                            text_lines = summary_text.strip().split("\n")
+                            text_y = rev_chart_y - 60
+
+                            for line in text_lines:
+                                c.drawString(LEFT_MARGIN, text_y, line.strip())
+                                text_y -= 14
+
+
+
+
+
 
 
 
