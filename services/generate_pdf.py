@@ -732,7 +732,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             cost_chart = generate_cost_by_adset_chart(full_ad_insights_df)
 
 
-                            cost_chart_y = chart_y - chart_height - 40
+                            cost_chart_y = chart_y - chart_height - 80
                             chart_w = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                             chart_h = 300
                             chart_x = (PAGE_WIDTH - chart_w) / 2
@@ -743,7 +743,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             revenue_chart = generate_revenue_by_adset_chart(full_ad_insights_df)
 
 
-                            rev_chart_y = cost_chart_y - chart_h - 30
+                            rev_chart_y = cost_chart_y - chart_h - 50
                             c.drawImage(ImageReader(revenue_chart[1]), chart_x, rev_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
                             
                             #Summary paragraph
@@ -765,7 +765,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 #c.setFont("Helvetica", 12)
                                 set_font_with_currency(c, currency_symbol, size=12)
                                 c.setFillColor(colors.black) 
-                                summary_y = chart_y - 60  
+                                summary_y = chart_y - 80  
 
                                 for line in paragraph_lines:
                                     #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
