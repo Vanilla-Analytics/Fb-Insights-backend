@@ -481,7 +481,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{grand_totals['cpa']:.2f}"
                             ])
 
-                            performance_table = Table(table_data, repeatRows=1, colWidths=[220, 110, 110, 90, 90, 90])
+                            performance_table = Table(table_data, repeatRows=1, colWidths=[260, 140, 140, 100, 100, 100])
                             performance_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -601,13 +601,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # LLM summary paragraph after Revenue by Campaigns
                             try:
                                 from services.deepseek_audit import generate_roas_summary_text
-                               
-
-                                from services.deepseek_audit import generate_roas_summary_text
 
                                 summary_text = run_async_in_thread(generate_roas_summary_text(full_ad_insights_df, currency_symbol))
-
-
 
                                 print("📄 LLM Summary Generated")
 
@@ -674,7 +669,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['cpa']:.2f}"
                                 ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[95, 90, 90, 70, 60, 60])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[270, 150, 150, 100, 100, 130])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -683,7 +678,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 350
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 200
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
                             
@@ -733,8 +728,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # c.drawImage(ImageReader(split_charts[2][1]), start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
                             
                             #Cost by Adsets chart
-                            from services.chart_utils import generate_cost_by_campaign_chart
-                            cost_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
+                            from services.chart_utils import generate_cost_by_adset_chart
+                            cost_chart = generate_cost_by_adset_chart(full_ad_insights_df)
+
 
                             cost_chart_y = chart_y - chart_height - 40
                             chart_w = PAGE_WIDTH - 1.5 * LEFT_MARGIN
@@ -743,8 +739,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawImage(ImageReader(cost_chart[1]), chart_x, cost_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
                             
                             #Revenue by Adsets chart
-                            from services.chart_utils import generate_revenue_by_campaign_chart
-                            revenue_chart = generate_revenue_by_campaign_chart(full_ad_insights_df)
+                            from services.chart_utils import generate_revenue_by_adset_chart
+                            revenue_chart = generate_revenue_by_adset_chart(full_ad_insights_df)
+
 
                             rev_chart_y = cost_chart_y - chart_h - 30
                             c.drawImage(ImageReader(revenue_chart[1]), chart_x, rev_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
@@ -780,16 +777,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 draw_footer_cta(c)  # Draw footer CTA after LLM summary
 
                             except Exception as e:
-                                print(f"⚠️ LLM Summary generation failed: {str(e)}")
-
-
-
-
-
-
-
-
-                                
+                                print(f"⚠️ LLM Summary generation failed: {str(e)}")                               
                     
                     else:
                         c.showPage()

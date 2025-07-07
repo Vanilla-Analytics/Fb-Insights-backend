@@ -193,3 +193,42 @@ def generate_revenue_by_campaign_chart(df):
 
     fig.tight_layout()
     return ("Revenue By Campaigns", generate_chart_image(fig))
+
+import matplotlib.pyplot as plt
+from io import BytesIO
+
+def generate_bar_chart(series, title, color="#1f77b4"):
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    bars = ax.barh(series.index[::-1], series.values[::-1], color=color)
+
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + 0.1, bar.get_y() + bar.get_height()/2,
+                f"{width:.2f}", va='center', fontsize=8)
+
+    ax.set_title(title)
+    ax.set_xlabel("Amount")
+    ax.set_xlim(left=0)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    plt.tight_layout()
+
+    # Convert to image bytes
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png")
+    buffer.seek(0)
+    return (title, buffer)
+
+
+def generate_cost_by_adset_chart(df):
+    grouped = df.copy()
+    grouped = grouped[grouped['adset_name'].notna()]
+    grouped = grouped.groupby('adset_name')['spend'].sum().sort_values(ascending=False).head(10)
+    return generate_bar_chart(grouped, "Cost by Adsets", color="#FF8C00")
+
+
+def generate_revenue_by_adset_chart(df):
+    grouped = df.copy()
+    grouped = grouped[grouped['adset_name'].notna()]
+    grouped = grouped.groupby('adset_name')['purchase_value'].sum().sort_values(ascending=False).head(10)
+    return generate_bar_chart(grouped, "Revenue by Adsets", color="#2E8B57")
