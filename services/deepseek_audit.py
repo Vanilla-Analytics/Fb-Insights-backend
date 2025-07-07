@@ -566,7 +566,7 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
     try:
         base_url = f"https://graph.facebook.com/v22.0/{page_id}/insights"
-        since = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
+        since = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
         until = datetime.now().strftime("%Y-%m-%d")
 
         params = {
@@ -627,7 +627,7 @@ async def fetch_ad_insights(user_token: str):
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     now = datetime.now(timezone.utc)
                     safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-                    safe_since = (now - timedelta(days=60)).strftime("%Y-%m-%d")
+                    safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
 
 
                     params = {
@@ -678,100 +678,7 @@ async def fetch_ad_insights(user_token: str):
         print(f"❌ Error in fetch_ad_insights: {str(e)}")
         return []
 
-#-----------------------------------------------------------------------------------------------
-# async def fetch_ad_insights(user_token: str):
-#     """Fetch Facebook ad insights"""
-#     try:
-#         url = f"https://graph.facebook.com/v22.0/me/adaccounts"
-#         async with httpx.AsyncClient() as client:
-#             # First get accounts with more detailed fields
-#             acc_resp = await client.get(url, params={
-#                 "access_token":user_token,
-#                 "fields": "id,name,account_status,disable_reason,adsets{id,name}"
-#             })
-#             acc_resp.raise_for_status()
-#             accounts = acc_resp.json().get("data", [])
-            
-#             if not accounts:
-#                 print("⚠️ No ad accounts found for this user")
-#                 return []
 
-#             insights_data = []
-#             for acc in accounts:
-#                 try:
-#                     print(f"🔍 Processing account: {acc.get('name')} ({acc.get('id')})")
-                    
-#                     # Check if account has any active adsets first
-#                     if 'adsets' not in acc or not acc['adsets'].get('data'):
-#                         print(f"⚠️ No adsets found for account {acc.get('name')}")
-#                         continue
-                        
-#                     # Get insights with broader time range and simpler fields first
-#                     #ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
-#                     ad_url = f"https://graph.facebook.com/v22.0/me/adaccounts?fields=id,name,account_status,adsets{id}&access_token=<EAAcIf6mRqdcBOZBncynonfReAZAzoJmkfkYXZAFqnZCzlhgPk823WHQ60WG6JMiMwBnYYriLP6IxJuJMn63puvANFyA69E1xm1MrGmoZAM5BkxnJKRZBZC9SdyXp8gBQLk2QnmLAtzzJR4MkHsywDCBreI61kp0OjlUhDyv73q3mcjmxahnZAFjeaMotPgyR3LWxPtFUfMnXjI1viFPTAJVlU1ylZAG546ZCLSpQZDZD>"
-
-#                     params = {
-#                         "fields": "spend,impressions,date_start",
-#                         "date_preset": "maximum",  # Get all available data
-#                         "time_increment": 1,
-#                         "level": "ad",
-#                         "access_token": user_token
-#                     }
-                    
-#                     print(f"📡 Initial insights request for account {acc['id']}")
-#                     insights_response = await client.get(ad_url, params=params)
-#                     insights_response.raise_for_status()
-                    
-#                     data = insights_response.json().get("data", [])
-#                     print(f"📊 Initial insights count: {len(data)}")
-                    
-#                     if not data:
-#                         print(f"⚠️ No insights data for account {acc['id']}")
-#                         continue
-                        
-#                     # If we got some data, now request detailed fields
-#                     detailed_params = {
-#                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
-#                         "time_range": json.dumps({
-#                             "since": (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d"),
-#                             "until": datetime.now(timezone.utc).strftime("%Y-%m-%d")
-#                         }),
-#                         "time_increment": 1,
-#                         "level": "ad",
-#                         "access_token": user_token
-#                     }
-                    
-#                     detailed_response = await client.get(ad_url, params=detailed_params)
-#                     detailed_response.raise_for_status()
-                    
-#                     ad_results = []
-#                     data_page = detailed_response.json()
-#                     ad_results.extend(data_page.get("data", []))
-                    
-#                     # Handle pagination
-#                     while 'paging' in data_page and 'next' in data_page['paging']:
-#                         next_url = data_page["paging"]["next"]
-#                         data_page = await client.get(next_url)
-#                         data_page = data_page.json()
-#                         ad_results.extend(data_page.get("data", []))
-                    
-#                     print(f"📊 Total detailed insights: {len(ad_results)}")
-                    
-#                     for ad in ad_results:
-#                         ad["account_currency"] = "USD"  # Default, adjust as needed
-#                         insights_data.append(ad)
-                        
-#                 except Exception as e:
-#                     print(f"⚠️ Error processing account {acc.get('id')}: {str(e)}")
-#                     continue
-            
-#             return insights_data
-            
-#     except Exception as e:
-#         print(f"❌ Error in fetch_ad_insights: {str(e)}")
-#         return []
-
-#-----------------------------------------------------------------------------------------------
 
 
 import json
@@ -932,7 +839,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
         #ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
 
-        cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
+        cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
         ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
 
         if ad_insights_df.empty:
