@@ -58,7 +58,7 @@ def draw_donut_chart(values, labels, title):
     return fig
 
 def draw_roas_split_bar_chart(roas_series):
-    fig, ax = plt.subplots(figsize=(6, 3.5))  # Optional: slightly wider chart
+    fig, ax = plt.subplots(figsize=(10, 3.5))  # Optional: slightly wider chart
     bars = ax.barh(roas_series.index, roas_series.values, color="#007fff", height=0.4)
 
     ax.set_xlabel("ROAS")
@@ -72,7 +72,7 @@ def draw_roas_split_bar_chart(roas_series):
 
     # 🔧 Make bars longer by increasing x-axis range
     max_val = roas_series.max()
-    ax.set_xlim(0, max_val * 1.4)  # ← increases available space to stretch bars
+    ax.set_xlim(0, max_val * 2)  # ← increases available space to stretch bars
 
     # Clean up axes
     ax.spines['top'].set_visible(False)

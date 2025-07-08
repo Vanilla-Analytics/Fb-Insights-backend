@@ -510,6 +510,29 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             chart_height = 250
                             padding_x = 40
                             padding_y = 40
+                            
+                            donut_width = 300
+                            donut_height = 300
+                            donut_y = table_y - donut_height - 40
+
+                            # Cost Split - left aligned
+                            cost_x = LEFT_MARGIN
+                            c.setStrokeColor(colors.lightgrey)
+                            c.setLineWidth(1)
+                            c.roundRect(cost_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+                            if len(split_charts) > 0:
+                                img1 = ImageReader(split_charts[0][1])
+                                c.drawImage(img1, cost_x, donut_y, width=donut_width, height=donut_height)
+
+                            # Revenue Split - right aligned
+                            revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
+                            c.setStrokeColor(colors.lightgrey)
+                            c.setLineWidth(1)
+                            c.roundRect(revenue_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+                            if len(split_charts) > 1:
+                                img2 = ImageReader(split_charts[1][1])
+                                c.drawImage(img2, revenue_x, donut_y, width=donut_width, height=donut_height)
+
 
                             # Calculate position for top row (2 donut charts)
                             total_width = chart_width * 2 + padding_x
@@ -532,10 +555,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=chart_height)
  
                         # ────────────── Chart 3: ROAS Split ──────────────
-                            roas_width = 360
-                            roas_height = 280
+                            roas_width = 420
+                            roas_height = 300
                             roas_x = (PAGE_WIDTH - roas_width) / 2
-                            roas_y = top_chart_y - roas_height - 60
+                            #roas_y = top_chart_y - roas_height - 60
+                            roas_y = donut_y - 60 - roas_height  # ensures enough gap
+
 
                         # Title
                             c.setFont("Helvetica-Bold", 13)
@@ -616,7 +641,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_height = 420
                                 chart_x = (PAGE_WIDTH - chart_width) / 2
                                 #chart_y = BOTTOM_MARGIN + 100
-                                chart_y = chart_y - chart_height - 40 
+                                #chart_y = chart_y - chart_height - 40 
+                                chart_y = roas_y - 60 - chart_height  # place below ROAS chart cleanly
                                 #chart_y = table_y - chart_height - 80
 
                                 c.drawImage(img, chart_x, chart_y, width=chart_width, height=chart_height, preserveAspectRatio=True)
@@ -660,7 +686,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 #c.setFont("Helvetica", 12)
                                 set_font_with_currency(c, currency_symbol, size=12)
                                 c.setFillColor(colors.black) 
-                                summary_y = chart_y - 60  
+                                summary_y = chart_y - 100  
 
                                 for line in paragraph_lines:
                                     #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
