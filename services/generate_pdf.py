@@ -63,11 +63,11 @@ def adjust_page_height(c, section: dict):
     if "CAMPAIGN PERFORMANCE OVERVIEW" in title:
         PAGE_HEIGHT = 1300
     elif title == "CAMPAIGN PERFORMANCE SUMMARY":
-        PAGE_HEIGHT = 1900
+        PAGE_HEIGHT = 2000
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     elif title == "ADSET LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 1900
+        PAGE_HEIGHT = 2200
     else:
         PAGE_HEIGHT = 600
 
@@ -524,8 +524,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             card_w = total_width + 2 * card_padding
                             card_h = chart_height + 2 * card_padding
 
-                            c.setFillColor(colors.whitesmoke)
-                            c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
+                            # c.setFillColor(colors.whitesmoke)
+                            # c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
+                            c.setStrokeColor(colors.lightgrey)
+                            c.setLineWidth(1)
+                            c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=0, stroke=1)
 
                             # Chart 1 - Cost Split
                             if len(split_charts) > 0:
@@ -690,7 +693,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             padding_x = 40
                             total_width = chart_width * 3 + padding_x * 2
                             start_x = (PAGE_WIDTH - total_width) / 2
-                            chart_y = table_y - chart_height - 80
+                            chart_y = table_y - small_chart_height - 20
 
                             # Optional background card
                             card_padding = 10
@@ -698,8 +701,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             card_y = chart_y - card_padding
                             card_w = total_width + 2 * card_padding
                             card_h = chart_height + 2 * card_padding
-                            c.setFillColor(colors.whitesmoke)
-                            c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
+                            # c.setFillColor(colors.whitesmoke)
+                            # c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
+                            
+                            c.setStrokeColor(colors.lightgrey)
+                            c.setLineWidth(1)
+                            c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=0, stroke=1)
                             
                             # Render charts and draw on canvas
                             try:

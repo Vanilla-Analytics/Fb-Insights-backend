@@ -246,8 +246,14 @@ def generate_cost_by_adset_chart(df):
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
 
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15),
-              ncol=3, fontsize=8, frameon=False)
+    ax.legend(
+    loc="upper center",
+    bbox_to_anchor=(0.5, 0.98),  # ✅ move legend slightly *inside* the plot area
+    ncol=3,
+    fontsize=8,
+    frameon=False
+    )
+
 
     fig.tight_layout()
     return ("Cost by Adsets", generate_chart_image(fig))
@@ -278,8 +284,13 @@ def generate_revenue_by_adset_chart(df):
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
 
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15),
-              ncol=3, fontsize=8, frameon=False)
+    ax.legend(
+    loc="upper center",
+    bbox_to_anchor=(0.5, 0.98),  # ✅ move legend slightly *inside* the plot area
+    ncol=3,
+    fontsize=8,
+    frameon=False
+    )
 
     fig.tight_layout()
     return ("Revenue by Adsets", generate_chart_image(fig))
