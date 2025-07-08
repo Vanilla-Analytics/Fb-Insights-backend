@@ -678,14 +678,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 460
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 500
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
                             
                             
                             # Row with 2 donut + 1 ROAS bar chart
                             chart_width = 250
-                            chart_height = 250
+                            small_chart_height = 250   # for donut & ROAS bar charts
+                            large_chart_height = 450   # for Cost/Revenue by Adsets
                             padding_x = 40
                             total_width = chart_width * 3 + padding_x * 2
                             start_x = (PAGE_WIDTH - total_width) / 2
@@ -704,21 +705,21 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             try:
                                 fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
                                 img1 = ImageReader(generate_chart_image(fig1))
-                                c.drawImage(img1, start_x, chart_y, width=chart_width, height=chart_height)
+                                c.drawImage(img1, start_x, chart_y, width=chart_width, height=small_chart_height)
                             except Exception as e:
                                 print(f"⚠️ Error rendering Cost Split: {str(e)}")
 
                             try:
                                 fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
                                 img2 = ImageReader(generate_chart_image(fig2))
-                                c.drawImage(img2, start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
+                                c.drawImage(img2, start_x + chart_width + padding_x, chart_y, width=chart_width, height=small_chart_height)
                             except Exception as e:
                                 print(f"⚠️ Error rendering Revenue Split: {str(e)}")
 
                             try:
                                 fig3 = draw_roas_split_bar_chart(top_roas)
                                 img3 = ImageReader(generate_chart_image(fig3))
-                                c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
+                                c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=small_chart_height)
                             except Exception as e:
                                 print(f"⚠️ Error rendering ROAS Split: {str(e)}")
                                 
@@ -739,7 +740,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, chart_y, "Cost by Adsets")
                             c.drawImage(img1, chart_x + 20, chart_y - 30 - chart_height,
-                            width=card_width - 40, height=chart_height)
+                            width=card_width - 40, height=large_chart_height)
                             
                             # Draw "Revenue by Adsets" Chart
                             from services.chart_utils import generate_revenue_by_adset_chart
@@ -748,7 +749,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setFont("Helvetica-Bold", 14)
                             c.drawCentredString(PAGE_WIDTH / 2, chart_y - chart_height - 60, "Revenue by Adsets")
                             c.drawImage(img2, chart_x + 20, chart_y - chart_height - 90 - chart_height,
-                            width=card_width - 40, height=chart_height)
+                            width=card_width - 40, height=large_chart_height)
                             # LLM summary paragraph after Adset level Campaigns
                             try:
                                 from services.deepseek_audit import generate_adset_summary
@@ -776,7 +777,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
 
                                 # Move summary further down (below both charts)
-                                summary_y = chart_y - chart_height - 600
+                                summary_y = chart_y - chart_height - 500
 
                                 # Set font and color
                                 set_font_with_currency(c, currency_symbol, size=12)
