@@ -737,6 +737,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ─────────────── Donut Charts (Left + Right Aligned) ───────────────
                             donut_width = 280
                             donut_height = 280
+                            large_chart_height = 480
                             donut_padding_y = 40
                             donut_y = table_y - donut_height - donut_padding_y
 
