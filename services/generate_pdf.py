@@ -63,11 +63,11 @@ def adjust_page_height(c, section: dict):
     if "CAMPAIGN PERFORMANCE OVERVIEW" in title:
         PAGE_HEIGHT = 1300
     elif title == "CAMPAIGN PERFORMANCE SUMMARY":
-        PAGE_HEIGHT = 2000
+        PAGE_HEIGHT = 2500
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     elif title == "ADSET LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 2200
+        PAGE_HEIGHT = 2500
     else:
         PAGE_HEIGHT = 600
 
@@ -734,37 +734,38 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ─────────────────────────────
                             # 🎯 Donut + ROAS Split Section
                             # ─────────────────────────────
-                            chart_width = 250
-                            small_chart_height = 250
-                            large_chart_height = 450
-                            padding_x = 40
-                            padding_y = 40
+                            # ─────────────── Donut Charts (Left + Right Aligned) ───────────────
+                            donut_width = 280
+                            donut_height = 280
+                            donut_padding_y = 40
+                            donut_y = table_y - donut_height - donut_padding_y
 
-                            # Row 1: Donuts — Cost Split (Left), Revenue Split (Right)
-                            total_width = chart_width * 2 + padding_x
-                            start_x = (PAGE_WIDTH - total_width) / 2
-                            top_chart_y = table_y - small_chart_height - 40
-
-                            # ───── Card 1: Cost Split ─────
+                            # Cost Split – flush left
+                            cost_x = LEFT_MARGIN
                             c.setStrokeColor(colors.lightgrey)
                             c.setLineWidth(1)
-                            c.roundRect(start_x, top_chart_y, chart_width, small_chart_height, radius=8, fill=0, stroke=1)
+                            c.roundRect(cost_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+
                             try:
                                 fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
                                 img1 = ImageReader(generate_chart_image(fig1))
-                                c.drawImage(img1, start_x, top_chart_y, width=chart_width, height=small_chart_height)
+                                c.drawImage(img1, cost_x, donut_y, width=donut_width, height=donut_height)
                             except Exception as e:
                                 print(f"⚠️ Error rendering Cost Split: {str(e)}")
 
-                            # ───── Card 2: Revenue Split ─────
-                            second_x = start_x + chart_width + padding_x
-                            c.roundRect(second_x, top_chart_y, chart_width, small_chart_height, radius=8, fill=0, stroke=1)
+                            # Revenue Split – flush right
+                            revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
+                            c.setStrokeColor(colors.lightgrey)
+                            c.setLineWidth(1)
+                            c.roundRect(revenue_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+
                             try:
                                 fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
                                 img2 = ImageReader(generate_chart_image(fig2))
-                                c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=small_chart_height)
+                                c.drawImage(img2, revenue_x, donut_y, width=donut_width, height=donut_height)
                             except Exception as e:
                                 print(f"⚠️ Error rendering Revenue Split: {str(e)}")
+
 
                             # Row 2: ROAS Bar Chart (Center with Heading)
                             roas_width = 360

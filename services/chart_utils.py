@@ -58,21 +58,29 @@ def draw_donut_chart(values, labels, title):
     return fig
 
 def draw_roas_split_bar_chart(roas_series):
-    fig, ax = plt.subplots(figsize=(5, 3.5))
+    fig, ax = plt.subplots(figsize=(6, 3.5))  # Optional: slightly wider chart
     bars = ax.barh(roas_series.index, roas_series.values, color="#007fff", height=0.4)
 
     ax.set_xlabel("ROAS")
     ax.set_title("ROAS Split by Adset")
 
+    # Add value labels
     for bar in bars:
         width = bar.get_width()
-        ax.text(width + 0.05, bar.get_y() + bar.get_height()/2,
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
                 f"{width:.2f}", va='center', fontsize=8)
 
+    # 🔧 Make bars longer by increasing x-axis range
+    max_val = roas_series.max()
+    ax.set_xlim(0, max_val * 1.4)  # ← increases available space to stretch bars
+
+    # Clean up axes
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+
     plt.tight_layout()
     return fig
+
 
 def generate_campaign_split_charts(df, currency_symbol=None):
     if currency_symbol is None:
