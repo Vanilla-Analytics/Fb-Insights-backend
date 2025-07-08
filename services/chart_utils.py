@@ -219,16 +219,52 @@ def generate_bar_chart(series, title, color="#1f77b4"):
     buffer.seek(0)
     return (title, buffer)
 
-
 def generate_cost_by_adset_chart(df):
     grouped = df.copy()
     grouped = grouped[grouped['adset_name'].notna()]
     grouped = grouped.groupby('adset_name')['spend'].sum().sort_values(ascending=False).head(10)
-    return generate_bar_chart(grouped, "Cost by Adsets", color="#FF8C00")
+
+    fig, ax = plt.subplots(figsize=(8, 5), dpi=200)
+    bars = ax.barh(grouped.index[::-1], grouped.values[::-1], color="#4E79A7", height=0.5)
+
+    # Add value labels to bars
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + (0.02 * width), bar.get_y() + bar.get_height()/2,
+                f"{width:,.2f}", va='center', fontsize=9, color="#333333")
+
+    # Modern UI tweaks
+    ax.set_title("Cost by Adsets", fontsize=14, fontweight="bold", color="#333333")
+    ax.set_xlabel("Amount Spent", fontsize=10)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', linestyle='--', alpha=0.3)
+
+    plt.tight_layout()
+    return ("Cost by Adsets", generate_chart_image(fig))
 
 
 def generate_revenue_by_adset_chart(df):
     grouped = df.copy()
     grouped = grouped[grouped['adset_name'].notna()]
     grouped = grouped.groupby('adset_name')['purchase_value'].sum().sort_values(ascending=False).head(10)
-    return generate_bar_chart(grouped, "Revenue by Adsets", color="#2E8B57")
+
+    fig, ax = plt.subplots(figsize=(8, 5), dpi=200)
+    bars = ax.barh(grouped.index[::-1], grouped.values[::-1], color="#F28E2B", height=0.5)
+
+    # Add value labels to bars
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + (0.02 * width), bar.get_y() + bar.get_height()/2,
+                f"{width:,.2f}", va='center', fontsize=9, color="#333333")
+
+    # Modern UI tweaks
+    ax.set_title("Revenue by Adsets", fontsize=14, fontweight="bold", color="#333333")
+    ax.set_xlabel("Revenue", fontsize=10)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', linestyle='--', alpha=0.3)
+
+    plt.tight_layout()
+    return ("Revenue by Adsets", generate_chart_image(fig))
+

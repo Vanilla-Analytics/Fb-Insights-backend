@@ -678,7 +678,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 200
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 400
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
                             
@@ -721,6 +721,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
                             except Exception as e:
                                 print(f"⚠️ Error rendering ROAS Split: {str(e)}")
+                                
+                            card_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN + 20
+                            card_height = (chart_height * 2) + 80 
 
                             # 3 Split charts: Cost, Revenue, ROAS
                             # c.drawImage(ImageReader(split_charts[0][1]), start_x, chart_y, width=chart_width, height=chart_height)
@@ -730,23 +733,22 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #Cost by Adsets chart
                             from services.chart_utils import generate_cost_by_adset_chart
                             cost_chart = generate_cost_by_adset_chart(full_ad_insights_df)
-
-
-                            cost_chart_y = chart_y - chart_height - 80
-                            chart_w = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_h = 300
-                            chart_x = (PAGE_WIDTH - chart_w) / 2
-                            c.drawImage(ImageReader(cost_chart[1]), chart_x, cost_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
+                            # Draw "Cost by Adsets" Chart
+                            img1 = ImageReader(cost_chart[1])
+                            c.setFont("Helvetica-Bold", 14)
+                            c.setFillColor(colors.black)
+                            c.drawCentredString(PAGE_WIDTH / 2, chart_y, "Cost by Adsets")
+                            c.drawImage(img1, chart_x + 20, chart_y - 30 - chart_height,
+                            width=card_width - 40, height=chart_height)
                             
-                            #Revenue by Adsets chart
+                            # Draw "Revenue by Adsets" Chart
                             from services.chart_utils import generate_revenue_by_adset_chart
                             revenue_chart = generate_revenue_by_adset_chart(full_ad_insights_df)
-
-
-                            rev_chart_y = cost_chart_y - chart_h - 50
-                            c.drawImage(ImageReader(revenue_chart[1]), chart_x, rev_chart_y, width=chart_w, height=chart_h, preserveAspectRatio=True)
-                            
-                            #Summary paragraph
+                            img2 = ImageReader(revenue_chart[1])
+                            c.setFont("Helvetica-Bold", 14)
+                            c.drawCentredString(PAGE_WIDTH / 2, chart_y - chart_height - 60, "Revenue by Adsets")
+                            c.drawImage(img2, chart_x + 20, chart_y - chart_height - 90 - chart_height,
+                            width=card_width - 40, height=chart_height)
                             # LLM summary paragraph after Adset level Campaigns
                             try:
                                 from services.deepseek_audit import generate_adset_summary
@@ -767,12 +769,35 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 c.setFillColor(colors.black) 
                                 summary_y = chart_y - 80  
 
-                                for line in paragraph_lines:
-                                    #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
-                                    wrapped = simpleSplit(line.strip(), "DejaVuSans" if currency_symbol == "₹" else "Helvetica", 12, text_width)
-                                    for wline in wrapped:
-                                        c.drawString(LEFT_MARGIN, summary_y, wline)
-                                        summary_y -= 14
+                                import re
+
+                                # Clean the summary text: remove #, *, extra spaces
+                                clean_text = re.sub(r"[*#]", "", summary_text).strip()
+                                clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
+
+                                # Move summary further down (below both charts)
+                                summary_y = chart_y - chart_height - 120
+
+                                # Set font and color
+                                c.setFont("Helvetica", 12)
+                                c.setFillColor(colors.HexColor("#333333"))
+
+                                # Wrap text for PDF width
+                                from reportlab.platypus import Paragraph    
+                                from reportlab.lib.styles import getSampleStyleSheet
+
+                                styles = getSampleStyleSheet()
+                                styleN = styles["Normal"]
+                                styleN.fontName = "Helvetica"
+                                styleN.fontSize = 11
+                                styleN.leading = 14
+                                styleN.textColor = colors.HexColor("#333333")
+
+                                # Draw as paragraph
+                                p = Paragraph(clean_text, styleN)
+                                p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
+                                p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
+
                                         
                                 draw_footer_cta(c)  # Draw footer CTA after LLM summary
 
