@@ -228,7 +228,7 @@ def generate_cost_by_adset_chart(df):
     grouped = df.groupby(['adset_name', 'date'])['spend'].sum().reset_index()
     pivot_df = grouped.pivot(index='date', columns='adset_name', values='spend').fillna(0)
 
-    fig, ax = plt.subplots(figsize=(13, 5), dpi=200)
+    fig, ax = plt.subplots(figsize=(14, 8), dpi=200)
 
     color_cycle = plt.cm.tab10.colors  # or use plt.get_cmap("tab20").colors
     lines = []
@@ -262,7 +262,7 @@ def generate_revenue_by_adset_chart(df):
     grouped = df.groupby(['adset_name', 'date'])['purchase_value'].sum().reset_index()
     pivot_df = grouped.pivot(index='date', columns='adset_name', values='purchase_value').fillna(0)
 
-    fig, ax = plt.subplots(figsize=(13, 5), dpi=200)
+    fig, ax = plt.subplots(figsize=(14, 8), dpi=200)
 
     color_cycle = plt.cm.tab10.colors
     for i, column in enumerate(pivot_df.columns):

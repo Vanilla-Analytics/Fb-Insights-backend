@@ -678,7 +678,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 400
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 460
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
                             
@@ -776,7 +776,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
 
                                 # Move summary further down (below both charts)
-                                summary_y = chart_y - chart_height - 220
+                                summary_y = chart_y - chart_height - 600
 
                                 # Set font and color
                                 set_font_with_currency(c, currency_symbol, size=12)
