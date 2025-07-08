@@ -776,10 +776,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
 
                                 # Move summary further down (below both charts)
-                                summary_y = chart_y - chart_height - 120
+                                summary_y = chart_y - chart_height - 220
 
                                 # Set font and color
-                                c.setFont("Helvetica", 12)
+                                set_font_with_currency(c, currency_symbol, size=12)
                                 c.setFillColor(colors.HexColor("#333333"))
 
                                 # Wrap text for PDF width
@@ -788,7 +788,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 styles = getSampleStyleSheet()
                                 styleN = styles["Normal"]
-                                styleN.fontName = "Helvetica"
+                                styleN.fontName = "DejaVuSans" if currency_symbol == "₹" else "Helvetica"
                                 styleN.fontSize = 11
                                 styleN.leading = 14
                                 styleN.textColor = colors.HexColor("#333333")

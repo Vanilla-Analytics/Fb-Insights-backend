@@ -220,51 +220,68 @@ def generate_bar_chart(series, title, color="#1f77b4"):
     return (title, buffer)
 
 def generate_cost_by_adset_chart(df):
-    grouped = df.copy()
-    grouped = grouped[grouped['adset_name'].notna()]
-    grouped = grouped.groupby('adset_name')['spend'].sum().sort_values(ascending=False).head(10)
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['adset_name'] = df['adset_name'].fillna("Unknown Adset")
+    
+    grouped = df.groupby(['adset_name', 'date'])['spend'].sum().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='adset_name', values='spend').fillna(0)
 
-    fig, ax = plt.subplots(figsize=(8, 5), dpi=200)
-    bars = ax.barh(grouped.index[::-1], grouped.values[::-1], color="#4E79A7", height=0.5)
+    fig, ax = plt.subplots(figsize=(13, 5), dpi=200)
 
-    # Add value labels to bars
-    for bar in bars:
-        width = bar.get_width()
-        ax.text(width + (0.02 * width), bar.get_y() + bar.get_height()/2,
-                f"{width:,.2f}", va='center', fontsize=9, color="#333333")
+    color_cycle = plt.cm.tab10.colors  # or use plt.get_cmap("tab20").colors
+    lines = []
+    for i, column in enumerate(pivot_df.columns):
+        line, = ax.plot(pivot_df.index, pivot_df[column], label=column,
+                        linewidth=2, marker='o' if i < 2 else '', markersize=4,
+                        color=color_cycle[i % len(color_cycle)])
+        lines.append(line)
 
-    # Modern UI tweaks
-    ax.set_title("Cost by Adsets", fontsize=14, fontweight="bold", color="#333333")
-    ax.set_xlabel("Amount Spent", fontsize=10)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(axis='x', linestyle='--', alpha=0.3)
+    ax.set_title("Cost By Adsets", fontsize=16, weight='bold')
+    ax.set_ylabel("Amount Spent")
+    ax.set_xlabel("Day")
 
-    plt.tight_layout()
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, linestyle='--', alpha=0.3)
+
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15),
+              ncol=3, fontsize=8, frameon=False)
+
+    fig.tight_layout()
     return ("Cost by Adsets", generate_chart_image(fig))
 
 
 def generate_revenue_by_adset_chart(df):
-    grouped = df.copy()
-    grouped = grouped[grouped['adset_name'].notna()]
-    grouped = grouped.groupby('adset_name')['purchase_value'].sum().sort_values(ascending=False).head(10)
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['adset_name'] = df['adset_name'].fillna("Unknown Adset")
 
-    fig, ax = plt.subplots(figsize=(8, 5), dpi=200)
-    bars = ax.barh(grouped.index[::-1], grouped.values[::-1], color="#F28E2B", height=0.5)
+    grouped = df.groupby(['adset_name', 'date'])['purchase_value'].sum().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='adset_name', values='purchase_value').fillna(0)
 
-    # Add value labels to bars
-    for bar in bars:
-        width = bar.get_width()
-        ax.text(width + (0.02 * width), bar.get_y() + bar.get_height()/2,
-                f"{width:,.2f}", va='center', fontsize=9, color="#333333")
+    fig, ax = plt.subplots(figsize=(13, 5), dpi=200)
 
-    # Modern UI tweaks
-    ax.set_title("Revenue by Adsets", fontsize=14, fontweight="bold", color="#333333")
-    ax.set_xlabel("Revenue", fontsize=10)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(axis='x', linestyle='--', alpha=0.3)
+    color_cycle = plt.cm.tab10.colors
+    for i, column in enumerate(pivot_df.columns):
+        ax.plot(pivot_df.index, pivot_df[column], label=column,
+                linewidth=2, marker='o' if i < 2 else '', markersize=4,
+                color=color_cycle[i % len(color_cycle)])
 
-    plt.tight_layout()
+    ax.set_title("Revenue By Adsets", fontsize=16, weight='bold')
+    ax.set_ylabel("Revenue")
+    ax.set_xlabel("Day")
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, linestyle='--', alpha=0.3)
+
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15),
+              ncol=3, fontsize=8, frameon=False)
+
+    fig.tight_layout()
     return ("Revenue by Adsets", generate_chart_image(fig))
+
 
