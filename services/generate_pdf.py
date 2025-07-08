@@ -539,20 +539,20 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             start_x = (PAGE_WIDTH - total_width) / 2
                             top_chart_y = table_y - chart_height - 40
 
-                        # ────────────── Chart 1: Cost Split ──────────────
-                            c.setStrokeColor(colors.lightgrey)
-                            c.setLineWidth(1)
-                            c.roundRect(start_x, top_chart_y, chart_width, chart_height, radius=8, fill=0, stroke=1)
-                            if len(split_charts) > 0:
-                                img1 = ImageReader(split_charts[0][1])
-                                c.drawImage(img1, start_x, top_chart_y, width=chart_width, height=chart_height)
+                        #  ────────────── Chart 1: Cost Split ──────────────
+                        #     c.setStrokeColor(colors.lightgrey)
+                        #     c.setLineWidth(1)
+                        #     c.roundRect(start_x, top_chart_y, chart_width, chart_height, radius=8, fill=0, stroke=1)
+                        #     if len(split_charts) > 0:
+                        #         img1 = ImageReader(split_charts[0][1])
+                        #         c.drawImage(img1, start_x, top_chart_y, width=chart_width, height=chart_height)
 
-                        # ────────────── Chart 2: Revenue Split ──────────────
-                            second_x = start_x + chart_width + padding_x
-                            c.roundRect(second_x, top_chart_y, chart_width, chart_height, radius=8, fill=0, stroke=1)
-                            if len(split_charts) > 1:
-                                img2 = ImageReader(split_charts[1][1])
-                                c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=chart_height)
+                        #  ────────────── Chart 2: Revenue Split ──────────────
+                        #     second_x = start_x + chart_width + padding_x
+                        #     c.roundRect(second_x, top_chart_y, chart_width, chart_height, radius=8, fill=0, stroke=1)
+                        #     if len(split_charts) > 1:
+                        #         img2 = ImageReader(split_charts[1][1])
+                        #         c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=chart_height)
  
                         # ────────────── Chart 3: ROAS Split ──────────────
                             roas_width = 420
@@ -940,7 +940,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
 
                                 # Move summary further down (below both charts)
-                                summary_y = chart_y - chart_height - 500
+                                #summary_y = chart_y - chart_height - 500
+                                summary_y = revenue_chart_y - 60
 
                                 # Set font and color
                                 set_font_with_currency(c, currency_symbol, size=12)
