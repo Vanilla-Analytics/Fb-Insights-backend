@@ -536,108 +536,173 @@ async def check_account_status(account_id, token):
         })
         return resp.json()
 
+# async def fetch_ad_insights(user_token: str):
+#     timeout = httpx.Timeout(60.0, connect=10.0)  # ✅ increase timeout
+#     """Fetch Facebook ad insights using user's access token"""
+#     try:
+#         url = f"https://graph.facebook.com/v22.0/me/adaccounts"
+#         async with httpx.AsyncClient(timeout=timeout) as client:
+#             acc_resp = await client.get(url, params={
+#                 "access_token": user_token,
+#                 #"fields": "id,name,account_status,disable_reason,adsets{id,name}"
+#                 "fields": "id,name,account_status,disable_reason,account_currency,adsets{id,name}"
+
+#             })
+#             acc_resp.raise_for_status()
+#             accounts = acc_resp.json().get("data", [])
+#             print("✅ 'account_currency' values from accounts:", [acc.get("account_currency") for acc in accounts])
+
+
+#             if not accounts:
+#                 print("⚠️ No ad accounts found for this user")
+#                 return []
+
+#             insights_data = []
+#             for acc in accounts:
+#                 try:
+#                     print(f"🔍 Processing account: {acc.get('name')} ({acc.get('id')})")
+
+#                     # Skip accounts with no adsets
+#                     if 'adsets' not in acc or not acc['adsets'].get('data'):
+#                         print(f"⚠️ No adsets found for account {acc.get('name')}")
+#                         continue
+
+#                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+#                     now = datetime.now(timezone.utc)
+#                     safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+#                     safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+
+
+#                     params = {
+#                         "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
+#                         "time_range": json.dumps({
+#                             # "since": (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d"),
+#                             # "until": datetime.now(timezone.utc).strftime("%Y-%m-%d")
+#                             "since": safe_since,
+#                             "until": safe_until
+#                         }),
+#                         "time_increment": 1,
+#                         "level": "ad",
+#                         "access_token": user_token
+#                     }
+
+#                     detailed_response = await client.get(ad_url, params=params)
+#                     detailed_response.raise_for_status()
+
+#                     ad_results = []
+#                     data_page = detailed_response.json()
+#                     ad_results.extend(data_page.get("data", []))
+#                     print(f"🔍 Raw insight response: {detailed_response.text}")
+#                     print(f"📦 Total records fetched after pagination: {len(ad_results)}")                    
+                    
+#                     while "paging" in data_page and "next" in data_page["paging"]:
+#                         next_url = data_page["paging"]["next"]
+    
+#                     # Use raw GET request — without adding headers or params again
+#                         async with httpx.AsyncClient(timeout=60.0) as client:
+#                             next_response = await client.get(next_url, follow_redirects=True)
+#                             next_response.raise_for_status()
+#                             data_page = next_response.json()
+#                             ad_results.extend(data_page.get("data", []))
+
+
+
+#                     # while 'paging' in data_page and 'next' in data_page['paging']:
+#                     #     next_url = data_page["paging"]["next"]
+#                     #     next_response = await client.get(next_url)
+#                     #     next_response.raise_for_status()
+#                     #     data_page = next_response.json()
+#                     #     ad_results.extend(data_page.get("data", []))
+#                     print(f"✅ Total insights collected after pagination: {len(ad_results)}")
+
+
+                    
+
+#                     for ad in ad_results:
+#                         if 'account_currency' not in ad:
+#                             ad["account_currency"] = acc.get("account_currency", "USD") 
+#                         #ad["account_currency"] = acc.get("account_currency", "USD")
+#                         insights_data.append(ad)
+
+#                 except Exception as e:
+#                     import traceback
+#                     print(f"⚠️ Error processing account {acc.get('id')}: {str(e)}")
+#                     traceback.print_exc()
+
+#             return insights_data
+
+#     except Exception as e:
+#         print(f"❌ Error in fetch_ad_insights: {str(e)}")
+#         return []
+
 async def fetch_ad_insights(user_token: str):
-    timeout = httpx.Timeout(60.0, connect=10.0)  # ✅ increase timeout
-    """Fetch Facebook ad insights using user's access token"""
+    timeout = httpx.Timeout(60.0, connect=10.0)
+
     try:
         url = f"https://graph.facebook.com/v22.0/me/adaccounts"
         async with httpx.AsyncClient(timeout=timeout) as client:
             acc_resp = await client.get(url, params={
                 "access_token": user_token,
-                #"fields": "id,name,account_status,disable_reason,adsets{id,name}"
                 "fields": "id,name,account_status,disable_reason,account_currency,adsets{id,name}"
-
             })
             acc_resp.raise_for_status()
             accounts = acc_resp.json().get("data", [])
             print("✅ 'account_currency' values from accounts:", [acc.get("account_currency") for acc in accounts])
-
 
             if not accounts:
                 print("⚠️ No ad accounts found for this user")
                 return []
 
             insights_data = []
+
             for acc in accounts:
-                try:
-                    print(f"🔍 Processing account: {acc.get('name')} ({acc.get('id')})")
+                if 'adsets' not in acc or not acc['adsets'].get('data'):
+                    print(f"⚠️ No adsets found for account {acc.get('name')}")
+                    continue
 
-                    # Skip accounts with no adsets
-                    if 'adsets' not in acc or not acc['adsets'].get('data'):
-                        print(f"⚠️ No adsets found for account {acc.get('name')}")
-                        continue
+                print(f"🔍 Processing account: {acc.get('name')} ({acc.get('id')})")
 
-                    ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
-                    now = datetime.now(timezone.utc)
-                    safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-                    safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+                ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                now = datetime.now(timezone.utc)
+                safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+                safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
 
+                params = {
+                    "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
+                    "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+                    "time_increment": 1,
+                    "level": "ad",
+                    "access_token": user_token
+                }
 
-                    params = {
-                        "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
-                        "time_range": json.dumps({
-                            # "since": (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d"),
-                            # "until": datetime.now(timezone.utc).strftime("%Y-%m-%d")
-                            "since": safe_since,
-                            "until": safe_until
-                        }),
-                        "time_increment": 1,
-                        "level": "ad",
-                        "access_token": user_token
-                    }
-
-                    detailed_response = await client.get(ad_url, params=params)
-                    detailed_response.raise_for_status()
-
-                    ad_results = []
-                    data_page = detailed_response.json()
+                ad_results = []
+                async with httpx.AsyncClient(timeout=timeout) as client:
+                    response = await client.get(ad_url, params=params)
+                    response.raise_for_status()
+                    data_page = response.json()
                     ad_results.extend(data_page.get("data", []))
-                    print(f"🔍 Raw insight response: {detailed_response.text}")
-                    print(f"📦 Total records fetched after pagination: {len(ad_results)}")
 
-                    
-                    
-                    
-                    while "paging" in data_page and "next" in data_page["paging"]:
+                    # 👇 PAGINATE over `paging.next`
+                    while data_page.get("paging", {}).get("next"):
                         next_url = data_page["paging"]["next"]
-    
-                    # Use raw GET request — without adding headers or params again
-                        async with httpx.AsyncClient(timeout=60.0) as client:
-                            next_response = await client.get(next_url, follow_redirects=True)
-                            next_response.raise_for_status()
-                            data_page = next_response.json()
-                            ad_results.extend(data_page.get("data", []))
+                        next_response = await client.get(next_url, follow_redirects=True)
+                        next_response.raise_for_status()
+                        data_page = next_response.json()
+                        ad_results.extend(data_page.get("data", []))
 
+                print(f"✅ Total insights for account {acc['id']}: {len(ad_results)}")
 
+                for ad in ad_results:
+                    if 'account_currency' not in ad:
+                        ad["account_currency"] = acc.get("account_currency", "USD")
+                    insights_data.append(ad)
 
-                    # while 'paging' in data_page and 'next' in data_page['paging']:
-                    #     next_url = data_page["paging"]["next"]
-                    #     next_response = await client.get(next_url)
-                    #     next_response.raise_for_status()
-                    #     data_page = next_response.json()
-                    #     ad_results.extend(data_page.get("data", []))
-                    print(f"✅ Total insights collected after pagination: {len(ad_results)}")
-
-
-                    
-
-                    for ad in ad_results:
-                        if 'account_currency' not in ad:
-                            ad["account_currency"] = acc.get("account_currency", "USD") 
-                        #ad["account_currency"] = acc.get("account_currency", "USD")
-                        insights_data.append(ad)
-
-                except Exception as e:
-                    import traceback
-                    print(f"⚠️ Error processing account {acc.get('id')}: {str(e)}")
-                    traceback.print_exc()
-
+            print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
             return insights_data
 
     except Exception as e:
         print(f"❌ Error in fetch_ad_insights: {str(e)}")
         return []
-
 
 
 
