@@ -593,7 +593,8 @@ async def fetch_ad_insights(user_token: str):
                     data_page = detailed_response.json()
                     ad_results.extend(data_page.get("data", []))
                     print(f"🔍 Raw insight response: {detailed_response.text}")
-                    
+                    print(f"📦 Total records fetched after pagination: {len(ad_results)}")
+
                     data_page = detailed_response.json()
                     ad_results = data_page.get("data", [])
                     
@@ -748,6 +749,9 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Create original DataFrame with date_start intact
         original_df = pd.DataFrame(ad_data)
+        original_df['campaign_name'] = original_df['campaign_name'].fillna("Unknown Campaign")
+        original_df['adset_name'] = original_df['adset_name'].fillna("Unknown Adset")
+
         # 🚨 Check if account_currency is missing
         if 'account_currency' not in original_df.columns:
             print("⚠️ 'account_currency' column missing in original_df.")
