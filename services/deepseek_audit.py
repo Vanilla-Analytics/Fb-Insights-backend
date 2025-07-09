@@ -689,6 +689,11 @@ async def fetch_ad_insights(user_token: str):
                         next_response.raise_for_status()
                         data_page = next_response.json()
                         ad_results.extend(data_page.get("data", []))
+                        
+                    # ✅ DEBUG: Print full data sample after all pages
+                    print("📦 Final sample of fetched ad data (first 3 rows):")
+                    import pprint
+                    pprint.pprint(ad_results[:3], indent=2)
 
                 print(f"✅ Total insights for account {acc['id']}: {len(ad_results)}")
 
