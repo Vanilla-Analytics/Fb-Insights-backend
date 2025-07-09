@@ -58,7 +58,7 @@ def draw_donut_chart(values, labels, title):
     return fig
 
 def draw_roas_split_bar_chart(roas_series):
-    fig, ax = plt.subplots(figsize=(10, 3.5))  # Optional: slightly wider chart
+    fig, ax = plt.subplots(figsize=(7, 4))  # Optional: slightly wider chart
     bars = ax.barh(roas_series.index, roas_series.values, color="#007fff", height=0.4)
 
     ax.set_xlabel("ROAS")

@@ -67,7 +67,7 @@ def adjust_page_height(c, section: dict):
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     elif title == "ADSET LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 2500
+        PAGE_HEIGHT = 2700
     else:
         PAGE_HEIGHT = 600
 
@@ -511,8 +511,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             padding_x = 40
                             padding_y = 40
                             
-                            donut_width = 700
-                            donut_height = 350
+                            donut_width = 400
+                            donut_height = 400
                             donut_y = table_y - donut_height - 40
 
                             # Cost Split - left aligned
@@ -555,8 +555,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #         c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=chart_height)
  
                         # ────────────── Chart 3: ROAS Split ──────────────
-                            roas_width = 420
-                            roas_height = 300
+                            roas_width = 700
+                            roas_height = 350
                             roas_x = (PAGE_WIDTH - roas_width) / 2
                             #roas_y = top_chart_y - roas_height - 60
                             roas_y = donut_y - 60 - roas_height  # ensures enough gap
@@ -749,7 +749,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['cpa']:.2f}"
                                 ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[270, 150, 150, 100, 100, 130])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[270, 130, 130, 90, 90, 110])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -766,8 +766,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # 🎯 Donut + ROAS Split Section
                             # ─────────────────────────────
                             # ─────────────── Donut Charts (Left + Right Aligned) ───────────────
-                            donut_width = 350
-                            donut_height = 350
+                            donut_width = 400
+                            donut_height = 400
                             large_chart_height = 480
                             donut_padding_y = 40
                             donut_y = table_y - donut_height - donut_padding_y
@@ -800,10 +800,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                             # Row 2: ROAS Bar Chart (Center with Heading)
-                            roas_width = 700
+                            roas_width = 750
                             roas_height = 300
                             roas_x = (PAGE_WIDTH - roas_width) / 2
-                            roas_y = top_chart_y - roas_height - 120
+                            roas_y = top_chart_y - roas_height - 40
 
                             # Heading above ROAS chart
                             c.setFont("Helvetica-Bold", 13)
