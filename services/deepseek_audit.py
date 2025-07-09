@@ -595,8 +595,7 @@ async def fetch_ad_insights(user_token: str):
                     print(f"🔍 Raw insight response: {detailed_response.text}")
                     print(f"📦 Total records fetched after pagination: {len(ad_results)}")
 
-                    data_page = detailed_response.json()
-                    ad_results = data_page.get("data", [])
+                    
                     
                     
                     while "paging" in data_page and "next" in data_page["paging"]:
