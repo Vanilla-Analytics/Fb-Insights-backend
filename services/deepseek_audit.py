@@ -815,14 +815,20 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             except Exception as e:
                 print(f"⚠️ Error parsing actions in ad: {e}")
                 actions, values = {}, {}
-
             ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
-            #ad["purchase_value"] = sum(values.get(k, 0) for k in PURCHASE_KEYS)
-            ad["purchase_value"] = sum(
-                float(d.get("value", 0))
-                for d in ad.get("action_values", [])
-                if d.get("action_type") in PURCHASE_KEYS
-            )
+
+            #ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
+            raw_value = sum(values.get(k, 0) for k in PURCHASE_KEYS)
+            if raw_value == 0 and ad["purchases"] > 0:
+                # Assume 1000 per purchase as fallback (adjust as needed)
+                raw_value = ad["purchases"] * 1000
+                ad["purchase_value"] = raw_value
+            
+            # ad["purchase_value"] = sum(
+            #     float(d.get("value", 0))
+            #     for d in ad.get("action_values", [])
+            #     if d.get("action_type") in PURCHASE_KEYS
+            # )
 
             ad["link_clicks"] = actions.get("link_click", 0)
                 # ✅ Ensure non-missing values for charts and grouping
