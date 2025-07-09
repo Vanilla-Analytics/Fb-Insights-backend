@@ -509,7 +509,7 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
     try:
         base_url = f"https://graph.facebook.com/v22.0/{page_id}/insights"
-        since = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        since = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
         until = datetime.now().strftime("%Y-%m-%d")
 
         params = {
@@ -570,7 +570,7 @@ async def fetch_ad_insights(user_token: str):
                     ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     now = datetime.now(timezone.utc)
                     safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-                    safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+                    safe_since = (now - timedelta(days=60)).strftime("%Y-%m-%d")
 
 
                     params = {
@@ -783,7 +783,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         #cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
         #ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
 
-        cutoff = pd.Timestamp.today() - pd.Timedelta(days=30)
+        cutoff = pd.Timestamp.today() - pd.Timedelta(days=60)
         ad_insights_df = grouped_df[grouped_df['date'] >= cutoff].copy()
 
         if ad_insights_df.empty:
