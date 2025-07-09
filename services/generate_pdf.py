@@ -511,8 +511,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             padding_x = 40
                             padding_y = 40
                             
-                            donut_width = 400
-                            donut_height = 400
+                            donut_width = 410
+                            donut_height = 410
                             donut_y = table_y - donut_height - 40
 
                             # Cost Split - left aligned
@@ -555,11 +555,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #         c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=chart_height)
  
                         # ────────────── Chart 3: ROAS Split ──────────────
-                            roas_width = 700
-                            roas_height = 350
+                            roas_width = 740
+                            roas_height = 320
                             roas_x = (PAGE_WIDTH - roas_width) / 2
                             #roas_y = top_chart_y - roas_height - 60
-                            roas_y = donut_y - 60 - roas_height  # ensures enough gap
+                            roas_y = donut_y - 40 - roas_height  # ensures enough gap
 
 
                         # Title
@@ -686,7 +686,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 #c.setFont("Helvetica", 12)
                                 set_font_with_currency(c, currency_symbol, size=12)
                                 c.setFillColor(colors.black) 
-                                summary_y = chart_y - 100  
+                                summary_y = chart_y - 70  
 
                                 for line in paragraph_lines:
                                     #wrapped = simpleSplit(line.strip(), "Helvetica", 12, text_width)
@@ -766,8 +766,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # 🎯 Donut + ROAS Split Section
                             # ─────────────────────────────
                             # ─────────────── Donut Charts (Left + Right Aligned) ───────────────
-                            donut_width = 400
-                            donut_height = 400
+                            donut_width = 410
+                            donut_height = 410
                             large_chart_height = 480
                             donut_padding_y = 40
                             donut_y = table_y - donut_height - donut_padding_y
@@ -800,10 +800,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                             # Row 2: ROAS Bar Chart (Center with Heading)
-                            roas_width = 750
-                            roas_height = 300
+                            roas_width = 770
+                            roas_height = 280
                             roas_x = (PAGE_WIDTH - roas_width) / 2
-                            roas_y = top_chart_y - roas_height - 40
+                            roas_y = top_chart_y - roas_height - 100
 
                             # Heading above ROAS chart
                             c.setFont("Helvetica-Bold", 13)
