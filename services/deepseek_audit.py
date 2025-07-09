@@ -599,12 +599,16 @@ async def fetch_ad_insights(user_token: str):
                     ad_results = data_page.get("data", [])
                     
                     
-                    while data_page.get("paging", {}).get("next"):
+                    while "paging" in data_page and "next" in data_page["paging"]:
                         next_url = data_page["paging"]["next"]
-                        next_response = await client.get(next_url)
-                        next_response.raise_for_status()
-                        data_page = next_response.json()
-                        ad_results.extend(data_page.get("data", []))
+    
+                    # Use raw GET request — without adding headers or params again
+                        async with httpx.AsyncClient(timeout=60.0) as client:
+                            next_response = await client.get(next_url, follow_redirects=True)
+                            next_response.raise_for_status()
+                            data_page = next_response.json()
+                            ad_results.extend(data_page.get("data", []))
+
 
 
                     # while 'paging' in data_page and 'next' in data_page['paging']:
@@ -613,8 +617,10 @@ async def fetch_ad_insights(user_token: str):
                     #     next_response.raise_for_status()
                     #     data_page = next_response.json()
                     #     ad_results.extend(data_page.get("data", []))
+                    print(f"✅ Total insights collected after pagination: {len(ad_results)}")
 
-                    print(f"📊 Total detailed insights: {len(ad_results)}")
+
+                    
 
                     for ad in ad_results:
                         if 'account_currency' not in ad:
@@ -729,7 +735,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             "offsite_conversion.fb_pixel_purchase",
             "offsite_conversion.fb_pixel_custom",
             "offsite_conversion.custom.1408006162945363",
-            "offsite_conversion.custom.587738624322885"
+            "offsite_conversion.custom.587738624322885",
+            "purchase"
         ]
 
         for ad in ad_data:
@@ -741,8 +748,19 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                 actions, values = {}, {}
 
             ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
-            ad["purchase_value"] = sum(values.get(k, 0) for k in PURCHASE_KEYS)
+            #ad["purchase_value"] = sum(values.get(k, 0) for k in PURCHASE_KEYS)
+            ad["purchase_value"] = sum(
+                float(d.get("value", 0))
+                for d in ad.get("action_values", [])
+                if d.get("action_type") in PURCHASE_KEYS
+            )
+
             ad["link_clicks"] = actions.get("link_click", 0)
+                # ✅ Ensure non-missing values for charts and grouping
+            if "purchase_value" not in ad or not isinstance(ad["purchase_value"], (int, float)):
+                ad["purchase_value"] = 0
+            if "purchases" not in ad or not isinstance(ad["purchases"], (int, float)):
+                ad["purchases"] = 0
 
 
 
@@ -882,6 +900,9 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         ]
         cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
         
+        # ✅ Log final data sample for verification
+        print("📊 Sample of original_df:")
+        print(original_df[["date", "campaign_name", "spend", "purchase_value", "purchases"]].tail(5))
 
         print("📄 Generating PDF report...")
         pdf_response = generate_pdf_report(
