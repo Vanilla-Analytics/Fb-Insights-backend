@@ -411,8 +411,6 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #table_section = {"title": "Campaign Performance Summary", "contains_table": True}
                         #adjust_page_height(c, table_section)
                         #c.showPage()
-                       
-
 
                         draw_header(c)
                         df = full_ad_insights_df.copy()
@@ -539,20 +537,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             start_x = (PAGE_WIDTH - total_width) / 2
                             top_chart_y = table_y - chart_height - 40
 
-                        #  ────────────── Chart 1: Cost Split ──────────────
-                        #     c.setStrokeColor(colors.lightgrey)
-                        #     c.setLineWidth(1)
-                        #     c.roundRect(start_x, top_chart_y, chart_width, chart_height, radius=8, fill=0, stroke=1)
-                        #     if len(split_charts) > 0:
-                        #         img1 = ImageReader(split_charts[0][1])
-                        #         c.drawImage(img1, start_x, top_chart_y, width=chart_width, height=chart_height)
-
-                        #  ────────────── Chart 2: Revenue Split ──────────────
-                        #     second_x = start_x + chart_width + padding_x
-                        #     c.roundRect(second_x, top_chart_y, chart_width, chart_height, radius=8, fill=0, stroke=1)
-                        #     if len(split_charts) > 1:
-                        #         img2 = ImageReader(split_charts[1][1])
-                        #         c.drawImage(img2, second_x, top_chart_y, width=chart_width, height=chart_height)
+                        
  
                         # ────────────── Chart 3: ROAS Split ──────────────
                             roas_width = 740
@@ -565,7 +550,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Title
                             c.setFont("Helvetica-Bold", 13)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, roas_y + roas_height + 16, "ROAS Split")
+                            #c.drawCentredString(PAGE_WIDTH / 2, roas_y + roas_height + 16, "ROAS Split")
 
                         # Card Border
                             c.setStrokeColor(colors.lightgrey)
@@ -575,56 +560,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             if len(split_charts) > 2:
                                 img3 = ImageReader(split_charts[2][1])
                                 c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
-
-
-                        # Draw Split Charts below the table
-                        # if 'split_charts' in locals() and split_charts and len(split_charts) >= 3:
-                        #     # 🎯 All three charts on the same row inside a card
-                        #     chart_width = 250
-                        #     chart_height = 250
-                        #     padding_x = 40
-
-                        #     total_width = chart_width * 3 + padding_x * 2
-                        #     start_x = (PAGE_WIDTH - total_width) / 2
-                        #     chart_y = table_y - chart_height - 80
-
-                        #     # Optional: Light gray card-style background
-                        #     card_padding = 10
-                        #     card_x = start_x - card_padding
-                        #     card_y = chart_y - card_padding
-                        #     card_w = total_width + 2 * card_padding
-                        #     card_h = chart_height + 2 * card_padding
-
-                        #     # c.setFillColor(colors.whitesmoke)
-                        #     # c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=1, stroke=0)
-                        #     c.setStrokeColor(colors.lightgrey)
-                        #     c.setLineWidth(1)
-                        #     c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=0, stroke=1)
-
-                        #     # Chart 1 - Cost Split
-                        #     if len(split_charts) > 0:
-                        #         img1 = ImageReader(split_charts[0][1])
-                        #         c.drawImage(img1, start_x, chart_y, width=chart_width, height=chart_height)
-
-                        #     # Chart 2 - Revenue Split
-                        #     if len(split_charts) > 1:
-                        #         img2 = ImageReader(split_charts[1][1])
-                        #         c.drawImage(img2, start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
-
-                        #     # Chart 3 - ROAS Split (horizontal bar)
-                        #     if len(split_charts) > 2:
-                        #         img3 = ImageReader(split_charts[2][1])
-                        #         c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
-
-                            
                             
                             try:
-                                #c.showPage()
-                                #PAGE_HEIGHT = 600
-                                #TOP_MARGIN = 1.2 * inch
-                                #LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
-                                #c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
-                                #draw_header(c)
+                               
 
                                 from services.chart_utils import generate_cost_by_campaign_chart  # Only if not already imported
                                 cost_by_campaign_chart = generate_cost_by_campaign_chart(full_ad_insights_df)
@@ -803,12 +741,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             roas_width = 770
                             roas_height = 280
                             roas_x = (PAGE_WIDTH - roas_width) / 2
-                            roas_y = top_chart_y - roas_height - 100
+                            roas_y = top_chart_y - roas_height - 40
 
                             # Heading above ROAS chart
                             c.setFont("Helvetica-Bold", 13)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, roas_y + roas_height + 16, "ROAS Split")
+                            #c.drawCentredString(PAGE_WIDTH / 2, roas_y + roas_height + 16, "ROAS Split")
  
                             # Card
                             c.setStrokeColor(colors.lightgrey)
@@ -846,79 +784,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             width=card_width - 40, height=large_chart_height)
 
 
-                            
-                            
-                            # # Row with 2 donut + 1 ROAS bar chart
-                            # chart_width = 250
-                            # small_chart_height = 250   # for donut & ROAS bar charts
-                            # large_chart_height = 450   # for Cost/Revenue by Adsets
-                            # padding_x = 40
-                            # total_width = chart_width * 3 + padding_x * 2
-                            # start_x = (PAGE_WIDTH - total_width) / 2
-                            # chart_y = table_y - small_chart_height - 20
-
-                            # # Optional background card
-                            # card_padding = 10
-                            # card_x = start_x - card_padding
-                            # card_y = chart_y - card_padding
-                            # card_w = total_width + 2 * card_padding
-                            # card_h = chart_height + 2 * card_padding
                            
-                            
-                            # c.setStrokeColor(colors.lightgrey)
-                            # c.setLineWidth(1)
-                            # c.roundRect(card_x, card_y, card_w, card_h, radius=12, fill=0, stroke=1)
-                            
-                            # # Render charts and draw on canvas
-                            # try:
-                            #     fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
-                            #     img1 = ImageReader(generate_chart_image(fig1))
-                            #     c.drawImage(img1, start_x, chart_y, width=chart_width, height=small_chart_height)
-                            # except Exception as e:
-                            #     print(f"⚠️ Error rendering Cost Split: {str(e)}")
-
-                            # try:
-                            #     fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
-                            #     img2 = ImageReader(generate_chart_image(fig2))
-                            #     c.drawImage(img2, start_x + chart_width + padding_x, chart_y, width=chart_width, height=small_chart_height)
-                            # except Exception as e:
-                            #     print(f"⚠️ Error rendering Revenue Split: {str(e)}")
-
-                            # try:
-                            #     fig3 = draw_roas_split_bar_chart(top_roas)
-                            #     img3 = ImageReader(generate_chart_image(fig3))
-                            #     c.drawImage(img3, start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=small_chart_height)
-                            # except Exception as e:
-                            #     print(f"⚠️ Error rendering ROAS Split: {str(e)}")
-                                
-                            # card_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN + 20
-                            # card_height = (chart_height * 2) + 80 
-
-                            # # 3 Split charts: Cost, Revenue, ROAS
-                            # # c.drawImage(ImageReader(split_charts[0][1]), start_x, chart_y, width=chart_width, height=chart_height)
-                            # # c.drawImage(ImageReader(split_charts[1][1]), start_x + chart_width + padding_x, chart_y, width=chart_width, height=chart_height)
-                            # # c.drawImage(ImageReader(split_charts[2][1]), start_x + 2 * (chart_width + padding_x), chart_y, width=chart_width, height=chart_height)
-                            
-                            # #Cost by Adsets chart
-                            # from services.chart_utils import generate_cost_by_adset_chart
-                            # cost_chart = generate_cost_by_adset_chart(full_ad_insights_df)
-                            # # Draw "Cost by Adsets" Chart
-                            # img1 = ImageReader(cost_chart[1])
-                            # c.setFont("Helvetica-Bold", 14)
-                            # c.setFillColor(colors.black)
-                            # c.drawCentredString(PAGE_WIDTH / 2, chart_y, "Cost by Adsets")
-                            # c.drawImage(img1, chart_x + 20, chart_y - 30 - chart_height,
-                            # width=card_width - 40, height=large_chart_height)
-                            
-                            # # Draw "Revenue by Adsets" Chart
-                            # from services.chart_utils import generate_revenue_by_adset_chart
-                            # revenue_chart = generate_revenue_by_adset_chart(full_ad_insights_df)
-                            # img2 = ImageReader(revenue_chart[1])
-                            # c.setFont("Helvetica-Bold", 14)
-                            # c.drawCentredString(PAGE_WIDTH / 2, chart_y - chart_height - 60, "Revenue by Adsets")
-                            # c.drawImage(img2, chart_x + 20, chart_y - chart_height - 90 - chart_height,
-                            # width=card_width - 40, height=large_chart_height)
-                            # LLM summary paragraph after Adset level Campaigns
                             try:
                                 from services.deepseek_audit import generate_adset_summary
                                
@@ -972,7 +838,119 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 draw_footer_cta(c)  # Draw footer CTA after LLM summary
 
                             except Exception as e:
-                                print(f"⚠️ LLM Summary generation failed: {str(e)}")                               
+                                print(f"⚠️ LLM Summary generation failed: {str(e)}")  
+                                
+                            
+                            
+                            # Add this after "Adset Level Performance" page block in generate_pdf.py
+
+                            # ───────────────────────────────
+                            # 📄 New Page - Ad Level Performance
+                            # ───────────────────────────────
+                            c.showPage()
+                            adset_section = {"title": "Ad Level Performance", "contains_table": True}
+                            adjust_page_height(c, adset_section)
+                            draw_header(c)
+
+                            # ➤ Prepare Ad-level data
+                            ad_df = full_ad_insights_df.copy()
+                            ad_df = ad_df[ad_df['ad_name'].notna()]
+                            ad_df['spend'] = pd.to_numeric(ad_df['spend'], errors='coerce').fillna(0)
+                            ad_df['purchase_value'] = pd.to_numeric(ad_df['purchase_value'], errors='coerce').fillna(0)
+                            ad_df['purchases'] = pd.to_numeric(ad_df['purchases'], errors='coerce').fillna(0)
+                            ad_df['roas'] = ad_df['purchase_value'] / ad_df['spend'].replace(0, 1)
+                            ad_df['cpa'] = ad_df['spend'] / ad_df['purchases'].replace(0, 1)
+
+                            # ➤ Aggregate by ad
+                            ad_grouped = ad_df.groupby('ad_name').agg({
+                                'spend': 'sum',
+                                'purchase_value': 'sum',
+                                'purchases': 'sum',
+                                'roas': 'mean',
+                                'cpa': 'mean'
+                            }).reset_index()
+
+                            #   ➤ Table Title
+                            c.setFont("Helvetica-Bold", 14)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, "Ad Level Performance")
+
+                            # ➤ Table
+                            ad_table_data = [["Ad Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
+                            for _, row in ad_grouped.iterrows():
+                                ad_table_data.append([
+                                row['ad_name'],
+                                f"{currency_symbol}{row['spend']:.2f}",
+                                f"{currency_symbol}{row['purchase_value']:.2f}",
+                                int(row['purchases']),
+                                f"{row['roas']:.2f}",
+                                f"{currency_symbol}{row['cpa']:.2f}"
+                            ])
+
+                            ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[270, 150, 150, 100, 100, 130])
+                            ad_summary_table.setStyle(TableStyle([
+                                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                                ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
+                            ]))
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 300
+                            ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                            ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
+
+                            # ➤ Charts
+                            from services.chart_utils import generate_cost_by_adset_chart, generate_revenue_by_adset_chart, draw_donut_chart, draw_roas_split_bar_chart
+
+                            # Top 6 ads
+                            top_ad_spend = ad_grouped.set_index('ad_name')['spend'].sort_values(ascending=False).head(6)
+                            top_ad_revenue = ad_grouped.set_index('ad_name')['purchase_value'].sort_values(ascending=False).head(6)
+                            top_ad_roas = ad_grouped.set_index('ad_name')['roas'].sort_values(ascending=False).head(6)
+
+                            # Donut Charts
+                            donut_width, donut_height = 350, 350
+                            donut_y = ad_table_y - donut_height - 40
+
+                            # Cost Split (left)
+                            cost_x = LEFT_MARGIN
+                            c.roundRect(cost_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+                            fig1 = draw_donut_chart(top_ad_spend.values, top_ad_spend.index, "")
+                            c.drawImage(ImageReader(generate_chart_image(fig1)), cost_x, donut_y, width=donut_width, height=donut_height)
+
+                            # Revenue Split (right)
+                            revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
+                            c.roundRect(revenue_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+                            fig2 = draw_donut_chart(top_ad_revenue.values, top_ad_revenue.index, "")
+                            c.drawImage(ImageReader(generate_chart_image(fig2)), revenue_x, donut_y, width=donut_width, height=donut_height)
+
+                            # ROAS Split bar (centered)
+                            roas_width, roas_height = 700, 300
+                            roas_x = (PAGE_WIDTH - roas_width) / 2
+                            roas_y = donut_y - roas_height - 60
+                            c.roundRect(roas_x, roas_y, roas_width, roas_height, radius=8, fill=0, stroke=1)
+                            fig3 = draw_roas_split_bar_chart(top_ad_roas)
+                            c.drawImage(ImageReader(generate_chart_image(fig3)), roas_x, roas_y, width=roas_width, height=roas_height)
+
+                            # Line charts
+                            cost_chart = generate_cost_by_adset_chart(ad_df)
+                            cost_chart_y = roas_y - 480 - 60
+                            c.drawCentredString(PAGE_WIDTH / 2, cost_chart_y + 480 + 20, "Cost by Ads")
+                            c.drawImage(ImageReader(cost_chart[1]), LEFT_MARGIN, cost_chart_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=480)
+
+                            revenue_chart = generate_revenue_by_adset_chart(ad_df)
+                            revenue_chart_y = cost_chart_y - 480 - 60
+                            c.drawCentredString(PAGE_WIDTH / 2, revenue_chart_y + 480 + 20, "Revenue by Ads")
+                            c.drawImage(ImageReader(revenue_chart[1]), LEFT_MARGIN, revenue_chart_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=480)
+
+                            # ➤ Ad Summary (LLM generated — inline on same page)
+                           
+
+  
+                                
+                                
+                            
+                            
+                                                   
                     
                     else:
                         c.showPage()

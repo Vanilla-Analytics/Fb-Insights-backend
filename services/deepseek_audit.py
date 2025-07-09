@@ -504,6 +504,51 @@ async def generate_adset_summary(full_df: pd.DataFrame, currency_symbol: str) ->
 
     return await generate_llm_content(prompt, summary_data)
 
+async def generate_ad_summary(full_df: pd.DataFrame, currency_symbol: str) -> str:
+    from services.deepseek_audit import generate_llm_content
+
+    if full_df.empty or 'ad_name' not in full_df.columns:
+        return "⚠️ No ad data available to summarize."
+
+    df = full_df[['ad_name', 'spend', 'purchase_value', 'purchases']].copy()
+    df = df[df['ad_name'].notna()]
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+
+    df = df.sort_values('roas', ascending=False)
+    df['spend'] = df['spend'].round(2)
+    df['purchase_value'] = df['purchase_value'].round(2)
+    df['roas'] = df['roas'].round(2)
+    df['cpa'] = df['cpa'].round(2)
+
+    records = df.to_dict(orient='records')
+
+    summary_data = {
+        "summary_metrics": {
+            "total_spend": float(df['spend'].sum()),
+            "total_revenue": float(df['purchase_value'].sum()),
+            "total_purchases": int(df['purchases'].sum()),
+            "avg_roas": float(df['roas'].mean()),
+            "avg_cpa": float(df['cpa'].mean())
+        },
+        "ads": records
+    }
+
+    prompt = (
+        f"Write a detailed summary of Meta Ads *ad-level performance* in about 150–200 words. "
+        f"Use {currency_symbol} for all money values.\n\n"
+        f"1. Highlight top-performing ads (ROAS > 3.0 and CPA < {currency_symbol}400).\n"
+        f"2. Identify underperforming ads (ROAS < 0.4 or CPA > {currency_symbol}5000).\n"
+        f"3. Mention creative insights or copy performance patterns if possible (like UGC, hooks, etc).\n"
+        f"4. Provide 1–2 sharp, actionable recommendations for improvement.\n\n"
+        f"Make it insightful and executive-friendly. Mention ad names selectively — don’t list everything."
+    )
+
+    return await generate_llm_content(prompt, summary_data)
+
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
