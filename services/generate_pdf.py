@@ -916,7 +916,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 500
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 600
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -956,9 +956,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             fig2 = draw_donut_chart(top_ad_revenue.values, top_ad_revenue.index, "")
                             #c.drawImage(ImageReader(generate_chart_image(fig2)), revenue_x, donut_y, width=donut_width, height=donut_height)
                             c.drawImage(
-                                ImageReader(generate_chart_image(fig1)),
-                                cost_x + padding_inner / 2,                   # Shift right a bit
-                                donut_y + padding_inner / 2,                  # Shift up slightly if needed
+                                ImageReader(generate_chart_image(fig2)),
+                                revenue_x + padding_inner / 2,             # Correct X position
+                                donut_y + padding_inner / 2,                 # Shift up slightly if needed
                                 width=donut_width - padding_inner,            # Reduce width to create padding
                                 height=donut_height - padding_inner           # Optional: reduce height too
                             )
