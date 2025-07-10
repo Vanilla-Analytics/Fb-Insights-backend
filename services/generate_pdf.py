@@ -67,7 +67,9 @@ def adjust_page_height(c, section: dict):
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     elif title == "ADSET LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 2700
+        PAGE_HEIGHT = 2900
+    elif title == "AD LEVEL PERFORMANCE":
+        PAGE_HEIGHT = 2900      
     else:
         PAGE_HEIGHT = 600
 
@@ -741,7 +743,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             roas_width = 770
                             roas_height = 280
                             roas_x = (PAGE_WIDTH - roas_width) / 2
-                            roas_y = top_chart_y - roas_height - 40
+                            #roas_y = top_chart_y - roas_height - 40
+                            roas_y = donut_y - roas_height - 40
+
 
                             # Heading above ROAS chart
                             c.setFont("Helvetica-Bold", 13)
