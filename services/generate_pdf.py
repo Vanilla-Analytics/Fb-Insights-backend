@@ -943,6 +943,54 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.drawImage(ImageReader(revenue_chart[1]), LEFT_MARGIN, revenue_chart_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=480)
 
                             # ➤ Ad Summary (LLM generated — inline on same page)
+                            try:
+                                from services.deepseek_audit import generate_ad_summary
+
+                                summary_text = run_async_in_thread(generate_ad_summary(ad_df, currency_symbol))
+
+                                print("📄 LLM Summary Generated")
+
+                                paragraph_lines = summary_text.strip().split("\n")
+                                text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+                                #c.setFont("Helvetica", 12)
+                                set_font_with_currency(c, currency_symbol, size=12)
+                                c.setFillColor(colors.black) 
+                                summary_y = revenue_chart_y - 80  
+
+                                import re
+
+                                # Clean the summary text: remove #, *, extra spaces
+                                clean_text = re.sub(r"[*#]", "", summary_text).strip()
+                                clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
+
+                                # Move summary further down (below both charts)
+                                #summary_y = chart_y - chart_height - 500
+                                summary_y = revenue_chart_y - 60
+
+                                # Set font and color
+                                set_font_with_currency(c, currency_symbol, size=12)
+                                c.setFillColor(colors.HexColor("#333333"))
+
+                                # Wrap text for PDF width
+                                from reportlab.platypus import Paragraph    
+                                from reportlab.lib.styles import getSampleStyleSheet
+
+                                styles = getSampleStyleSheet()
+                                styleN = styles["Normal"]
+                                styleN.fontName = "DejaVuSans" if currency_symbol == "₹" else "Helvetica"
+                                styleN.fontSize = 11
+                                styleN.leading = 14
+                                styleN.textColor = colors.HexColor("#333333")
+
+                                # Draw as paragraph
+                                p = Paragraph(clean_text, styleN)
+                                p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
+                                p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
+
+                                        
+                                
+                            except Exception as e:
+                                print(f"⚠️ LLM Summary generation failed: {str(e)}")
                            
 
   
