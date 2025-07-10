@@ -15,6 +15,14 @@ import re
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from services.chart_utils import draw_donut_chart, generate_chart_image, draw_roas_split_bar_chart
+from services.chart_utils import (
+    draw_donut_chart,
+    draw_roas_split_bar_chart,
+    generate_chart_image,
+    generate_cost_by_adset_chart,
+    generate_revenue_by_adset_chart
+)
+
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -706,8 +714,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # 🎯 Donut + ROAS Split Section
                             # ─────────────────────────────
                             # ─────────────── Donut Charts (Left + Right Aligned) ───────────────
-                            donut_width = 410
-                            donut_height = 410
+                            donut_width = 380
+                            donut_height = 380
                             large_chart_height = 480
                             donut_padding_y = 40
                             #donut_y = table_y - donut_height - donut_padding_y
@@ -907,7 +915,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 370
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 420
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -920,8 +928,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             top_ad_roas = ad_grouped.set_index('ad_name')['roas'].sort_values(ascending=False).head(6)
 
                             # Donut Charts
-                            donut_width, donut_height = 350, 350
+                            donut_width, donut_height = 360, 360
                             donut_y = ad_table_y - donut_height - 40
+                            padding_inner = 20
 
                             # Cost Split (left)
                             cost_x = LEFT_MARGIN
@@ -929,7 +938,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setLineWidth(1)
                             c.roundRect(cost_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
                             fig1 = draw_donut_chart(top_ad_spend.values, top_ad_spend.index, "")
-                            c.drawImage(ImageReader(generate_chart_image(fig1)), cost_x, donut_y, width=donut_width, height=donut_height)
+                            #c.drawImage(ImageReader(generate_chart_image(fig1)), cost_x, donut_y, width=donut_width, height=donut_height)
+                            c.drawImage(
+                                ImageReader(generate_chart_image(fig1)),
+                                cost_x + padding_inner / 2,                   # Shift right a bit
+                                donut_y + padding_inner / 2,                  # Shift up slightly if needed
+                                width=donut_width - padding_inner,            # Reduce width to create padding
+                                height=donut_height - padding_inner           # Optional: reduce height too
+                            )
 
                             # Revenue Split (right)
                             revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
@@ -937,7 +953,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setLineWidth(1)
                             c.roundRect(revenue_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
                             fig2 = draw_donut_chart(top_ad_revenue.values, top_ad_revenue.index, "")
-                            c.drawImage(ImageReader(generate_chart_image(fig2)), revenue_x, donut_y, width=donut_width, height=donut_height)
+                            #c.drawImage(ImageReader(generate_chart_image(fig2)), revenue_x, donut_y, width=donut_width, height=donut_height)
+                            c.drawImage(
+                                ImageReader(generate_chart_image(fig1)),
+                                cost_x + padding_inner / 2,                   # Shift right a bit
+                                donut_y + padding_inner / 2,                  # Shift up slightly if needed
+                                width=donut_width - padding_inner,            # Reduce width to create padding
+                                height=donut_height - padding_inner           # Optional: reduce height too
+                            )
 
                             # ROAS Split bar (centered)
                             roas_width, roas_height = 700, 300
