@@ -67,9 +67,9 @@ def adjust_page_height(c, section: dict):
     elif title == "3 CHARTS SECTION":
         PAGE_HEIGHT = 1400
     elif title == "ADSET LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 2900
+        PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 2900      
+        PAGE_HEIGHT = 2700      
     else:
         PAGE_HEIGHT = 600
 
@@ -718,19 +718,26 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setStrokeColor(colors.lightgrey)
                             c.setLineWidth(1)
                             c.roundRect(cost_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+                            print("📊 top_spend:", top_spend)
+                            print("📊 top_revenue:", top_revenue)
+                            print("📊 top_roas:", top_roas)
+
 
                             try:
                                 fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
                                 img1 = ImageReader(generate_chart_image(fig1))
                                 c.drawImage(img1, cost_x, donut_y, width=donut_width, height=donut_height)
                             except Exception as e:
-                                print(f"⚠️ Error rendering Cost Split: {str(e)}")
+                                c.setFont("Helvetica", 10)
+                                c.setFillColor(colors.red)
+                                c.drawString(cost_x + 20, donut_y + donut_height / 2, f"⚠️ Cost Split chart failed: {str(e)}")
 
                             # Revenue Split – flush right
                             revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
                             c.setStrokeColor(colors.lightgrey)
                             c.setLineWidth(1)
                             c.roundRect(revenue_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
+                            print("🎯 ROAS values:", top_roas.to_dict())
 
                             try:
                                 fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
@@ -900,7 +907,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 300
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 370
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -918,12 +925,16 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             # Cost Split (left)
                             cost_x = LEFT_MARGIN
+                            c.setStrokeColor(colors.grey)  # Replace pink with grey
+                            c.setLineWidth(1)
                             c.roundRect(cost_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
                             fig1 = draw_donut_chart(top_ad_spend.values, top_ad_spend.index, "")
                             c.drawImage(ImageReader(generate_chart_image(fig1)), cost_x, donut_y, width=donut_width, height=donut_height)
 
                             # Revenue Split (right)
                             revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
+                            c.setStrokeColor(colors.grey)  # Replace pink with grey
+                            c.setLineWidth(1)
                             c.roundRect(revenue_x, donut_y, donut_width, donut_height, radius=8, fill=0, stroke=1)
                             fig2 = draw_donut_chart(top_ad_revenue.values, top_ad_revenue.index, "")
                             c.drawImage(ImageReader(generate_chart_image(fig2)), revenue_x, donut_y, width=donut_width, height=donut_height)
