@@ -710,7 +710,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             donut_height = 410
                             large_chart_height = 480
                             donut_padding_y = 40
-                            donut_y = table_y - donut_height - donut_padding_y
+                            #donut_y = table_y - donut_height - donut_padding_y
+                            donut_y = table_y - donut_height - 40
 
                             # Cost Split – flush left
                             cost_x = LEFT_MARGIN
@@ -744,7 +745,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             roas_height = 280
                             roas_x = (PAGE_WIDTH - roas_width) / 2
                             #roas_y = top_chart_y - roas_height - 40
-                            roas_y = donut_y - roas_height - 40
+                            roas_y = donut_y - roas_height - 40 
 
 
                             # Heading above ROAS chart
@@ -990,6 +991,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 p = Paragraph(clean_text, styleN)
                                 p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
+                                
+                                draw_footer_cta(c)  # Draw footer CTA after LLM summary
 
                                         
                                 
