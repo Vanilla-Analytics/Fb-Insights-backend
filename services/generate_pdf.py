@@ -6,6 +6,8 @@ from reportlab.lib.utils import simpleSplit
 import io
 import os
 import asyncio
+import pandas as pd
+import numpy as np
 import threading
 from fastapi.responses import StreamingResponse
 from reportlab.lib.utils import ImageReader
