@@ -20,6 +20,7 @@ from services.chart_utils import (
     draw_roas_split_bar_chart,
     generate_chart_image,
     generate_cost_by_adset_chart,
+    generate_campaign_split_charts,
     generate_revenue_by_adset_chart
 )
 
@@ -1033,15 +1034,84 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 
                             except Exception as e:
                                 print(f"⚠️ LLM Summary generation failed: {str(e)}")
-                           
+                                
+                            c.showPage()
+                            # ────────────── New Page: Ad Fatigue Analysis ──────────────
+                            adjust_page_height(c, {"title": "Ad Fatigue Analysis", "contains_table": True})
+                            draw_header(c)
 
-  
-                                
-                                
-                            
-                            
-                                                   
-                    
+                            # ✅ Add title
+                            c.setFont("Helvetica-Bold", 16)
+                            c.setFillColor(colors.black)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Ad Fatigue Analysis")
+
+                            # ➤ Prepare table data
+                            df = full_ad_insights_df.copy()
+                            df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
+                            table_data = [["Ad Name", "Campaign Name", "Adset Name", "Amount Spent", "Impressions", "Frequency", "ROAS", "CTR", "Purchases", "Purchase Conversion Value"]]
+                            for _, row in df.iterrows():
+                                table_data.append([
+                                    row['ad_name'],
+                                    row['campaign_name'],
+                                    row['adset_name'],
+                                    f"{currency_symbol}{row['spend']:.2f}",
+                                    int(row['impressions']),
+                                    f"{row['frequency']:.2f}",
+                                    f"{row['roas']:.2f}",
+                                    f"{row['ctr']:.2%}",
+                                    int(row['purchases']),
+                                    f"{currency_symbol}{row['purchase_value']:.2f}"
+                                ])
+
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[130, 130, 130, 90, 90, 70, 60, 60, 70, 100])
+                            summary_table.setStyle(TableStyle([
+                                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                                ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                            ]))
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 300
+                            summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                            summary_table.drawOn(c, LEFT_MARGIN, table_y)
+
+                            # ────────────── Donut Charts ──────────────
+                            donut_y = table_y - 450  # Adjust spacing
+                            donut_width = 410
+                            donut_height = 410
+
+                            # Cost Split
+                            cost_split = generate_campaign_split_charts(df, currency_symbol)[0][1]
+                            img_cost = ImageReader(cost_split)
+                            c.drawImage(img_cost, LEFT_MARGIN, donut_y, width=donut_width, height=donut_height)
+
+                            # Revenue Split
+                            revenue_split = generate_campaign_split_charts(df, currency_symbol)[1][1]
+                            img_revenue = ImageReader(revenue_split)
+                            c.drawImage(img_revenue, PAGE_WIDTH - RIGHT_MARGIN - donut_width, donut_y, width=donut_width, height=donut_height)
+
+                            # ────────────── ROAS Split Bar Chart ──────────────
+                            roas_chart = generate_campaign_split_charts(df, currency_symbol)[2][1]
+                            img_roas = ImageReader(roas_chart)
+                            roas_y = donut_y - 460
+                            roas_width = 740
+                            roas_height = 320
+                            c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
+
+                            # ────────────── Frequency Over Time Chart ──────────────
+                            from services.chart_utils import generate_frequency_over_time_chart
+                            freq_chart = generate_frequency_over_time_chart(df)
+                            img_freq = ImageReader(freq_chart[1])
+                            freq_y = roas_y - 400
+                            c.drawImage(img_freq, LEFT_MARGIN, freq_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=350)
+
+                            # ────────────── CPM Over Time Chart ──────────────
+                            from services.chart_utils import generate_cpm_over_time_chart
+                            cpm_chart = generate_cpm_over_time_chart(df)
+                            img_cpm = ImageReader(cpm_chart[1])
+                            cpm_y = freq_y - 400
+                            c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=350)                                                             
+                                                                                                                                                               
                     else:
                         c.showPage()
                         if i < len(sections) - 1:

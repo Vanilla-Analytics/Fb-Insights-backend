@@ -306,22 +306,17 @@ def generate_revenue_by_adset_chart(df):
 
 def generate_frequency_over_time_chart(df):
     df['date'] = pd.to_datetime(df['date'])
-    df['reach'] = pd.to_numeric(df.get('reach', df['impressions']), errors='coerce').fillna(1)
-    df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(0)
     df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
-
-    grouped = df.groupby(['ad_name', 'date'])['frequency'].mean().reset_index()
-    pivot_df = grouped.pivot(index='date', columns='ad_name', values='frequency').fillna(0)
+    pivot_df = df.pivot_table(index='date', columns='ad_name', values='frequency').fillna(0)
 
     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    for col in pivot_df.columns:
-        ax.plot(pivot_df.index, pivot_df[col], label=col, marker='o')
-
-    ax.set_title("Frequency Over Time")
-    ax.set_xlabel("Day")
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5)
+    ax.axhline(y=3, color='red', linestyle='--', linewidth=1, label="Fatigue Threshold (3)")
+    ax.set_title("Frequency Over Time", fontsize=16, weight='bold')
     ax.set_ylabel("Frequency")
-    ax.legend(fontsize=8, loc='upper left', ncol=2)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.set_xlabel("Day")
+    ax.legend(loc="upper left", fontsize=8, ncol=3)
     ax.grid(True, linestyle='--', alpha=0.5)
     fig.tight_layout()
     return ("Frequency Over Time", generate_chart_image(fig))
@@ -329,22 +324,18 @@ def generate_frequency_over_time_chart(df):
 
 def generate_cpm_over_time_chart(df):
     df['date'] = pd.to_datetime(df['date'])
-    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
-    df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(1)
-    df['cpm'] = df['spend'] / df['impressions'] * 1000
-
-    grouped = df.groupby(['ad_name', 'date'])['cpm'].mean().reset_index()
-    pivot_df = grouped.pivot(index='date', columns='ad_name', values='cpm').fillna(0)
+    df['cpm'] = (df['spend'] / df['impressions'].replace(0, 1)) * 1000
+    pivot_df = df.pivot_table(index='date', columns='ad_name', values='cpm').fillna(0)
 
     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    for col in pivot_df.columns:
-        ax.plot(pivot_df.index, pivot_df[col], label=col, marker='o')
-
-    ax.set_title("CPM Over Time")
-    ax.set_xlabel("Day")
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5)
+    ax.set_title("CPM Over Time", fontsize=16, weight='bold')
     ax.set_ylabel("CPM (₹)")
-    ax.legend(fontsize=8, loc='upper left', ncol=2)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.set_xlabel("Day")
+    ax.legend(loc="upper left", fontsize=8, ncol=3)
     ax.grid(True, linestyle='--', alpha=0.5)
     fig.tight_layout()
     return ("CPM Over Time", generate_chart_image(fig))
+
+
