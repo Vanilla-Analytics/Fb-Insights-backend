@@ -1047,6 +1047,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             # ➤ Prepare table data
                             df = full_ad_insights_df.copy()
+                            print(df.columns)
+                            print(df.head(5))
                             df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
                             table_data = [["Ad Name", "Campaign Name", "Adset Name", "Amount Spent", "Impressions", "Frequency", "ROAS", "CTR", "Purchases", "Purchase Conversion Value"]]
                             for _, row in df.iterrows():
