@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from reportlab.lib.pagesizes import landscape
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -6,8 +8,6 @@ from reportlab.lib.utils import simpleSplit
 import io
 import os
 import asyncio
-import pandas as pd
-import numpy as np
 import threading
 from fastapi.responses import StreamingResponse
 from reportlab.lib.utils import ImageReader
@@ -362,7 +362,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
-                        import pandas as pd
+                        #import pandas as pd
 
                         for _, row in ad_insights_df.iterrows():
                             table_data.append([
