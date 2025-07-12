@@ -304,3 +304,47 @@ def generate_revenue_by_adset_chart(df):
     return ("Revenue by Adsets", generate_chart_image(fig))
 
 
+def generate_frequency_over_time_chart(df):
+    df['date'] = pd.to_datetime(df['date'])
+    df['reach'] = pd.to_numeric(df.get('reach', df['impressions']), errors='coerce').fillna(1)
+    df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(0)
+    df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
+
+    grouped = df.groupby(['ad_name', 'date'])['frequency'].mean().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='ad_name', values='frequency').fillna(0)
+
+    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    for col in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[col], label=col, marker='o')
+
+    ax.set_title("Frequency Over Time")
+    ax.set_xlabel("Day")
+    ax.set_ylabel("Frequency")
+    ax.legend(fontsize=8, loc='upper left', ncol=2)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.grid(True, linestyle='--', alpha=0.5)
+    fig.tight_layout()
+    return ("Frequency Over Time", generate_chart_image(fig))
+
+
+def generate_cpm_over_time_chart(df):
+    df['date'] = pd.to_datetime(df['date'])
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(1)
+    df['cpm'] = df['spend'] / df['impressions'] * 1000
+
+    grouped = df.groupby(['ad_name', 'date'])['cpm'].mean().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='ad_name', values='cpm').fillna(0)
+
+    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    for col in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[col], label=col, marker='o')
+
+    ax.set_title("CPM Over Time")
+    ax.set_xlabel("Day")
+    ax.set_ylabel("CPM (₹)")
+    ax.legend(fontsize=8, loc='upper left', ncol=2)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.grid(True, linestyle='--', alpha=0.5)
+    fig.tight_layout()
+    return ("CPM Over Time", generate_chart_image(fig))

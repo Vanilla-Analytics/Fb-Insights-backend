@@ -239,6 +239,42 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
         "charts": chart_imgs
     }
 
+async def generate_ad_fatigue_summary(full_df: pd.DataFrame, currency_symbol: str) -> str:
+    from services.deepseek_audit import generate_llm_content
+
+    if full_df.empty or 'ad_name' not in full_df.columns:
+        return "⚠️ No ad-level data available to summarize fatigue."
+
+    df = full_df.copy()
+    df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(0)
+    df['reach'] = pd.to_numeric(df.get('reach', df['impressions']), errors='coerce').fillna(1)
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+
+    df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
+    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    df['ctr'] = pd.to_numeric(df['ctr'], errors='coerce').fillna(0)
+
+    records = df[['ad_name', 'frequency', 'ctr', 'roas', 'cpa']].to_dict(orient='records')
+    summary_data = {"ads": records}
+
+    prompt = (
+        f"Based on the following Meta Ads data, write a short professional paragraph (max 4–5 lines) summarizing signs of ad fatigue.\n\n"
+        f"Include:\n"
+        f"1. Whether frequency is too high (>3.5) for some ads with poor CTR or ROAS.\n"
+        f"2. Whether stable frequency ads are performing better.\n"
+        f"3. Trends in CPM if available.\n"
+        f"4. 1 actionable recommendation.\n"
+        f"Use {currency_symbol} in values where needed.\n"
+        f"Do not list all ads — just highlight general observations with insight."
+    )
+
+    return await generate_llm_content(prompt, summary_data)
+
+ 
+
 
 def draw_donut_chart(values, labels, title):    
     if values.sum() <= 0 or not np.all(np.isfinite(values)):
