@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from reportlab.lib.pagesizes import landscape
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -20,11 +22,11 @@ from services.chart_utils import (
     draw_roas_split_bar_chart,
     generate_chart_image,
     generate_cost_by_adset_chart,
-    generate_revenue_by_adset_chart
+    generate_revenue_by_adset_chart,
+    generate_frequency_over_time_chart,
+    generate_cpm_over_time_chart
+    
 )
-
-
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -78,7 +80,9 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 3400      
+        PAGE_HEIGHT = 3700 
+    elif title == "AD FATIGUE ANALYSIS":
+        PAGE_HEIGHT = 3700     
     else:
         PAGE_HEIGHT = 600
 
@@ -355,7 +359,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # Prepare table data
                         table_data = [["Day", "Amount spent", "Purchases", "Purchases conversion value", "CPA", "Impressions","CTR", "Link clicks", "Click To Conversion", "ROAS"]]
 
-                        import pandas as pd
+                        #import pandas as pd
 
                         for _, row in ad_insights_df.iterrows():
                             table_data.append([
@@ -916,7 +920,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1100
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1400
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1033,20 +1037,140 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 
                             except Exception as e:
                                 print(f"⚠️ LLM Summary generation failed: {str(e)}")
-                           
+            
+            if full_ad_insights_df is not None and 'ad_name' in full_ad_insights_df.columns:
+                c.showPage()
+                adjust_page_height(c, {"title": "Ad Fatigue Analysis", "contains_table": True})
+                draw_header(c)
 
-  
-                                
-                                
-                            
-                            
-                                                   
+                c.setFont("Helvetica-Bold", 16)
+                c.setFillColor(colors.black)
+                c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Ad Fatigue Analysis")
+                df = full_ad_insights_df.copy()
+                df = df[df['ad_name'].notna()]
+                df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+                df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+                df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+                df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(0)
+                df['ctr'] = pd.to_numeric(df['ctr'], errors='coerce').fillna(0)
+                df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+                df['frequency'] = df['impressions'] / df.get('reach', df['impressions']).replace(0, 1)
+                
+                # Group by ad_name
+                grouped = df.groupby('ad_name').agg({
+                    'campaign_name': 'first',
+                    'adset_name': 'first',
+                    'spend': 'sum',
+                    'impressions': 'sum',
+                    'frequency': 'mean',
+                    'roas': 'mean',
+                    'ctr': 'mean',
+                    'purchases': 'sum',
+                    'purchase_value': 'sum'
+                }).reset_index()
+                
+                table_data = [["Ad Name", "Campaign", "Adset", "Amount Spent", "Impressions", "Frequency", "ROAS", "CTR", "Purchases", "Purchase Value"]]
+                for _, row in grouped.iterrows():
+                    table_data.append([
+                        row['ad_name'],
+                        row['campaign_name'],
+                        row['adset_name'],
+                        f"{currency_symbol}{row['spend']:.2f}",
+                        f"{int(row['impressions']):,}",
+                        f"{row['frequency']:.2f}",
+                        f"{row['roas']:.2f}",
+                        f"{row['ctr']:.2%}",
+                        int(row['purchases']),
+                        f"{currency_symbol}{row['purchase_value']:.2f}"
+                    ])
                     
-                    else:
-                        c.showPage()
-                        if i < len(sections) - 1:
-                            next_section = sections[i + 1]
-                            adjust_page_height(c, next_section)
+                ad_table = Table(table_data, repeatRows=1, colWidths=[120, 100, 100, 90, 90, 60, 60, 60, 60, 90])
+                ad_table.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 7),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
+                ]))
+                
+                table_y = PAGE_HEIGHT - TOP_MARGIN - 260
+                ad_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                ad_table.drawOn(c, LEFT_MARGIN, table_y)
+
+                # Donut + ROAS Split
+                top_spend = grouped.set_index('ad_name')['spend'].sort_values(ascending=False).head(6)
+                top_revenue = grouped.set_index('ad_name')['purchase_value'].sort_values(ascending=False).head(6)
+                top_roas = grouped.set_index('ad_name')['roas'].sort_values(ascending=False).head(6)
+
+                donut_width = 360
+                donut_height = 360
+                donut_y = table_y - donut_height - 50
+                
+                cost_x = LEFT_MARGIN
+                revenue_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
+
+                fig1 = draw_donut_chart(top_spend.values, top_spend.index, "Cost Split")
+                c.drawImage(ImageReader(generate_chart_image(fig1)), cost_x, donut_y, width=donut_width, height=donut_height)
+
+                fig2 = draw_donut_chart(top_revenue.values, top_revenue.index, "Revenue Split")
+                c.drawImage(ImageReader(generate_chart_image(fig2)), revenue_x, donut_y, width=donut_width, height=donut_height)
+
+                roas_width = 750
+                roas_height = 280
+                roas_x = (PAGE_WIDTH - roas_width) / 2
+                roas_y = donut_y - roas_height - 40
+                
+                fig3 = draw_roas_split_bar_chart(top_roas)
+                c.drawImage(ImageReader(generate_chart_image(fig3)), roas_x, roas_y, width=roas_width, height=roas_height)
+
+                # Frequency Over Time Chart
+                #from services.deepseek_audit import generate_frequency_over_time_chart
+                freq_chart = generate_frequency_over_time_chart(full_ad_insights_df)
+                freq_y = roas_y - 420
+                c.drawImage(ImageReader(freq_chart[1]), LEFT_MARGIN, freq_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=350)
+
+                # CPM Over Time Chart
+                #from services.deepseek_audit import generate_cpm_over_time_chart
+                cpm_chart = generate_cpm_over_time_chart(full_ad_insights_df)
+                cpm_y = freq_y - 420
+                c.drawImage(ImageReader(cpm_chart[1]), LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=350)
+
+                           
+                # ─── Ad Fatigue Summary ───
+                try:
+                    from services.deepseek_audit import generate_ad_fatigue_summary
+                    fatigue_summary = run_async_in_thread(generate_ad_fatigue_summary(full_ad_insights_df, currency_symbol))
+
+                    # Clean and prepare paragraph
+                    import re
+                    clean_text = re.sub(r"[*#]", "", fatigue_summary).strip()
+
+                    from reportlab.platypus import Paragraph
+                    from reportlab.lib.styles import getSampleStyleSheet
+
+                    styles = getSampleStyleSheet()
+                    styleN = styles["Normal"]
+                    styleN.fontName = "DejaVuSans" if currency_symbol == "₹" else "Helvetica"
+                    styleN.fontSize = 11
+                    styleN.leading = 14
+                    styleN.textColor = colors.HexColor("#333333")
+
+                    summary_y = cpm_y - 60
+                    p = Paragraph(clean_text, styleN)
+                    p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
+                    p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
+
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    print(f"⚠️ Ad Fatigue Summary generation failed: {str(e)}")  
+                                                                                                                                                                                               
+                else:
+                    c.showPage()
+                    if i < len(sections) - 1:
+                        next_section = sections[i + 1]
+                        adjust_page_height(c, next_section)
 
                         # next_section = sections[i + 1]
                         # adjust_page_height(c, next_section)            
