@@ -656,7 +656,7 @@ async def fetch_ad_insights(user_token: str):
 
 
                 params = {
-                    "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,purchases,purchase_value,date_start,account_currency,account_name",
+                    "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,account_currency,account_name",
                     "time_range": json.dumps({"since": safe_since, "until": safe_until}),
                     "time_increment": 1,
                     "level": "ad",
