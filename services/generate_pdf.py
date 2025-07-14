@@ -185,6 +185,16 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
     if currency_symbol is None:
         currency_symbol = "₹"
+        
+    if ad_insights_df is not None and 'reach' not in ad_insights_df.columns:
+        print("⚠️ 'reach' missing in ad_insights_df, creating fallback.")
+        ad_insights_df['reach'] = ad_insights_df['impressions']
+        
+    if full_ad_insights_df is not None and 'reach' not in full_ad_insights_df.columns:
+        print("⚠️ 'reach' missing in full_ad_insights_df, creating fallback.")
+        full_ad_insights_df['reach'] = full_ad_insights_df['impressions']
+
+
     try:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer)   

@@ -249,7 +249,14 @@ async def generate_ad_fatigue_summary(full_df: pd.DataFrame, currency_symbol: st
     df = full_df.copy()
     df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(0)
     #df['reach'] = pd.to_numeric(df.get('reach', df['impressions']), errors='coerce').fillna(1)
+    #df['reach'] = pd.to_numeric(df['reach'], errors='coerce').fillna(1)
+    # Fallback: if 'reach' column is missing, use 'impressions'
+    if 'reach' not in df.columns:
+        print("⚠️ 'reach' column missing, using 'impressions' as fallback.")
+        df['reach'] = df['impressions']
+
     df['reach'] = pd.to_numeric(df['reach'], errors='coerce').fillna(1)
+
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
     df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
