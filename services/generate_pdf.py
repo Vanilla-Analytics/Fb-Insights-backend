@@ -83,9 +83,9 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 3800 
+        PAGE_HEIGHT = 4400 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 2500     
+        PAGE_HEIGHT = 3200     
     else:
         PAGE_HEIGHT = 600
 
@@ -945,7 +945,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1400
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1900
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1093,7 +1093,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['purchase_value']:.2f}"
                                 ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[130, 130, 130, 90, 90, 70, 60, 60, 70, 100])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[150, 150, 150, 70, 60, 70, 60, 60, 40, 60])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1101,7 +1101,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 900
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1123,7 +1123,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ────────────── ROAS Split Bar Chart ──────────────
                             roas_chart = generate_campaign_split_charts(df, currency_symbol)[2][1]
                             img_roas = ImageReader(roas_chart)
-                            roas_y = donut_y - 460
+                            roas_y = donut_y - 380
                             roas_width = 740
                             roas_height = 320
                             c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
@@ -1133,14 +1133,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             freq_chart = generate_frequency_over_time_chart(df)
                             img_freq = ImageReader(freq_chart[1])
                             freq_y = roas_y - 400
-                            c.drawImage(img_freq, LEFT_MARGIN, freq_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=350)
+                            c.drawImage(img_freq, LEFT_MARGIN, freq_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)
 
                             # ────────────── CPM Over Time Chart ──────────────
                             from services.chart_utils import generate_cpm_over_time_chart
                             cpm_chart = generate_cpm_over_time_chart(df)
                             img_cpm = ImageReader(cpm_chart[1])
                             cpm_y = freq_y - 400
-                            c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=350)                                                             
+                            c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)                                                             
                                                                                                                                                                
                     else:
                         c.showPage()

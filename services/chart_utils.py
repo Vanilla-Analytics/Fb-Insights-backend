@@ -309,14 +309,14 @@ def generate_frequency_over_time_chart(df):
     df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
     pivot_df = df.pivot_table(index='date', columns='ad_name', values='frequency').fillna(0)
 
-    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    for column in pivot_df.columns:
+    fig, ax = plt.subplots(figsize=(15, 7), dpi=200)
+    for column in pivot_df.columns[:5]:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5)
     ax.axhline(y=3, color='red', linestyle='--', linewidth=1, label="Fatigue Threshold (3)")
     ax.set_title("Frequency Over Time", fontsize=16, weight='bold')
     ax.set_ylabel("Frequency")
     ax.set_xlabel("Day")
-    ax.legend(loc="upper left", fontsize=8, ncol=3)
+    ax.legend(loc="upper centre", fontsize=8, ncol=3)
     ax.grid(True, linestyle='--', alpha=0.5)
     fig.tight_layout()
     return ("Frequency Over Time", generate_chart_image(fig))
@@ -327,13 +327,13 @@ def generate_cpm_over_time_chart(df):
     df['cpm'] = (df['spend'] / df['impressions'].replace(0, 1)) * 1000
     pivot_df = df.pivot_table(index='date', columns='ad_name', values='cpm').fillna(0)
 
-    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    for column in pivot_df.columns:
+    fig, ax = plt.subplots(figsize=(15, 7), dpi=200)
+    for column in pivot_df.columns[:5]:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5)
     ax.set_title("CPM Over Time", fontsize=16, weight='bold')
     ax.set_ylabel("CPM (₹)")
     ax.set_xlabel("Day")
-    ax.legend(loc="upper left", fontsize=8, ncol=3)
+    ax.legend(loc="upper centre", fontsize=8, ncol=3)
     ax.grid(True, linestyle='--', alpha=0.5)
     fig.tight_layout()
     return ("CPM Over Time", generate_chart_image(fig))
