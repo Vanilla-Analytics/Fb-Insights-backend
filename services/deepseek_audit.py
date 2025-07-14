@@ -650,8 +650,10 @@ async def fetch_ad_insights(user_token: str):
 
                 ad_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                 now = datetime.now(timezone.utc)
-                safe_until = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-                safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+                safe_until = (now - timedelta(days=2)).strftime("%Y-%m-%d")
+                safe_since = (now - timedelta(days=32)).strftime("%Y-%m-%d")
+                print(f"📅 Fetching data from {safe_since} to {safe_until}")
+
 
                 params = {
                     "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,purchases,purchase_value,date_start,account_currency,account_name",
@@ -673,6 +675,9 @@ async def fetch_ad_insights(user_token: str):
                 ad_results = []
                 async with httpx.AsyncClient(timeout=timeout) as client:
                     response = await client.get(ad_url, params=params)
+                    if "error" in response.json():
+                        print("⚠️ Graph API Error:", response.json()["error"]["message"])
+
                     response.raise_for_status()
                     data_page = response.json()
                     ad_results.extend(data_page.get("data", []))
