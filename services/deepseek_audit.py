@@ -654,7 +654,7 @@ async def fetch_ad_insights(user_token: str):
                 safe_since = (now - timedelta(days=30)).strftime("%Y-%m-%d")
 
                 params = {
-                    "fields": "campaign_name,adset_name,ad_name,spend,impressions,reach,clicks,cpc,ctr,purchases,purchase_value,actions,action_values,date_start,account_currency,account_name",
+                    "fields": "campaign_name,adset_name,ad_name,spend,impressions,clicks,cpc,ctr,purchases,purchase_value,actions,action_values,date_start,account_currency,account_name",
                     "time_range": json.dumps({"since": safe_since, "until": safe_until}),
                     "time_increment": 1,
                     "level": "ad",
