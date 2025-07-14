@@ -193,6 +193,18 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
     if full_ad_insights_df is not None and 'reach' not in full_ad_insights_df.columns:
         print("⚠️ 'reach' missing in full_ad_insights_df, creating fallback.")
         full_ad_insights_df['reach'] = full_ad_insights_df['impressions']
+        
+    # 🔥 Fallback: Ensure 'roas' exists
+    if ad_insights_df is not None and 'roas' not in ad_insights_df.columns:
+        print("⚠️ 'roas' missing in ad_insights_df, calculating fallback.")
+        ad_insights_df['roas'] = ad_insights_df['purchase_value'] / ad_insights_df['spend'].replace(0, 1)
+        ad_insights_df['roas'] = ad_insights_df['roas'].fillna(0).round(2)
+
+    if full_ad_insights_df is not None and 'roas' not in full_ad_insights_df.columns:
+        print("⚠️ 'roas' missing in full_ad_insights_df, calculating fallback.")
+        full_ad_insights_df['roas'] = full_ad_insights_df['purchase_value'] / full_ad_insights_df['spend'].replace(0, 1)
+        full_ad_insights_df['roas'] = full_ad_insights_df['roas'].fillna(0).round(2)
+
 
 
     try:
