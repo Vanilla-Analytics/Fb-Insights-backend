@@ -83,9 +83,9 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 4400 
+        PAGE_HEIGHT = 4000 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 3200     
+        PAGE_HEIGHT = 4000     
     else:
         PAGE_HEIGHT = 600
 
@@ -945,7 +945,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1900
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1650
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1101,7 +1101,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2000
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1123,7 +1123,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ────────────── ROAS Split Bar Chart ──────────────
                             roas_chart = generate_campaign_split_charts(df, currency_symbol)[2][1]
                             img_roas = ImageReader(roas_chart)
-                            roas_y = donut_y - 380
+                            roas_y = donut_y - 340
                             roas_width = 740
                             roas_height = 320
                             c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
