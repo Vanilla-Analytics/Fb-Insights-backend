@@ -1,4 +1,5 @@
 # services/deepseek_audit.py
+# services/deepseek_audit.py
 import httpx
 import os
 import requests
@@ -247,7 +248,8 @@ async def generate_ad_fatigue_summary(full_df: pd.DataFrame, currency_symbol: st
 
     df = full_df.copy()
     df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce').fillna(0)
-    df['reach'] = pd.to_numeric(df.get('reach', df['impressions']), errors='coerce').fillna(1)
+    #df['reach'] = pd.to_numeric(df.get('reach', df['impressions']), errors='coerce').fillna(1)
+    df['reach'] = pd.to_numeric(df['reach'], errors='coerce').fillna(1)
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
     df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
@@ -658,6 +660,15 @@ async def fetch_ad_insights(user_token: str):
                     "level": "ad",
                     "access_token": user_token
                 }
+                
+                reach_params = {
+                    "fields": "adset_id,reach,date_start",  # minimum fields needed
+                    "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+                    "time_increment": 1,
+                    "level": "adset",  # ✅ Fetch reach from adset level
+                    "access_token": user_token
+                }
+
 
                 ad_results = []
                 async with httpx.AsyncClient(timeout=timeout) as client:
@@ -674,12 +685,42 @@ async def fetch_ad_insights(user_token: str):
                         data_page = next_response.json()
                         ad_results.extend(data_page.get("data", []))
                         
+                    # 🔍 Fetch reach at adset level (for fatigue analysis)
+                    reach_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    reach_params = {
+                        "fields": "adset_id,reach,date_start",
+                        "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+                        "time_increment": 1,
+                        "level": "adset",
+                        "access_token": user_token
+                    }
+                    reach_df = pd.DataFrame()
+                    try:
+                        reach_response = await client.get(reach_url, params=reach_params)
+                        reach_response.raise_for_status()
+                        reach_data = reach_response.json().get("data", [])
+                        reach_df = pd.DataFrame(reach_data)
+                    except Exception as e:
+                        print(f"⚠️ Failed to fetch reach data for account {acc['id']}: {e}")
+                        
                     # ✅ DEBUG: Print full data sample after all pages
                     print("📦 Final sample of fetched ad data (first 3 rows):")
                     import pprint
                     pprint.pprint(ad_results[:3], indent=2)
 
                 print(f"✅ Total insights for account {acc['id']}: {len(ad_results)}")
+                # 🧠 Merge reach into ad-level data if available
+                if not reach_df.empty:
+                    reach_df["date_start"] = pd.to_datetime(reach_df["date_start"])
+                    for ad in ad_results:
+                        if "adset_id" in ad and "date_start" in ad:
+                            match = reach_df[
+                                (reach_df["adset_id"] == ad["adset_id"]) &
+                                (pd.to_datetime(reach_df["date_start"]) == pd.to_datetime(ad["date_start"]))
+                            ]
+                            if not match.empty:
+                                ad["reach"] = match["reach"].values[0]
+
 
                 for ad in ad_results:
                     if 'account_currency' not in ad:
