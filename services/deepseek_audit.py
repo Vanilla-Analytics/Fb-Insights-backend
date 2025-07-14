@@ -686,7 +686,8 @@ async def fetch_ad_insights(user_token: str):
                         ad_results.extend(data_page.get("data", []))
                         
                     # 🔍 Fetch reach at adset level (for fatigue analysis)
-                    reach_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    reach_url = f"https://graph.facebook.com/v22.0/act_{acc['id']}/insights"
+
                     reach_params = {
                         "fields": "adset_id,reach,date_start",
                         "time_range": json.dumps({"since": safe_since, "until": safe_until}),
