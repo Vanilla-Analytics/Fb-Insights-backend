@@ -1093,7 +1093,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['purchase_value']:.2f}"
                                 ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[150, 150, 150, 70, 60, 70, 60, 60, 40, 60])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[150, 150, 170, 70, 50, 60, 60, 60, 40, 60])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1132,14 +1132,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             from services.chart_utils import generate_frequency_over_time_chart
                             freq_chart = generate_frequency_over_time_chart(df)
                             img_freq = ImageReader(freq_chart[1])
-                            freq_y = roas_y - 400
+                            freq_y = roas_y - 470
                             c.drawImage(img_freq, LEFT_MARGIN, freq_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)
 
                             # ────────────── CPM Over Time Chart ──────────────
                             from services.chart_utils import generate_cpm_over_time_chart
                             cpm_chart = generate_cpm_over_time_chart(df)
                             img_cpm = ImageReader(cpm_chart[1])
-                            cpm_y = freq_y - 400
+                            cpm_y = freq_y - 470
                             c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)                                                             
                                                                                                                                                                
                     else:
