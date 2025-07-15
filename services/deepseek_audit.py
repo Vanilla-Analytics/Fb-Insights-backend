@@ -924,7 +924,15 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         ad_data = await fetch_ad_insights(user_token)
         print("🔍 ad_data structure:", type(ad_data), ad_data)
         #account_id = ad_data[0]['account_id'] if ad_data else None
-        account_id = ad_data.get('account_id') if isinstance(ad_data, dict) else ad_data[0].get('account_id') if ad_data else None
+        account_id = None
+        if isinstance(ad_data, dict):
+            account_id = ad_data.get('account_id')
+        elif isinstance(ad_data, list):
+            for item in ad_data:
+                if isinstance(item, dict) and 'account_id' in item:
+                    account_id = item['account_id']
+                    break
+
         demographic_df = await fetch_demographic_insights(account_id, user_token)
         
         if not demographic_df.empty:
