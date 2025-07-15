@@ -696,6 +696,16 @@ async def fetch_ad_insights(user_token: str):
                     "level": "adset",  # ✅ Fetch reach from adset level
                     "access_token": user_token
                 }
+                
+                demographic_params = {
+                    "fields": "age,gender,adset_id,spend,impressions,reach",
+                    "breakdowns": "age,gender",
+                    "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+                    "time_increment": 1,
+                    "level": "ad",
+                    "access_token": user_token
+                }
+
 
 
                 ad_results = []
@@ -735,6 +745,18 @@ async def fetch_ad_insights(user_token: str):
                     except Exception as e:
                         print(f"⚠️ Failed to fetch reach data for account {acc['id']}: {e}")
                         
+                    # 🔍 Fetch demographic data
+                    demographic_url = f"https://graph.facebook.com/v22.0/act_{acc['id']}/insights"
+                    demographic_df = pd.DataFrame()
+                    try:
+                        demo_response = await client.get(demographic_url, params=demographic_params)
+                        demo_response.raise_for_status()
+                        demo_data = demo_response.json().get("data", [])
+                        demographic_df = pd.DataFrame(demo_data)
+                    except Exception as e:
+                        print(f"⚠️ Failed to fetch demographic data for account {acc['id']}: {e}")
+ 
+                        
                     # ✅ DEBUG: Print full data sample after all pages
                     print("📦 Final sample of fetched ad data (first 3 rows):")
                     import pprint
@@ -752,6 +774,19 @@ async def fetch_ad_insights(user_token: str):
                             ]
                             if not match.empty:
                                 ad["reach"] = match["reach"].values[0]
+                                
+                if not demographic_df.empty:
+                    demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
+                    demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
+                    demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+
+                    # Optional: clean or rename columns if needed
+                    demographic_df = demographic_df.rename(columns={"date_start": "date"})
+
+                    # If needed: merge into original_df or use separately
+                    print("📊 Demographic breakdown sample:")
+                    print(demographic_df.head())
+
 
 
                 for ad in ad_results:
@@ -760,7 +795,7 @@ async def fetch_ad_insights(user_token: str):
                     insights_data.append(ad)
 
             print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
-            return insights_data
+            return insights_data,demographic_df
 
     except Exception as e:
         print(f"❌ Error in fetch_ad_insights: {str(e)}")
@@ -925,6 +960,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         for col in numeric_fields:
             if col in original_df.columns:
                 original_df[col] = pd.to_numeric(original_df[col], errors='coerce').fillna(0)
+                
+        
 
         # Calculate aggregated metrics per day
         grouped_df = original_df.groupby('date').agg({
