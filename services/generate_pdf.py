@@ -206,7 +206,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
         
 
-def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol=None, split_charts=None) -> StreamingResponse:
+def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=None, currency_symbol=None, split_charts=None,demographic_df=None) -> StreamingResponse:
     global PAGE_HEIGHT, LOGO_Y_OFFSET, TOP_MARGIN  # ✅ Fixes UnboundLocalError
 
     if currency_symbol is None:

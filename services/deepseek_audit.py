@@ -1112,6 +1112,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             full_ad_insights_df=original_df,
             currency_symbol=currency_symbol,
             split_charts=split_charts,
+            demographic_df=demographic_df
             
         )
 
