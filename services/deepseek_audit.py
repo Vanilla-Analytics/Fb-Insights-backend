@@ -736,6 +736,16 @@ async def fetch_ad_insights(user_token: str):
                         "level": "adset",
                         "access_token": user_token
                     }
+                    
+                    demographic_params = {
+                        "fields": "adset_id,age,gender,spend,impressions,reach,date_start",
+                        "breakdowns": "age,gender",
+                        "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+                        "time_increment": 1,
+                        "level": "ad",
+                        "access_token": user_token
+                    }
+
                     reach_df = pd.DataFrame()
                     try:
                         reach_response = await client.get(reach_url, params=reach_params)
@@ -753,8 +763,10 @@ async def fetch_ad_insights(user_token: str):
                         demo_response.raise_for_status()
                         demo_data = demo_response.json().get("data", [])
                         demographic_df = pd.DataFrame(demo_data)
+                        print(f"✅ Fetched demographic data for {acc['id']}, shape: {demographic_df.shape}")
                     except Exception as e:
                         print(f"⚠️ Failed to fetch demographic data for account {acc['id']}: {e}")
+                        demographic_df = pd.DataFrame()
  
                         
                     # ✅ DEBUG: Print full data sample after all pages
@@ -877,7 +889,21 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
-        ad_data = await fetch_ad_insights(user_token)
+        ad_data,demographic_df = await fetch_ad_insights(user_token)
+        
+        if not demographic_df.empty:
+            demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
+            demographic_df['impressions'] = pd.to_numeric(demographic_df['impressions'], errors='coerce').fillna(0)
+            demographic_df['reach'] = pd.to_numeric(demographic_df['reach'], errors='coerce').fillna(0)
+
+            demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
+                "spend": "sum",
+                "reach": "sum",
+                "impressions": "sum"
+            }).reset_index()
+            print("✅ Grouped demographic data:")
+            print(demographic_grouped.head())
+
 
         # Filter out invalid entries
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
