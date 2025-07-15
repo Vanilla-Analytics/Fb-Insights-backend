@@ -339,6 +339,8 @@ def generate_cpm_over_time_chart(df):
     return ("CPM Over Time", generate_chart_image(fig))
 
 def generate_cost_split_by_age_chart(df):
+    if 'Age' not in df.columns or 'Amount Spent' not in df.columns:
+        raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
     grouped = df.groupby('Age')['Amount Spent'].sum()
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
@@ -350,6 +352,8 @@ def generate_cost_split_by_age_chart(df):
     plt.close(fig)
     return buf
 def generate_revenue_split_by_age_chart(df):
+    if 'Age' not in df.columns or 'Purchases' not in df.columns:
+        raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
     grouped = df.groupby('Age')['Purchases'].sum()
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
@@ -361,6 +365,8 @@ def generate_revenue_split_by_age_chart(df):
     plt.close(fig)
     return buf
 def generate_cost_split_by_gender_chart(df):
+    if 'Gender' not in df.columns or 'Amount Spent' not in df.columns:
+        raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
     grouped = df.groupby('Gender')['Amount Spent'].sum()
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
@@ -372,6 +378,8 @@ def generate_cost_split_by_gender_chart(df):
     plt.close(fig)
     return buf
 def generate_revenue_split_by_gender_chart(df):
+    if 'Gender' not in df.columns or 'Purchases' not in df.columns:
+        raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
     grouped = df.groupby('Gender')['Purchases'].sum()
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
