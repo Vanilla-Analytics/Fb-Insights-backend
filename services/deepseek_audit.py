@@ -922,7 +922,9 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
         ad_data = await fetch_ad_insights(user_token)
-        account_id = ad_data[0]['account_id'] if ad_data else None
+        print("🔍 ad_data structure:", type(ad_data), ad_data)
+        #account_id = ad_data[0]['account_id'] if ad_data else None
+        account_id = ad_data.get('account_id') if isinstance(ad_data, dict) else ad_data[0].get('account_id') if ad_data else None
         demographic_df = await fetch_demographic_insights(account_id, user_token)
         
         if not demographic_df.empty:
