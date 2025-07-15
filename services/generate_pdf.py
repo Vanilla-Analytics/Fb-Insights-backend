@@ -92,7 +92,9 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 4000 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4500     
+        PAGE_HEIGHT = 4500 
+    elif title == "DEMOGRAPHIC PERFORMANCE":
+        PAGE_HEIGHT = 3000    
     else:
         PAGE_HEIGHT = 600
 
@@ -1147,7 +1149,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             
                             # 📄 New Page - Demographic Performance
                             c.showPage()
+                            adjust_page_height(c, {"title": "Demographic Performance", "contains_table": True})
                             draw_header(c)
+                            
+                            # ✅ Add title
+                            c.setFont("Helvetica-Bold", 16)
+                            c.setFillColor(colors.black)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
                             # 📊 Prepare Demographic Table Data
                             demographic_df = full_ad_insights_df.copy()
 
@@ -1195,8 +1203,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                                 ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                             ]))
+                            table_y = PAGE_HEIGHT - 1000
                             table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                            table.drawOn(c, LEFT_MARGIN, PAGE_HEIGHT - 250)
+                            table.drawOn(c, LEFT_MARGIN, table_y)
                             
                             # 📈 Donut Charts - Age
                             cost_age_chart = generate_cost_split_by_age_chart(demographic_df)
