@@ -338,4 +338,77 @@ def generate_cpm_over_time_chart(df):
     fig.tight_layout()
     return ("CPM Over Time", generate_chart_image(fig))
 
-
+def generate_cost_split_by_age_chart(df):
+    grouped = df.groupby('Age')['Amount Spent'].sum()
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
+    ax.set_title("Cost Split By Age", fontsize=14)
+    plt.tight_layout()
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+def generate_revenue_split_by_age_chart(df):
+    grouped = df.groupby('Age')['Purchases'].sum()
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
+    ax.set_title("Revenue Split By Age", fontsize=14)
+    plt.tight_layout()
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+def generate_cost_split_by_gender_chart(df):
+    grouped = df.groupby('Gender')['Amount Spent'].sum()
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
+    ax.set_title("Cost Split By Gender", fontsize=14)
+    plt.tight_layout()
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+def generate_revenue_split_by_gender_chart(df):
+    grouped = df.groupby('Gender')['Purchases'].sum()
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
+    ax.set_title("Revenue Split By Gender", fontsize=14)
+    plt.tight_layout()
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+def generate_roas_split_by_age_chart(df):
+    grouped = df.groupby('Age')['ROAS'].mean()
+    fig, ax = plt.subplots(figsize=(6, 4))
+    bars = ax.barh(grouped.index, grouped.values, color="#ff00aa")
+    ax.set_title("ROAS Split By Age", fontsize=14)
+    ax.set_xlabel("ROAS")
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2, f"{width:.2f}", va='center', fontsize=8)
+    plt.tight_layout()
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+def generate_roas_split_by_gender_chart(df):
+    grouped = df.groupby('Gender')['ROAS'].mean()
+    fig, ax = plt.subplots(figsize=(6, 4))
+    bars = ax.barh(grouped.index, grouped.values, color="#ff00aa")
+    ax.set_title("ROAS Split By Gender", fontsize=14)
+    ax.set_xlabel("ROAS")
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2, f"{width:.2f}", va='center', fontsize=8)
+    plt.tight_layout()
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf

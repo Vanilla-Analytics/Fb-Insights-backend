@@ -21,8 +21,15 @@ from services.chart_utils import (
     generate_chart_image,
     generate_cost_by_adset_chart,
     generate_campaign_split_charts,
-    generate_revenue_by_adset_chart
+    generate_revenue_by_adset_chart,
+    generate_cost_split_by_age_chart,
+    generate_cost_split_by_gender_chart,
+    generate_revenue_split_by_age_chart,
+    generate_revenue_split_by_gender_chart,
+    generate_roas_split_by_age_chart,
+    generate_roas_split_by_gender_chart
 )
+from services.deepseek_audit import generate_llm_content, build_demographic_summary_prompt
 
 import logging
 
@@ -85,7 +92,7 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 4000 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4000     
+        PAGE_HEIGHT = 4500     
     else:
         PAGE_HEIGHT = 600
 
@@ -835,16 +842,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                            
-                            try:
-                                
-                               
+                            try:                              
 
                                 from services.deepseek_audit import generate_adset_summary
 
                                 summary_text = run_async_in_thread(generate_adset_summary(full_ad_insights_df, currency_symbol))
-
-
-
                                 print("📄 LLM Summary Generated")
 
                                 paragraph_lines = summary_text.strip().split("\n")
@@ -936,7 +938,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{row['cpa']:.2f}"
                             ])
 
-                            ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[270, 150, 150, 100, 100, 130])
+                            ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[250, 130, 130, 80, 90, 120])
                             ad_summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -945,7 +947,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1650
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1101,7 +1103,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2000
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2500
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1123,7 +1125,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ────────────── ROAS Split Bar Chart ──────────────
                             roas_chart = generate_campaign_split_charts(df, currency_symbol)[2][1]
                             img_roas = ImageReader(roas_chart)
-                            roas_y = donut_y - 340
+                            roas_y = donut_y - 300
                             roas_width = 740
                             roas_height = 320
                             c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
@@ -1140,7 +1142,127 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             cpm_chart = generate_cpm_over_time_chart(df)
                             img_cpm = ImageReader(cpm_chart[1])
                             cpm_y = freq_y - 470
-                            c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)                                                             
+                            c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)  
+                            
+                            
+                            # 📄 New Page - Demographic Performance
+                            c.showPage()
+                            draw_header(c)
+                            # 📊 Prepare Demographic Table Data
+                            demographic_df = full_ad_insights_df.copy()
+
+                            # Clean and ensure correct types
+                            demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
+                            demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
+                            demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
+                            demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
+                            demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
+
+                            # Group by Age and Gender
+                            demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
+                                'spend': 'sum',
+                                'purchases': 'sum',
+                                'roas': 'mean',
+                                'cpa': 'mean'
+                            }).reset_index()
+
+                            # Rename columns for table display
+                            demographic_grouped.rename(columns={
+                                'age': 'Age',
+                                'gender': 'Gender',
+                                'spend': 'Amount Spent',
+                                'purchases': 'Purchases',
+                                'roas': 'ROAS',
+                                'cpa': 'CPA'
+                            }, inplace=True)
+
+                            # Format numbers for display
+                            demographic_grouped['Amount Spent'] = demographic_grouped['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                            demographic_grouped['CPA'] = demographic_grouped['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                            demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
+
+                            # 📋 Draw Demographic Table
+                            table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
+                            table = Table(table_data, colWidths=[80, 60, 90, 70, 60, 60])
+
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                            ]))
+                            table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                            table.drawOn(c, LEFT_MARGIN, PAGE_HEIGHT - 250)
+                            
+                            # 📈 Donut Charts - Age
+                            cost_age_chart = generate_cost_split_by_age_chart(demographic_df)
+                            revenue_age_chart = generate_revenue_split_by_age_chart(demographic_df)
+
+                            c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
+                            c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
+
+                            # 📈 Donut Charts - Gender
+                            cost_gender_chart = generate_cost_split_by_gender_chart(demographic_df)
+                            revenue_gender_chart = generate_revenue_split_by_gender_chart(demographic_df)
+
+                            c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
+                            c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
+
+                            # 📊 Horizontal Bar Charts - ROAS
+                            roas_age_chart = generate_roas_split_by_age_chart(demographic_df)
+                            roas_gender_chart = generate_roas_split_by_gender_chart(demographic_df)
+
+                            c.drawImage(ImageReader(roas_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 1100, width=250, height=250)
+                            c.drawImage(ImageReader(roas_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 1100, width=250, height=250)
+                            
+                            # 📝 LLM Summary - Dynamic
+                        try:
+                                
+                            from services.deepseek_audit import generate_demographic_summary
+
+                            # 🔥 Run LLM summary in async thread
+                            summary_text = run_async_in_thread(
+                            generate_demographic_summary(demographic_grouped, currency_symbol)
+                            )
+                            print("📄 Demographic LLM Summary Generated")
+
+                            import re
+
+                            # 🧹 Clean summary text
+                            clean_text = re.sub(r"[*#]", "", summary_text).strip()
+                            clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
+
+                            # 📍 Position summary below the last chart
+                            summary_y = PAGE_HEIGHT - 1250  # adjust as needed for spacing
+
+                            # 📄 Wrap and draw text as paragraph
+                            from reportlab.platypus import Paragraph
+                            from reportlab.lib.styles import getSampleStyleSheet
+
+                            styles = getSampleStyleSheet()
+                            styleN = styles["Normal"]
+                            styleN.fontName = "DejaVuSans" if currency_symbol == "₹" else "Helvetica"
+                            styleN.fontSize = 11
+                            styleN.leading = 14
+                            styleN.textColor = colors.HexColor("#333333")
+
+                            p = Paragraph(clean_text, styleN)
+                            p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
+                            p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
+
+                            draw_footer_cta(c)  # 📌 Footer CTA after LLM summary
+
+                        except Exception as e:
+                            
+                            print(f"⚠️ Demographic LLM Summary generation failed: {str(e)}")
+
+
+
+                                                           
                                                                                                                                                                
                     else:
                         c.showPage()

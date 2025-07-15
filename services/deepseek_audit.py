@@ -282,6 +282,22 @@ async def generate_ad_fatigue_summary(full_df: pd.DataFrame, currency_symbol: st
 
     return await generate_llm_content(prompt, summary_data)
 
+def build_demographic_summary_prompt(demographic_df, currency_symbol):
+    """
+    Builds a prompt for LLM based on demographic data.
+    """
+    table_preview = demographic_df.to_string(index=False)
+    prompt = (
+        f"You are a marketing analytics expert.\n"
+        f"Analyze the following demographic data:\n\n"
+        f"{table_preview}\n\n"
+        f"Write a concise executive summary (~4-5 lines) highlighting:\n"
+        f"1. Best performing Age/Gender groups (high ROAS, low CPA)\n"
+        f"2. Underperforming segments (low ROAS or high CPA)\n"
+        f"3. Strategic recommendations to focus ad budget efficiently.\n\n"
+        f"Use {currency_symbol} for monetary values. Keep it professional."
+    )
+    return prompt
  
 
 
