@@ -1172,12 +1172,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
                             # 📊 Prepare Demographic Table Data
-                            demographic_df = full_ad_insights_df.copy()
+                            #demographic_df = full_ad_insights_df.copy()
 
                             # Check for required columns
-                            if 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
+                            if  demographic_df is None or 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
                                 print("⚠️ Missing 'age' or 'gender' columns — skipping Demographic section.")
-                                c.setFont("Helvetica", 12)
+                                c.setFont("Helvetica", 14)
                                 c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 100, "⚠️ Demographic data not available for this account.")
                                 draw_footer_cta(c)
                             else:
