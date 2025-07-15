@@ -35,6 +35,26 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+def run_async_in_thread(coro):
+    result = {}
+    def runner():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result["value"] = loop.run_until_complete(coro)
+        loop.close()
+    t = threading.Thread(target=runner)
+    t.start()
+    t.join()
+    return result["value"]
+
+
+# Example usage
+from services.demographic_data import fetch_demographic_data
+
+demographic_df = run_async_in_thread(
+    fetch_demographic_data(page_id, access_token, start_date, end_date)
+)
+
 
 
 
@@ -1159,53 +1179,56 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # 📊 Prepare Demographic Table Data
                             demographic_df = full_ad_insights_df.copy()
 
-                            # Clean and ensure correct types
-                            demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
-                            demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
-                            demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
-                            demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
-                            demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
+                            # Check for required columns
+                            if 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
+                                print("⚠️ Missing 'age' or 'gender' columns — skipping Demographic section.")
+                                c.setFont("Helvetica", 12)
+                                c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 100, "⚠️ Demographic data not available for this account.")
+                                draw_footer_cta(c)
+                            else:
+                                # ✅ Continue only if demographic columns are present
+                                demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
+                                demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
+                                demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
+                                demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
+                                demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
 
-                            # Group by Age and Gender
-                            demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
-                                'spend': 'sum',
-                                'purchases': 'sum',
-                                'roas': 'mean',
-                                'cpa': 'mean'
-                            }).reset_index()
+                                demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
+                                    'spend': 'sum',
+                                    'purchases': 'sum',
+                                    'roas': 'mean',
+                                    'cpa': 'mean'
+                                }).reset_index()
 
-                            # Rename columns for table display
-                            demographic_grouped.rename(columns={
-                                'age': 'Age',
-                                'gender': 'Gender',
-                                'spend': 'Amount Spent',
-                                'purchases': 'Purchases',
-                                'roas': 'ROAS',
-                                'cpa': 'CPA'
-                            }, inplace=True)
+                                demographic_grouped.rename(columns={
+                                    'age': 'Age',
+                                    'gender': 'Gender',
+                                    'spend': 'Amount Spent',
+                                    'purchases': 'Purchases',
+                                    'roas': 'ROAS',
+                                    'cpa': 'CPA'
+                                }, inplace=True)
 
-                            # Format numbers for display
-                            demographic_grouped['Amount Spent'] = demographic_grouped['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                            demographic_grouped['CPA'] = demographic_grouped['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                            demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
+                                demographic_grouped['Amount Spent'] = demographic_grouped['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                                demographic_grouped['CPA'] = demographic_grouped['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                                demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
 
-                            # 📋 Draw Demographic Table
-                            table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
-                            table = Table(table_data, colWidths=[80, 60, 90, 70, 60, 60])
-
-                            table.setStyle(TableStyle([
-                                ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
-                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                                ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-                            ]))
-                            table_y = PAGE_HEIGHT - 1000
-                            table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                            table.drawOn(c, LEFT_MARGIN, table_y)
+                                # 📋 Draw Table
+                                table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
+                                table = Table(table_data, colWidths=[80, 60, 90, 70, 60, 60])
+                                table.setStyle(TableStyle([
+                                    ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                                    ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                                ]))
+                                table_y = PAGE_HEIGHT - 1000
+                                table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                                table.drawOn(c, LEFT_MARGIN, table_y)
                             
                             # 📈 Donut Charts - Age
                             cost_age_chart = generate_cost_split_by_age_chart(demographic_df)

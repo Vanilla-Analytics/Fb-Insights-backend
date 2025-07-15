@@ -23,6 +23,7 @@ import matplotlib.dates as mdates
 from datetime import datetime, timedelta , timezone
 import json
 
+
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
@@ -676,6 +677,8 @@ async def fetch_ad_insights(user_token: str):
                 safe_until = (now - timedelta(days=2)).strftime("%Y-%m-%d")
                 safe_since = (now - timedelta(days=32)).strftime("%Y-%m-%d")
                 print(f"📅 Fetching data from {safe_since} to {safe_until}")
+                
+                
 
 
                 params = {
@@ -1039,7 +1042,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             ad_insights_df=ad_insights_df,
             full_ad_insights_df=original_df,
             currency_symbol=currency_symbol,
-            split_charts=split_charts
+            split_charts=split_charts,
+            
         )
 
         print("✅ PDF generated successfully")
