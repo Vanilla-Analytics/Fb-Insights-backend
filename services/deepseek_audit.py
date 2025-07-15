@@ -811,7 +811,7 @@ async def fetch_ad_insights(user_token: str):
 
     except Exception as e:
         print(f"❌ Error in fetch_ad_insights: {str(e)}")
-        return []
+        return [], pd.DataFrame()
 
 
 
@@ -889,7 +889,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
-        ad_data,demographic_df = await fetch_ad_insights(user_token)
+        result = await fetch_ad_insights(user_token)
+        ad_data, demographic_df = result if isinstance(result, tuple) and len(result) == 2 else ([], pd.DataFrame())
         
         if not demographic_df.empty:
             demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
