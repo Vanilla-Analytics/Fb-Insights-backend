@@ -611,6 +611,36 @@ async def generate_ad_summary(full_df: pd.DataFrame, currency_symbol: str) -> st
 
     return await generate_llm_content(prompt, summary_data)
 
+async def fetch_demographic_insights(account_id: str, access_token: str):
+    url = f"https://graph.facebook.com/v18.0/act_{account_id}/insights"
+    now = datetime.now()
+    since = (now - timedelta(days=30)).strftime('%Y-%m-%d')
+    until = now.strftime('%Y-%m-%d')
+
+    params = {
+        "fields": "age,gender,spend,impressions,actions,action_values",
+        "breakdowns": "age,gender",
+        "time_range": json.dumps({"since": since, "until": until}),
+        "access_token": access_token
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        data = response.json().get("data", [])
+        df = pd.DataFrame(data)
+
+        if df.empty:
+            return df
+
+        # Preprocess data
+        df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+        df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+        df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+        df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+        df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+
+        return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
@@ -880,6 +910,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
 
 async def generate_audit(page_id: str, user_token: str, page_token: str):
     from services.generate_pdf import generate_pdf_report
+    from services.deepseek_audit import fetch_demographic_insights
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
@@ -889,7 +920,9 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
-        ad_data,demographic_df = await fetch_ad_insights(user_token)
+        ad_data = await fetch_ad_insights(user_token)
+        account_id = ad_data[0]['account_id'] if ad_data else None
+        demographic_df = await fetch_demographic_insights(account_id, user_token)
         
         if not demographic_df.empty:
             demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)

@@ -29,6 +29,8 @@ from services.chart_utils import (
     generate_roas_split_by_age_chart,
     generate_roas_split_by_gender_chart
 )
+from services.deepseek_audit import demographic_df  # make sure it's imported at the top
+
 from services.deepseek_audit import generate_llm_content, build_demographic_summary_prompt
 
 import logging
@@ -1172,7 +1174,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
                             # 📊 Prepare Demographic Table Data
-                            #demographic_df = full_ad_insights_df.copy()
+                            
 
                             # Check for required columns
                             if  demographic_df is None or 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
