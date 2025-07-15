@@ -628,6 +628,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         response = await client.get(url, params=params)
         response.raise_for_status()
         data = response.json().get("data", [])
+        print("📦 Raw demographic data:", json.dumps(data, indent=2)) 
         df = pd.DataFrame(data)
 
         if df.empty:

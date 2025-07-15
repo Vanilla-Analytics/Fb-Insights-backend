@@ -28,8 +28,7 @@ from services.chart_utils import (
     generate_revenue_split_by_gender_chart,
     generate_roas_split_by_age_chart,
     generate_roas_split_by_gender_chart
-)
-from services.deepseek_audit import demographic_df  # make sure it's imported at the top
+) # make sure it's imported at the top
 
 from services.deepseek_audit import generate_llm_content, build_demographic_summary_prompt
 
