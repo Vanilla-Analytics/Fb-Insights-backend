@@ -48,12 +48,7 @@ def run_async_in_thread(coro):
     return result["value"]
 
 
-# Example usage
-from services.demographic_data import fetch_demographic_data
 
-demographic_df = run_async_in_thread(
-    fetch_demographic_data(page_id, access_token, start_date, end_date)
-)
 
 
 
