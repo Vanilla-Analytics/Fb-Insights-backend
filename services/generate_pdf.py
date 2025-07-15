@@ -1225,59 +1225,87 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                                 table.drawOn(c, LEFT_MARGIN, table_y)
                                 
-                            if ad_insights_df is not None and {'age', 'spend'}.issubset(ad_insights_df.columns):
-                                demographic_df = ad_insights_df[['age', 'spend']].copy()
-                                demographic_df.rename(columns={'age': 'Age', 'spend': 'Amount Spent'}, inplace=True)
+                                if ad_insights_df is not None and {'age', 'spend', 'purchase_value', 'purchases'}.issubset(ad_insights_df.columns):
+                                    age_df = ad_insights_df[['age', 'spend', 'purchase_value', 'purchases']].copy()
+                                    age_df.rename(columns={
+                                        'age': 'Age',
+                                        'spend': 'Amount Spent',
+                                        'purchase_value': 'Purchase Value',
+                                        'purchases': 'Purchases'
+                                    }, inplace=True)
+                                    age_df['ROAS'] = age_df['Purchase Value'] / age_df['Amount Spent'].replace(0, 1)
 
-                                try:
-                                    cost_age_chart = generate_cost_split_by_age_chart(demographic_df)
-                                    revenue_age_chart = generate_revenue_split_by_age_chart(demographic_df)
+                                    try:
+                                        cost_age_chart = generate_cost_split_by_age_chart(age_df)
+                                        revenue_age_chart = generate_revenue_split_by_age_chart(age_df)
+                                        roas_age_chart = generate_roas_split_by_age_chart(age_df)
 
-                                    c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
-                                    c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
-                                    # ✅ Proceed with using the chart
-                                except Exception as e:
-                                    print(f"⚠️ Skipping cost by age chart: {e}")
-                            else:
-                                print("⚠️ Demographic data missing — skipping age-based cost chart.")
+                                        c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
+                                        c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
+                                        c.drawImage(ImageReader(roas_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 1100, width=250, height=250)
+                                    except Exception as e:
+                                        print(f"⚠️ Skipping age-based charts: {e}")
 
+                                if ad_insights_df is not None and {'gender', 'spend', 'purchase_value', 'purchases'}.issubset(ad_insights_df.columns):
+                                    gender_df = ad_insights_df[['gender', 'spend', 'purchase_value', 'purchases']].copy()
+                                    gender_df.rename(columns={
+                                        'gender': 'Gender',
+                                        'spend': 'Amount Spent',
+                                        'purchase_value': 'Purchase Value',
+                                        'purchases': 'Purchases'
+                                    }, inplace=True)
+                                    gender_df['ROAS'] = gender_df['Purchase Value'] / gender_df['Amount Spent'].replace(0, 1)
+
+                                    try:
+                                        cost_gender_chart = generate_cost_split_by_gender_chart(gender_df)
+                                        revenue_gender_chart = generate_revenue_split_by_gender_chart(gender_df)
+                                        roas_gender_chart = generate_roas_split_by_gender_chart(gender_df)
+
+                                        c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
+                                        c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
+                                        c.drawImage(ImageReader(roas_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 1100, width=250, height=250)
+                                    except Exception as e:
+                                        print(f"⚠️ Skipping gender-based charts: {e}")
+
+                                
+                            # if ad_insights_df is not None and {'age', 'spend'}.issubset(ad_insights_df.columns):
+                            #     demographic_df = ad_insights_df[['age', 'spend']].copy()
+                            #     demographic_df.rename(columns={'age': 'Age', 'spend': 'Amount Spent'}, inplace=True)
+
+                            #     try:
+                            #         cost_age_chart = generate_cost_split_by_age_chart(demographic_df)
+                            #         revenue_age_chart = generate_revenue_split_by_age_chart(demographic_df)
+
+                            #         c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
+                            #         c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
+                            #         # ✅ Proceed with using the chart
+                            #     except Exception as e:
+                            #         print(f"⚠️ Skipping cost by age chart: {e}")
+                            # else:
+                            #     print("⚠️ Demographic data missing — skipping age-based cost chart.")
                             
-                            # 📈 Donut Charts - Age
-                            # cost_age_chart = generate_cost_split_by_age_chart(demographic_df)
-                            # revenue_age_chart = generate_revenue_split_by_age_chart(demographic_df)
+                            # if ad_insights_df is not None and {'gender', 'spend'}.issubset(ad_insights_df.columns):
+                            #     demographic_df = ad_insights_df[['gender', 'spend']].copy()
+                            #     demographic_df.rename(columns={'gender': 'Gender', 'spend': 'Amount Spent'}, inplace=True)
 
-                            # c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
-                            # c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
-                            
-                            if ad_insights_df is not None and {'gender', 'spend'}.issubset(ad_insights_df.columns):
-                                demographic_df = ad_insights_df[['gender', 'spend']].copy()
-                                demographic_df.rename(columns={'gender': 'Gender', 'spend': 'Amount Spent'}, inplace=True)
+                            #     try:
+                            #         cost_gender_chart = generate_cost_split_by_gender_chart(demographic_df)
+                            #         revenue_gender_chart = generate_revenue_split_by_gender_chart(demographic_df)
 
-                                try:
-                                    cost_gender_chart = generate_cost_split_by_gender_chart(demographic_df)
-                                    revenue_gender_chart = generate_revenue_split_by_gender_chart(demographic_df)
+                            #         c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
+                            #         c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
+                            #         # ✅ Proceed with using the chart
+                            #     except Exception as e:
+                            #         print(f"⚠️ Skipping cost by age chart: {e}")
+                            # else:
+                            #     print("⚠️ Demographic data missing — skipping age-based cost chart.")
 
-                                    c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
-                                    c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
-                                    # ✅ Proceed with using the chart
-                                except Exception as e:
-                                    print(f"⚠️ Skipping cost by age chart: {e}")
-                            else:
-                                print("⚠️ Demographic data missing — skipping age-based cost chart.")
+                            # # 📊 Horizontal Bar Charts - ROAS
+                            # roas_age_chart = generate_roas_split_by_age_chart(demographic_df)
+                            # roas_gender_chart = generate_roas_split_by_gender_chart(demographic_df)
 
-                            # 📈 Donut Charts - Gender
-                            # cost_gender_chart = generate_cost_split_by_gender_chart(demographic_df)
-                            # revenue_gender_chart = generate_revenue_split_by_gender_chart(demographic_df)
-
-                            # c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
-                            # c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
-
-                            # 📊 Horizontal Bar Charts - ROAS
-                            roas_age_chart = generate_roas_split_by_age_chart(demographic_df)
-                            roas_gender_chart = generate_roas_split_by_gender_chart(demographic_df)
-
-                            c.drawImage(ImageReader(roas_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 1100, width=250, height=250)
-                            c.drawImage(ImageReader(roas_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 1100, width=250, height=250)
+                            # c.drawImage(ImageReader(roas_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 1100, width=250, height=250)
+                            # c.drawImage(ImageReader(roas_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 1100, width=250, height=250)
                             
                             # 📝 LLM Summary - Dynamic
                         try:
