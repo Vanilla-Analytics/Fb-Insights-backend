@@ -618,7 +618,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
     until = now.strftime('%Y-%m-%d')
 
     params = {
-        "fields": "spend,impressions,clicks,reach",
+        "fields": "spend,impressions,clicks,reach,actions,action_values",
         "level": "ad",
         "breakdowns": "age,gender",
         "time_range": json.dumps({"since": since, "until": until}),
@@ -759,7 +759,7 @@ async def fetch_ad_insights(user_token: str):
                         ad_results.extend(data_page.get("data", []))
                         
                     # 🔍 Fetch reach at adset level (for fatigue analysis)
-                    reach_url = f"https://graph.facebook.com/v22.0/act_{acc['id']}/insights"
+                    reach_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
 
                     reach_params = {
                         "fields": "adset_id,reach,date_start",
@@ -788,7 +788,7 @@ async def fetch_ad_insights(user_token: str):
                         print(f"⚠️ Failed to fetch reach data for account {acc['id']}: {e}")
                         
                     # 🔍 Fetch demographic data
-                    demographic_url = f"https://graph.facebook.com/v22.0/act_{acc['id']}/insights"
+                    demographic_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
                     demographic_df = pd.DataFrame()
                     try:
                         demo_response = await client.get(demographic_url, params=demographic_params)
