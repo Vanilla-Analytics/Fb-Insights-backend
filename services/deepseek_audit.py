@@ -612,7 +612,7 @@ async def generate_ad_summary(full_df: pd.DataFrame, currency_symbol: str) -> st
     return await generate_llm_content(prompt, summary_data)
 
 async def fetch_demographic_insights(account_id: str, access_token: str):
-    url = f"https://graph.facebook.com/v22.0/act_{account_id}/insights"
+    url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
     now = datetime.now()
     since = (now - timedelta(days=30)).strftime('%Y-%m-%d')
     until = now.strftime('%Y-%m-%d')
