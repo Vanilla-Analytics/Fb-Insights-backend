@@ -637,7 +637,8 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
 
         # Preprocess data
         df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
-        df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+        #df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+        df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if isinstance(acts, list) and a.get("action_type") == "purchase"), 0))
         df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
         df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
         df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
@@ -769,14 +770,14 @@ async def fetch_ad_insights(user_token: str):
                         "access_token": user_token
                     }
                     
-                    demographic_params = {
-                        "fields": "adset_id,age,gender,spend,impressions,reach,date_start",
-                        "breakdowns": "age,gender",
-                        "time_range": json.dumps({"since": safe_since, "until": safe_until}),
-                        "time_increment": 1,
-                        "level": "ad",
-                        "access_token": user_token
-                    }
+                    # demographic_params = {
+                    #     "fields": "adset_id,age,gender,spend,impressions,reach,date_start",
+                    #     "breakdowns": "age,gender",
+                    #     "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+                    #     "time_increment": 1,
+                    #     "level": "ad",
+                    #     "access_token": user_token
+                    # }
 
                     reach_df = pd.DataFrame()
                     try:
@@ -788,17 +789,17 @@ async def fetch_ad_insights(user_token: str):
                         print(f"⚠️ Failed to fetch reach data for account {acc['id']}: {e}")
                         
                     # 🔍 Fetch demographic data
-                    demographic_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
-                    demographic_df = pd.DataFrame()
-                    try:
-                        demo_response = await client.get(demographic_url, params=demographic_params)
-                        demo_response.raise_for_status()
-                        demo_data = demo_response.json().get("data", [])
-                        demographic_df = pd.DataFrame(demo_data)
-                        print(f"✅ Fetched demographic data for {acc['id']}, shape: {demographic_df.shape}")
-                    except Exception as e:
-                        print(f"⚠️ Failed to fetch demographic data for account {acc['id']}: {e}")
-                        demographic_df = pd.DataFrame()
+                    # demographic_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
+                    # demographic_df = pd.DataFrame()
+                    # try:
+                    #     demo_response = await client.get(demographic_url, params=demographic_params)
+                    #     demo_response.raise_for_status()
+                    #     demo_data = demo_response.json().get("data", [])
+                    #     demographic_df = pd.DataFrame(demo_data)
+                    #     print(f"✅ Fetched demographic data for {acc['id']}, shape: {demographic_df.shape}")
+                    # except Exception as e:
+                    #     print(f"⚠️ Failed to fetch demographic data for account {acc['id']}: {e}")
+                    #     demographic_df = pd.DataFrame()
  
                         
                     # ✅ DEBUG: Print full data sample after all pages
