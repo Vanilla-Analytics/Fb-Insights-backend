@@ -836,6 +836,7 @@ async def fetch_ad_insights(user_token: str):
                 for ad in ad_results:
                     if 'account_currency' not in ad:
                         ad["account_currency"] = acc.get("account_currency", "USD")
+                    ad["account_id"] = acc.get("id") # <-- ADD THIS LINE
                     insights_data.append(ad)
 
             print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
@@ -922,19 +923,26 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         print("📊 Fetching Facebook data...")
         page_data = await fetch_facebook_insights(page_id, page_token)
-        ad_data = await fetch_ad_insights(user_token)
-        print("🔍 ad_data structure:", type(ad_data), ad_data)
+        ad_data, _  = await fetch_ad_insights(user_token)
+        print("🔍 ad_data structure:", type(ad_data))
         #account_id = ad_data[0]['account_id'] if ad_data else None
         account_id = None
-        if isinstance(ad_data, dict):
-            account_id = ad_data.get('account_id')
+        if ad_data and isinstance(ad_data, list) and isinstance(ad_data[0], dict):
+            account_id = ad_data[0].get('account_id')
         elif isinstance(ad_data, list):
             for item in ad_data:
                 if isinstance(item, dict) and 'account_id' in item:
                     account_id = item['account_id']
                     break
-
-        demographic_df = await fetch_demographic_insights(account_id, user_token)
+        print(f"🆔 Extracted Account ID: {account_id}")
+        
+        demographic_df = pd.DataFrame() # Default to empty DataFrame
+        if account_id:
+            demographic_df = await fetch_demographic_insights(account_id, user_token)
+        else:
+            print("⚠️ Could not determine account_id. Skipping demographic insights fetch.")
+        
+        #demographic_df = await fetch_demographic_insights(account_id, user_token)
         
         if not demographic_df.empty:
             demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
