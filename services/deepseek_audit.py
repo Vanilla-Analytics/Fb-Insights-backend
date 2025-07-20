@@ -702,6 +702,8 @@ async def fetch_ad_insights(user_token: str):
                 if 'adsets' not in acc or not acc['adsets'].get('data'):
                     print(f"⚠️ No adsets found for account {acc.get('name')}")
                     continue
+                print(f"✅ Processing account: {acc.get('name')} (ID: {acc.get('id')})")
+
 
                 print(f"🔍 Processing account: {acc.get('name')} ({acc.get('id')})")
 
@@ -758,6 +760,8 @@ async def fetch_ad_insights(user_token: str):
                         next_response.raise_for_status()
                         data_page = next_response.json()
                         ad_results.extend(data_page.get("data", []))
+                    print(f"✅ Fetched {len(ad_results)} ad results for account {acc.get('name')} ({acc.get('id')})")
+
                         
                     # 🔍 Fetch reach at adset level (for fatigue analysis)
                     reach_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
@@ -841,6 +845,7 @@ async def fetch_ad_insights(user_token: str):
                     insights_data.append(ad)
 
             print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
+            
             return insights_data
 
     except Exception as e:
@@ -977,7 +982,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             ad_data = [d for d in ad_raw if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
 
         if not ad_data:
+            print("❌ Fallback fetch returned no usable entries with 'date_start'. Check if API token has access.")
+            print("🔍 Full raw fallback ad data:")
+            import pprint
+            pprint.pprint(ad_raw)
             raise ValueError("❌ All fallback ad insights entries are missing 'date_start' — cannot proceed.")
+
         
         PURCHASE_KEYS = [
             "offsite_conversion.purchase",
