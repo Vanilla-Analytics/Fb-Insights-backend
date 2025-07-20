@@ -638,7 +638,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         
 
         # Preprocess data
-        for col in ['spend', 'reach', 'impressions', 'clicks']:
+        for col in ['age', 'gender', 'spend', 'reach', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpa', 'roas']:
             if col not in df.columns:
                 df[col] = 0
             else:
@@ -653,8 +653,6 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
             return 0.0
-
-        
         
         def extract_purchase_value(vals):
             if isinstance(vals, list):
@@ -662,6 +660,21 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
             return 0.0
+        
+        df['spend'] = df['spend'].astype(float)
+
+        if 'action_values' in df.columns:
+            df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+        else:
+            df['purchase_value'] = 0.0
+
+        if 'actions' in df.columns:
+            df['purchases'] = df['actions'].apply(extract_purchase)
+        else:
+            df['purchases'] = 0.0
+
+        
+        
         
         df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else 0.0
         df['purchases'] = df['actions'].apply(extract_purchase) if 'actions' in df.columns else 0.0
@@ -674,6 +687,10 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         
         if 'gender' in df.columns:
             df = df[df['gender'].str.lower().str.strip() != 'unknown']
+            
+        print("📊 Demographic DataFrame Columns:", df.columns)
+        print("📊 Demographic DataFrame Preview:\n", df.head(2))
+
 
 
         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
@@ -998,6 +1015,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
 async def generate_audit(page_id: str, user_token: str, page_token: str):
     from services.generate_pdf import generate_pdf_report
     from services.deepseek_audit import fetch_demographic_insights
+    demographic_df = await fetch_demographic_insights(account_id, access_token)
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
