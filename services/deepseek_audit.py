@@ -1,5 +1,4 @@
 # services/deepseek_audit.py
-# services/deepseek_audit.py
 import httpx
 import os
 import requests
@@ -28,8 +27,7 @@ DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def generate_chart_1(ad_insights_df):
-   
-  
+
 
     fig, ax1 = plt.subplots(figsize=(20, 8), dpi=200, constrained_layout=True)
 
@@ -98,7 +96,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
         return "No data available for Key Metrics.", []
-    
+
     # Calculate metrics properly
     total_spend = ad_insights_df['spend'].sum()
     total_purchases = ad_insights_df['purchases'].sum()
@@ -128,12 +126,12 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
 
     # Chart 1: Amount Spent vs Purchase Conversion Value
-    
+
     fig1 = generate_chart_1(ad_insights_df)
     chart_imgs.append(("# ", generate_chart_image(fig1)))
-   
-   # Chart 2: Purchases vs ROAS    
-   
+
+   # Chart 2: Purchases vs ROAS
+
     purchases_df = ad_insights_df.sort_values("date")[-30:]
 
     fig2, ax3 = plt.subplots(figsize=(13, 5))
@@ -161,9 +159,9 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     plt.tight_layout()
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
 
-   
+
    # Chart 3: CPA vs Link CPC
-   
+
     cpa_df = ad_insights_df.sort_values("date")[-30:]
 
     fig3, ax5 = plt.subplots(figsize=(13, 5))
@@ -189,7 +187,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     plt.tight_layout()
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
-      
+
 # Chart 4: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
 
@@ -299,10 +297,10 @@ def build_demographic_summary_prompt(demographic_df, currency_symbol):
         f"Use {currency_symbol} for monetary values. Keep it professional."
     )
     return prompt
- 
 
 
-def draw_donut_chart(values, labels, title):    
+
+def draw_donut_chart(values, labels, title):
     if values.sum() <= 0 or not np.all(np.isfinite(values)):
         raise ValueError("Invalid values for donut chart.")
     # Truncate labels to 4 words
@@ -313,7 +311,7 @@ def draw_donut_chart(values, labels, title):
     percentages = 100 * values / values.sum()
     color_map = plt.get_cmap('tab20c')
     colors = color_map.colors[:len(truncated_labels)]
-    fig, ax = plt.subplots(figsize=(5, 5))  
+    fig, ax = plt.subplots(figsize=(5, 5))
     # Pie chart with no labels
     wedges, _ = ax.pie(
         values,
@@ -359,7 +357,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     # Group by campaign - filter out rows without campaign names first
     grouped = df[df['campaign_name'].notna()].copy()
-    
+
     # Convert numeric columns safely
     grouped['spend'] = pd.to_numeric(grouped['spend'], errors='coerce').fillna(0)
     grouped['purchase_value'] = pd.to_numeric(grouped['purchase_value'], errors='coerce').fillna(0)
@@ -371,7 +369,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
 
     spend_split = grouped.groupby('campaign_name')['spend'].sum().sort_values(ascending=False)
     revenue_split = grouped.groupby('campaign_name')['purchase_value'].sum().sort_values(ascending=False)
-    
+
     # Handle division by zero for ROAS calculation
     roas_split = revenue_split / spend_split.replace(0, 1)
     roas_split = roas_split.dropna()
@@ -399,13 +397,12 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         print("⚠️ Skipping Revenue Split chart — no valid revenue data.")
 
 
-    
-   
-   # 3. ROAS Split (Horizontal bar)    
+
+   # 3. ROAS Split (Horizontal bar)
     if not top_roas.empty:
         fig3, ax3 = plt.subplots(figsize=(7, 4))  # Wider figure (was 5.5)
         # Get max ROAS value and add 25% padding
-        max_val = top_roas.max() 
+        max_val = top_roas.max()
         x_limit = max_val * 1.25
         ax3.barh(
             top_roas.index[::-1],
@@ -415,10 +412,10 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         )
         # Critical change - set axis limits to maximize bar lengths
         ax3.set_xlim(0, x_limit)
-    
+
         # Adjust layout to prevent cutting off
         plt.subplots_adjust(left=0.3, right=0.95)  # More space for labels
-    
+
         ax3.set_title('ROAS Split', fontsize=12)
         ax3.set_xlabel("ROAS", fontsize=10)  # Added fontsize
         ax3.tick_params(axis='both', labelsize=10)
@@ -426,7 +423,7 @@ def generate_campaign_split_charts(df, currency_symbol=None):
         plt.tight_layout()
         figs.append(("ROAS Split", generate_chart_image(fig3)))
     return figs
-     
+
 
 def generate_cost_by_campaign_chart(df):
 
@@ -452,7 +449,7 @@ def generate_cost_by_campaign_chart(df):
     return ("Cost By Campaigns", generate_chart_image(fig))
 
 def generate_revenue_by_campaign_chart(df):
-    
+
 
     df['date'] = pd.to_datetime(df['date'])
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
@@ -515,7 +512,7 @@ async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str
         f"Include total spend, revenue, purchases, average ROAS, and CPA. "
         f"Mention 1-2 top-performing campaigns (with high ROAS) and 1-2 poor ones (low ROAS or high CPA). "
         f"Conclude with 1 recommendation to improve overall performance."
-        
+
     )
 
     return await generate_llm_content(prompt, summary_data)
@@ -629,7 +626,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         response = await client.get(url, params=params)
         response.raise_for_status()
         data = response.json().get("data", [])
-        print("📦 Raw demographic data:", json.dumps(data, indent=2)) 
+        print("📦 Raw demographic data:", json.dumps(data, indent=2))
         df = pd.DataFrame(data)
 
         if df.empty:
@@ -666,7 +663,7 @@ async def fetch_facebook_insights(page_id: str, page_token: str):
     except Exception as e:
         print(f"❌ Error fetching Facebook insights: {str(e)}")
         return {"data": [], "error": str(e)}
-    
+
 async def check_account_status(account_id, token):
     url = f"https://graph.facebook.com/v22.0/{account_id}"
     async with httpx.AsyncClient() as client:
@@ -710,8 +707,7 @@ async def fetch_ad_insights(user_token: str):
                 safe_until = (now - timedelta(days=2)).strftime("%Y-%m-%d")
                 safe_since = (now - timedelta(days=32)).strftime("%Y-%m-%d")
                 print(f"📅 Fetching data from {safe_since} to {safe_until}")
-                
-                
+
 
 
                 params = {
@@ -721,7 +717,7 @@ async def fetch_ad_insights(user_token: str):
                     "level": "ad",
                     "access_token": user_token
                 }
-                
+
                 reach_params = {
                     "fields": "adset_id,reach,date_start",  # minimum fields needed
                     "time_range": json.dumps({"since": safe_since, "until": safe_until}),
@@ -729,7 +725,7 @@ async def fetch_ad_insights(user_token: str):
                     "level": "adset",  # ✅ Fetch reach from adset level
                     "access_token": user_token
                 }
-                
+
                 demographic_params = {
                     "fields": "age,gender,adset_id,spend,impressions,reach",
                     "breakdowns": "age,gender",
@@ -755,10 +751,10 @@ async def fetch_ad_insights(user_token: str):
                     while data_page.get("paging", {}).get("next"):
                         next_url = data_page["paging"]["next"]
                         next_response = await client.get(next_url, follow_redirects=True)
-                        next_response.raise_for_status()
+                        next_response.raise_or_status()
                         data_page = next_response.json()
                         ad_results.extend(data_page.get("data", []))
-                        
+
                     # 🔍 Fetch reach at adset level (for fatigue analysis)
                     reach_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
 
@@ -769,15 +765,6 @@ async def fetch_ad_insights(user_token: str):
                         "level": "adset",
                         "access_token": user_token
                     }
-                    
-                    # demographic_params = {
-                    #     "fields": "adset_id,age,gender,spend,impressions,reach,date_start",
-                    #     "breakdowns": "age,gender",
-                    #     "time_range": json.dumps({"since": safe_since, "until": safe_until}),
-                    #     "time_increment": 1,
-                    #     "level": "ad",
-                    #     "access_token": user_token
-                    # }
 
                     reach_df = pd.DataFrame()
                     try:
@@ -787,21 +774,21 @@ async def fetch_ad_insights(user_token: str):
                         reach_df = pd.DataFrame(reach_data)
                     except Exception as e:
                         print(f"⚠️ Failed to fetch reach data for account {acc['id']}: {e}")
-                        
+
                     # 🔍 Fetch demographic data
-                    # demographic_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights"
-                    # demographic_df = pd.DataFrame()
-                    # try:
-                    #     demo_response = await client.get(demographic_url, params=demographic_params)
-                    #     demo_response.raise_for_status()
-                    #     demo_data = demo_response.json().get("data", [])
-                    #     demographic_df = pd.DataFrame(demo_data)
-                    #     print(f"✅ Fetched demographic data for {acc['id']}, shape: {demographic_df.shape}")
-                    # except Exception as e:
-                    #     print(f"⚠️ Failed to fetch demographic data for account {acc['id']}: {e}")
-                    #     demographic_df = pd.DataFrame()
- 
-                        
+                    demographic_url = f"https://graph.facebook.com/v22.0/{acc['id']}/insights" # Initializing demographic_df outside the try block
+                    demographic_df = pd.DataFrame() # Initialize demographic_df here
+                    try:
+                        demo_response = await client.get(demographic_url, params=demographic_params)
+                        demo_response.raise_for_status()
+                        demo_data = demo_response.json().get("data", [])
+                        demographic_df = pd.DataFrame(demo_data)
+                        print(f"✅ Fetched demographic data for {acc['id']}, shape: {demographic_df.shape}")
+                    except Exception as e:
+                        print(f"⚠️ Failed to fetch demographic data for account {acc['id']}: {e}")
+                        demographic_df = pd.DataFrame() # Ensure it's empty on failure
+
+
                     # ✅ DEBUG: Print full data sample after all pages
                     print("📦 Final sample of fetched ad data (first 3 rows):")
                     import pprint
@@ -819,7 +806,7 @@ async def fetch_ad_insights(user_token: str):
                             ]
                             if not match.empty:
                                 ad["reach"] = match["reach"].values[0]
-                                
+
                 if not demographic_df.empty:
                     demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
                     demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
@@ -936,20 +923,20 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                     account_id = item['account_id']
                     break
         print(f"🆔 Extracted Account ID: {account_id}")
-        
+
         demographic_df = pd.DataFrame() # Default to empty DataFrame
         if account_id:
             demographic_df = await fetch_demographic_insights(account_id, user_token)
         else:
             print("⚠️ Could not determine account_id. Skipping demographic insights fetch.")
-        
+
         #demographic_df = await fetch_demographic_insights(account_id, user_token)
-        
+
         if not demographic_df.empty:
             demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
             demographic_df['impressions'] = pd.to_numeric(demographic_df['impressions'], errors='coerce').fillna(0)
             demographic_df['reach'] = pd.to_numeric(demographic_df['reach'], errors='coerce').fillna(0)
-            
+
             #Rename columns to match expected format
             demographic_df = demographic_df.rename(columns={
                 'age': 'Age',
@@ -967,8 +954,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Filter out invalid entries
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
-        ad_raw = []        
-        
+        ad_raw = []
+
         if not ad_data:
             print("🚨 Raw ad_data returned from Facebook:")
             ad_raw = await fetch_ad_insights(user_token)
@@ -976,7 +963,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         if not ad_data:
             raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
-        
+
         PURCHASE_KEYS = [
             "offsite_conversion.purchase",
             "offsite_conversion.fb_pixel_purchase",
@@ -1001,7 +988,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                 # Assume 1000 per purchase as fallback (adjust as needed)
                 raw_value = ad["purchases"] * 1000
                 ad["purchase_value"] = raw_value
-            
+
             # ad["purchase_value"] = sum(
             #     float(d.get("value", 0))
             #     for d in ad.get("action_values", [])
@@ -1046,8 +1033,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         for col in numeric_fields:
             if col in original_df.columns:
                 original_df[col] = pd.to_numeric(original_df[col], errors='coerce').fillna(0)
-                
-        
+
+
 
         # Calculate aggregated metrics per day
         grouped_df = original_df.groupby('date').agg({
@@ -1085,30 +1072,30 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             if 'account_currency' not in df.columns:
                 print("⚠️ No 'account_currency' column found in the DataFrame")
                 return "USD", "$"
-    
+
             # Simple mapping of currency codes to symbols
             currency_symbols = {
                 "INR": "₹",  # Indian Rupee
                 "USD": "$",  # US Dollar
                 # Add more currencies as needed
             }
-            
+
             # Get most frequent currency from the data
             currencies = df['account_currency'].dropna().astype(str).str.strip().str.upper()
             if currencies.empty:
                 print("⚠️ No valid currency values found in 'account_currency' column")
                 return "USD", "$"
-            
+
             # Print unique currencies for debugging
             unique_currencies = currencies.unique()
             print(f"🔍 Unique currency values found: {unique_currencies}")
-            
+
             # Get the most frequent currency
             currency = currencies.mode()[0] if not currencies.mode().empty else "USD"
-            
+
             # Get the symbol for this currency (default to $ if not in our mapping)
             currency_symbol = currency_symbols.get(currency, "$")
-            
+
             print(f"✅ Using currency: {currency} with symbol: {currency_symbol}")
             return currency, currency_symbol
 
@@ -1125,7 +1112,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         # ✅ Generate key metrics + charts
         key_metrics = generate_key_metrics_section(ad_insights_df, currency_symbol=currency_symbol)
         split_charts = generate_campaign_split_charts(original_df, currency_symbol)
-        
+
 
 
         # ✅ LLM Sections
@@ -1154,7 +1141,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             key_metrics
         ]
         cost_by_campaign_chart = generate_cost_by_campaign_chart(original_df)
-        
+
         # ✅ Log final data sample for verification
         print("📊 Sample of original_df:")
         print(original_df[["date", "campaign_name", "spend", "purchase_value", "purchases"]].tail(5))
@@ -1167,7 +1154,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             currency_symbol=currency_symbol,
             split_charts=split_charts,
             demographic_df=demographic_df
-            
+
         )
 
         print("✅ PDF generated successfully")
@@ -1187,4 +1174,3 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         error_msg = f"Error generating audit: {str(e)}"
         print(f"❌ {error_msg}")
         raise Exception(error_msg)
-#------------------------------------------------------------------------------------
