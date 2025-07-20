@@ -754,7 +754,7 @@ async def fetch_ad_insights(user_token: str):
                     while data_page.get("paging", {}).get("next"):
                         next_url = data_page["paging"]["next"]
                         next_response = await client.get(next_url, follow_redirects=True)
-                        next_response.raise_for_status()
+                        next_response.raise_or_status()
                         data_page = next_response.json()
                         ad_results.extend(data_page.get("data", []))
                         
@@ -936,7 +936,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                     break
         print(f"🆔 Extracted Account ID: {account_id}")
         
-        demographic_df = pd.DataFrame() # Initialize demographic_df
+        demographic_df = pd.DataFrame() # Initialize demographic_df to an empty DataFrame
         if account_id:
             demographic_df = await fetch_demographic_insights(account_id, user_token)
         else:
@@ -1186,4 +1186,3 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         error_msg = f"Error generating audit: {str(e)}"
         print(f"❌ {error_msg}")
         raise Exception(error_msg)
-#------------------------------------------------------------------------------------
