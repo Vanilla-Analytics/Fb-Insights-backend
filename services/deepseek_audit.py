@@ -853,9 +853,25 @@ async def fetch_ad_insights(user_token: str):
                 demographic_df = pd.DataFrame()
                                 
                 if not demographic_df.empty:
-                    demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
-                    demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
-                    demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+                    # demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
+                    # demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
+                    # demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+                    
+                    if 'reach' in demographic_df.columns:
+                        demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
+                    else:
+                        demographic_df["reach"] = 0
+
+                    if 'spend' in demographic_df.columns:
+                        demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
+                    else:
+                        demographic_df["spend"] = 0
+
+                    if 'impressions' in demographic_df.columns:
+                        demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+                    else:
+                        demographic_df["impressions"] = 0
+
 
                     # Optional: clean or rename columns if needed
                     demographic_df = demographic_df.rename(columns={"date_start": "date"})
@@ -875,9 +891,25 @@ async def fetch_ad_insights(user_token: str):
                 demographic_df = pd.DataFrame()
 
                 if not demographic_df.empty:
-                    demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
-                    demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
-                    demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+                    # demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
+                    # demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
+                    # demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+                    
+                    if 'reach' in demographic_df.columns:
+                        demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
+                    else:
+                        demographic_df["reach"] = 0
+
+                    if 'spend' in demographic_df.columns:
+                        demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
+                    else:
+                        demographic_df["spend"] = 0
+
+                    if 'impressions' in demographic_df.columns:
+                        demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+                    else:
+                        demographic_df["impressions"] = 0
+
 
                     demographic_df = demographic_df.rename(columns={"date_start": "date"})
 
