@@ -1036,12 +1036,14 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
             
             #Rename columns to match expected format
-            
+            demographic_df = demographic_df.rename(columns={"age": "Age", "gender": "Gender"})
 
             demographic_grouped = demographic_df.groupby(['Age', 'Gender']).agg({
                 "spend": "sum",
                 "reach": "sum",
-                "impressions": "sum"
+                "impressions": "sum",
+                "purchases": "sum",
+                "purchase_value": "sum"
             }).reset_index()
             print("✅ Grouped demographic data:")
             print(demographic_grouped.head())
