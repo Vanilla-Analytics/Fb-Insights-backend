@@ -1015,7 +1015,7 @@ async def generate_llm_content(prompt: str, data: dict) -> str:
 async def generate_audit(page_id: str, user_token: str, page_token: str):
     from services.generate_pdf import generate_pdf_report
     from services.deepseek_audit import fetch_demographic_insights
-    demographic_df = await fetch_demographic_insights(account_id, access_token)
+    #demographic_df = await fetch_demographic_insights(account_id, access_token)
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
