@@ -1155,6 +1155,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                 print(f"⚠️ Error parsing actions in ad: {e}")
                 actions, values = {}, {}
             ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
+            # ADD THE REACH FALLBACK BLOCK RIGHT HERE
+            if 'reach' not in ad:
+                if 'impressions' in ad:
+                    ad["reach"] = ad["impressions"]
+                else:
+                    ad["reach"] = 1  # Fallback to avoid division errors
 
             #ad["purchases"] = sum(actions.get(k, 0) for k in PURCHASE_KEYS)
             raw_value = sum(values.get(k, 0) for k in PURCHASE_KEYS)
@@ -1181,6 +1187,14 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Create original DataFrame with date_start intact
         original_df = pd.DataFrame(ad_data)
+        # Ensure reach column exists
+        if 'reach' not in original_df.columns:
+            if 'impressions' in original_df.columns:
+                print("⚠️ 'reach' column missing, using impressions as fallback")
+                original_df['reach'] = original_df['impressions']
+            else:
+                print("⚠️ Both 'reach' and 'impressions' missing - setting reach to 1")
+        original_df['reach'] = 1
         original_df['campaign_name'] = original_df['campaign_name'].fillna("Unknown Campaign")
         original_df['adset_name'] = original_df['adset_name'].fillna("Unknown Adset")
 

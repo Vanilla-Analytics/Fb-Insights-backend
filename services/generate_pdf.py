@@ -213,13 +213,29 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
     if currency_symbol is None:
         currency_symbol = "₹"
         
-    if ad_insights_df is not None and 'reach' not in ad_insights_df.columns:
-        print("⚠️ 'reach' missing in ad_insights_df, creating fallback.")
-        ad_insights_df['reach'] = ad_insights_df['impressions']
+    # if ad_insights_df is not None and 'reach' not in ad_insights_df.columns:
+    #     print("⚠️ 'reach' missing in ad_insights_df, creating fallback.")
+    #     ad_insights_df['reach'] = ad_insights_df['impressions']
         
-    if full_ad_insights_df is not None and 'reach' not in full_ad_insights_df.columns:
-        print("⚠️ 'reach' missing in full_ad_insights_df, creating fallback.")
-        full_ad_insights_df['reach'] = full_ad_insights_df['impressions']
+    # if full_ad_insights_df is not None and 'reach' not in full_ad_insights_df.columns:
+    #     print("⚠️ 'reach' missing in full_ad_insights_df, creating fallback.")
+    #     full_ad_insights_df['reach'] = full_ad_insights_df['impressions']
+    
+    if ad_insights_df is not None:
+        if 'reach' not in ad_insights_df.columns and 'impressions' in ad_insights_df.columns:
+            print("⚠️ 'reach' missing in ad_insights_df, using impressions as fallback")
+            ad_insights_df['reach'] = ad_insights_df['impressions']
+        elif 'reach' not in ad_insights_df.columns:
+            print("⚠️ Both 'reach' and 'impressions' missing - setting reach to 1 to avoid division errors")
+            ad_insights_df['reach'] = 1
+
+    if full_ad_insights_df is not None:
+        if 'reach' not in full_ad_insights_df.columns and 'impressions' in full_ad_insights_df.columns:
+            print("⚠️ 'reach' missing in full_ad_insights_df, using impressions as fallback")
+            full_ad_insights_df['reach'] = full_ad_insights_df['impressions']
+        elif 'reach' not in full_ad_insights_df.columns:
+            print("⚠️ Both 'reach' and 'impressions' missing - setting reach to 1 to avoid division errors")
+            full_ad_insights_df['reach'] = 1
         
     # 🔥 Fallback: Ensure 'roas' exists
     if ad_insights_df is not None and 'roas' not in ad_insights_df.columns:
@@ -1176,18 +1192,27 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             
 
                             # Check for required columns
-                            if  demographic_df is None or 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
+                            if  demographic_df is None or demographic_df.empty or 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
                                 print("⚠️ Missing 'age' or 'gender' columns — skipping Demographic section.")
                                 c.setFont("Helvetica", 14)
                                 c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 100, "⚠️ Demographic data not available for this account.")
                                 draw_footer_cta(c)
                             else:
                                 # ✅ Continue only if demographic columns are present
+                                # Ensure all required columns exist
+                                for col in ['spend', 'purchase_value', 'purchases']:
+                                    if col not in demographic_df.columns:
+                                        demographic_df[col] = 0
                                 demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
                                 demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
                                 demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
                                 demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
                                 demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
+                                # demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
+                                # demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
+                                # demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
+                                # demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
+                                # demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
 
                                 demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
                                     'spend': 'sum',
