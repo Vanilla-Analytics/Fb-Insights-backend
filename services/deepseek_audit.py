@@ -632,8 +632,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         print("📦 Raw demographic data:", json.dumps(data, indent=2)) 
         df = pd.DataFrame(data)
 
-        if df.empty:
-            return df
+        
 
         # Preprocess data
         for col in ['spend', 'reach', 'impressions', 'clicks']:
@@ -641,6 +640,9 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
                 df[col] = 0
             else:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                
+        if df.empty:
+            return df
         #df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
         def extract_purchase(acts):
             if isinstance(acts, list):
