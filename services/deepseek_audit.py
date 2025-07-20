@@ -970,12 +970,14 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         ad_raw = []        
         
         if not ad_data:
-            print("🚨 Raw ad_data returned from Facebook:")
+            print("🚨 Filtered ad_data is empty. Attempting fallback fetch...")
             ad_raw = await fetch_ad_insights(user_token)
-            print(ad_raw[:2])
+            print("🔍 Raw ad data preview:", ad_raw[:2])
+            
+            ad_data = [d for d in ad_raw if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
 
         if not ad_data:
-            raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
+            raise ValueError("❌ All fallback ad insights entries are missing 'date_start' — cannot proceed.")
         
         PURCHASE_KEYS = [
             "offsite_conversion.purchase",
