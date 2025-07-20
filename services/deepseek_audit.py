@@ -823,6 +823,7 @@ async def fetch_ad_insights(user_token: str):
                             ]
                             if not match.empty:
                                 ad["reach"] = match["reach"].values[0]
+                demographic_df = pd.DataFrame()
                                 
                 if not demographic_df.empty:
                     demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
