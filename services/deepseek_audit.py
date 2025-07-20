@@ -638,8 +638,26 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         # Preprocess data
         df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
         #df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
-        df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if isinstance(acts, list) and a.get("action_type") == "purchase"), 0))
-        df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+        def extract_purchase(actions):
+            if isinstance(actions, list):
+                for a in actions:
+                    if isinstance(a, dict) and a.get("action_type") == "purchase":
+                        return float(a.get("value", 0))
+            return 0
+
+        df['purchases'] = df['actions'].apply(extract_purchase)
+        
+        def extract_purchase_value(action_values):
+            if isinstance(action_values, list):
+                for a in action_values:
+                    if isinstance(a, dict) and a.get("action_type") == "purchase":
+                        return float(a.get("value", 0))
+            return 0
+
+        df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+
+
+        #df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
         df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
         df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
 
@@ -990,17 +1008,20 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         if not ad_data:
             print("🚨 Filtered ad_data is empty. Attempting fallback fetch...")
             ad_raw = await fetch_ad_insights(user_token)
+            print("🔍 ad_data structure:", type(ad_raw))
             print("🔍 Raw ad data preview:", ad_raw[:2])
             
-            ad_data = [d for d in ad_raw if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
+            #ad_data = [d for d in ad_raw if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
 
         if not ad_data:
-            print("❌ Fallback fetch returned no usable entries with 'date_start'. Check if API token has access.")
-            print("🔍 Full raw fallback ad data:")
-            import pprint
-            pprint.pprint(ad_raw)
-            raise ValueError("❌ All fallback ad insights entries are missing 'date_start' — cannot proceed.")
-
+            print("🚨 No ad data returned initially. Attempting fallback fetch...")
+            ad_data = await fetch_ad_insights(user_token)
+        ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
+        
+        # Final check
+        if not ad_data:
+            print("❌ No usable ad entries with 'date_start'.")
+            raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
         
         PURCHASE_KEYS = [
             "offsite_conversion.purchase",
