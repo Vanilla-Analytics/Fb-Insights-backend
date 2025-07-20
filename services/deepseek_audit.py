@@ -843,6 +843,18 @@ async def fetch_ad_insights(user_token: str):
                         ad["account_currency"] = acc.get("account_currency", "USD")
                     ad["account_id"] = acc.get("id") # <-- ADD THIS LINE
                     insights_data.append(ad)
+                    
+                demographic_df = pd.DataFrame()
+
+                if not demographic_df.empty:
+                    demographic_df["reach"] = pd.to_numeric(demographic_df["reach"], errors='coerce').fillna(0)
+                    demographic_df["spend"] = pd.to_numeric(demographic_df["spend"], errors='coerce').fillna(0)
+                    demographic_df["impressions"] = pd.to_numeric(demographic_df["impressions"], errors='coerce').fillna(0)
+
+                    demographic_df = demographic_df.rename(columns={"date_start": "date"})
+
+                    print("📊 Demographic breakdown sample:")
+                    print(demographic_df.head())
 
             print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
             
