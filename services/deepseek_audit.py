@@ -636,39 +636,40 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
             return df
 
         # Preprocess data
-        df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+        for col in ['spend', 'reach', 'impressions', 'clicks']:
+            if col not in df.columns:
+                df[col] = 0
+            else:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
         #df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
-        def extract_purchase(actions):
-            if isinstance(actions, list):
-                for a in actions:
+        def extract_purchase(acts):
+            if isinstance(acts, list):
+                for a in acts:
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
-            return 0
+            return 0.0
 
         
         
-        def extract_purchase_value(action_values):
-            if isinstance(action_values, list):
-                for a in action_values:
+        def extract_purchase_value(vals):
+            if isinstance(vals, list):
+                for a in vals:
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
-            return 0
+            return 0.0
         
-        if 'action_values' in df.columns:
-            df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
-        else:
-            df['purchase_value'] = 0.0
-
-        if 'actions' in df.columns:
-            df['purchases'] = df['actions'].apply(extract_purchase)
-        else:
-            df['purchases'] = 0.0
+        df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else 0.0
+        df['purchases'] = df['actions'].apply(extract_purchase) if 'actions' in df.columns else 0.0
 
 
 
         #df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
         df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
         df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+        
+        if 'gender' in df.columns:
+            df = df[df['gender'].str.lower().str.strip() != 'unknown']
+
 
         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
 
