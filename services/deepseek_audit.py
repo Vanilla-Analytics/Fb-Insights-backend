@@ -917,6 +917,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
     """Generate audit report and return PDF"""
     try:
         print("🔄 Starting audit generation...")
+
         if not DEEPSEEK_API_URL or not DEEPSEEK_API_KEY:
             raise ValueError("DEEPSEEK_API_URL and DEEPSEEK_API_KEY environment variables must be set")
 
