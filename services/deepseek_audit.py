@@ -635,10 +635,15 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         print("📦 Raw demographic data:", json.dumps(data, indent=2)) 
         df = pd.DataFrame(data)
 
-        
+        # ✅ String-type safety
+        if 'gender' in df.columns:
+            df['gender'] = df['gender'].astype(str)
+
+        if 'age' in df.columns:
+            df['age'] = df['age'].astype(str)
 
         # Preprocess data
-        for col in ['age', 'gender', 'spend', 'reach', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpa', 'roas']:
+        for col in ['spend', 'reach', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpa', 'roas']:
             if col not in df.columns:
                 df[col] = 0
             else:
@@ -676,8 +681,9 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         
         
         
-        df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else 0.0
-        df['purchases'] = df['actions'].apply(extract_purchase) if 'actions' in df.columns else 0.0
+        # df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else 0.0
+        df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else pd.Series(0.0, index=df.index)
+        df['purchases'] = df['actions'].apply(extract_purchase) if 'actions' in df.columns else pd.Series(0.0, index=df.index)
 
 
 
@@ -686,14 +692,22 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
         
         if 'gender' in df.columns:
+            df['gender'] = df['gender'].astype(str)
             df = df[df['gender'].str.lower().str.strip() != 'unknown']
+            
+        if 'age' in df.columns:
+            df['age'] = df['age'].astype(str)
+            
             
         print("📊 Demographic DataFrame Columns:", df.columns)
         print("📊 Demographic DataFrame Preview:\n", df.head(2))
 
+        expected_cols = ['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']
+        for col in expected_cols:
+            if col not in df.columns:
+                df[col] = 0
 
-
-        return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
+        return df[expected_cols]
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
