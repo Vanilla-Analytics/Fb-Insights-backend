@@ -1023,10 +1023,17 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         
         #demographic_df = await fetch_demographic_insights(account_id, user_token)
         
-        if not demographic_df.empty:
-            demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
-            demographic_df['impressions'] = pd.to_numeric(demographic_df['impressions'], errors='coerce').fillna(0)
-            demographic_df['reach'] = pd.to_numeric(demographic_df['reach'], errors='coerce').fillna(0)
+        # if not demographic_df.empty:
+        #     demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
+        #     demographic_df['impressions'] = pd.to_numeric(demographic_df['impressions'], errors='coerce').fillna(0)
+        #     demographic_df['reach'] = pd.to_numeric(demographic_df['reach'], errors='coerce').fillna(0)
+        
+        for col in ['reach', 'spend', 'impressions']:
+            if col not in demographic_df.columns:
+                demographic_df[col] = 0
+            else:
+                demographic_df[col] = pd.to_numeric(demographic_df[col], errors='coerce').fillna(0)
+
             
             #Rename columns to match expected format
             
