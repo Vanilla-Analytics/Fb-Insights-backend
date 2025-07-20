@@ -1,4 +1,5 @@
 # services/deepseek_audit.py
+# services/deepseek_audit.py
 import httpx
 import os
 import requests
@@ -936,7 +937,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
                     break
         print(f"🆔 Extracted Account ID: {account_id}")
         
-        demographic_df = pd.DataFrame() # Initialize demographic_df
+        demographic_df = pd.DataFrame() # Default to empty DataFrame
         if account_id:
             demographic_df = await fetch_demographic_insights(account_id, user_token)
         else:
@@ -966,12 +967,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Filter out invalid entries
         ad_data = [d for d in ad_data if isinstance(d, dict) and 'date_start' in d and d.get('date_start')]
+        ad_raw = []        
         
-        if not ad_data: # If ad_data is empty after initial fetch or filtering, re-fetch.
+        if not ad_data:
             print("🚨 Raw ad_data returned from Facebook:")
-            ad_data = await fetch_ad_insights(user_token) # Reassign to ad_data
-            # No need for ad_raw, direct assignment to ad_data
-            print(ad_data[:2])
+            ad_raw = await fetch_ad_insights(user_token)
+            print(ad_raw[:2])
 
         if not ad_data:
             raise ValueError("❌ All ad insights entries are missing 'date_start' — cannot proceed.")
@@ -1105,7 +1106,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             # Get the most frequent currency
             currency = currencies.mode()[0] if not currencies.mode().empty else "USD"
             
-            # Get the symbol for this currency (default to $)
+            # Get the symbol for this currency (default to $ if not in our mapping)
             currency_symbol = currency_symbols.get(currency, "$")
             
             print(f"✅ Using currency: {currency} with symbol: {currency_symbol}")
