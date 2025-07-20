@@ -1311,11 +1311,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # 📝 LLM Summary - Dynamic
                         try:
                                 
-                            from services.deepseek_audit import generate_demographic_summary
+                            from services.deepseek_audit import build_demographic_summary_prompt
 
                             # 🔥 Run LLM summary in async thread
                             summary_text = run_async_in_thread(
-                            generate_demographic_summary(demographic_grouped, currency_symbol)
+                            build_demographic_summary_prompt(demographic_grouped, currency_symbol)
                             )
                             print("📄 Demographic LLM Summary Generated")
 

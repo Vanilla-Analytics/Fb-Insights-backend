@@ -987,12 +987,9 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             demographic_df['reach'] = pd.to_numeric(demographic_df['reach'], errors='coerce').fillna(0)
             
             #Rename columns to match expected format
-            demographic_df = demographic_df.rename(columns={
-                'age': 'Age',
-                'gender': 'Gender'
-            })
+            
 
-            demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
+            demographic_grouped = demographic_df.groupby(['Age', 'Gender']).agg({
                 "spend": "sum",
                 "reach": "sum",
                 "impressions": "sum"
