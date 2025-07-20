@@ -22,6 +22,9 @@ import matplotlib.dates as mdates
 #from services.generate_pdf import generate_pdf_report
 from datetime import datetime, timedelta , timezone
 import json
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
@@ -1042,15 +1045,41 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             if 'impressions' not in demographic_df.columns:
                 demographic_df['impressions'] = 0
 
-            demographic_grouped = demographic_df.groupby(['Age', 'Gender']).agg({
-                "spend": "sum",
-                "reach": "sum",
-                "impressions": "sum",
-                "purchases": "sum",
-                "purchase_value": "sum",
-                'cpa': 'mean',
-                'roas': 'mean'
-            }).reset_index()
+            # demographic_grouped = demographic_df.groupby(['Age', 'Gender']).agg({
+            #     "spend": "sum",
+            #     "reach": "sum",
+            #     "impressions": "sum",
+            #     "purchases": "sum",
+            #     "purchase_value": "sum",
+            #     'cpa': 'mean',
+            #     'roas': 'mean'
+            # }).reset_index()
+            
+            
+            try:
+                if demographic_df.empty or 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
+                    logger.warning("⚠️ Missing 'age' or 'gender' columns — skipping Demographic section.")
+                    demographic_grouped = pd.DataFrame()  # fallback to avoid crash
+                else:
+        # ✅ Ensure all required columns exist before aggregation
+                    required_demo_cols = ['age', 'gender', 'spend', 'impressions', 'purchases', 'purchase_value', 'cpa', 'roas']
+                    for col in required_demo_cols:
+                        if col not in demographic_df.columns:
+                            demographic_df[col] = 0
+
+                    demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
+                        'spend': 'sum',
+                        'impressions': 'sum',
+                        'purchases': 'sum',
+                        'purchase_value': 'sum',
+                        'cpa': 'mean',
+                        'roas': 'mean'
+                    }).reset_index()
+
+            except Exception as e:
+                logger.warning(f"⚠️ Demographic LLM Summary generation failed: {e}")
+                demographic_grouped = pd.DataFrame()  # fallback to prevent crash
+
             print("✅ Grouped demographic data:")
             print(demographic_grouped.head())
 
