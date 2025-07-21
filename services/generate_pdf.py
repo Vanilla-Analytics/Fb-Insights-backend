@@ -5,6 +5,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.utils import simpleSplit
 import io
 import os
+import numpy as np
 import asyncio
 import threading
 from fastapi.responses import StreamingResponse
@@ -1220,11 +1221,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     'purchases': 'Purchases',
                                     'roas': 'ROAS',
                                     'cpa': 'CPA'
-                                }, inplace=True)
-
-                                
-                                
-                                #
+                                }, inplace=True)                                
                                 # demographic_table_df = demographic_grouped.copy()
                                 # demographic_table_df['Amount Spent'] = demographic_table_df['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
                                 # demographic_table_df['CPA'] = demographic_table_df['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
@@ -1234,19 +1231,22 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
 
                                 # 🧱 Create a copy for table only (to format text safely)
+                                if 'ROAS' not in demographic_grouped.columns:
+                                    demographic_grouped['ROAS'] = demographic_grouped['Purchases'] / demographic_grouped['Amount Spent'].replace(0, 1)
+                                    demographic_grouped['ROAS'] = demographic_grouped['ROAS'].replace([np.inf, -np.inf], 0).fillna(0)
+
+                                # 🧱 Copy for table formatting
                                 demographic_table = demographic_grouped.copy()
                                 demographic_table['Amount Spent'] = demographic_table['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
                                 demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-
-
                                 
                                 # Ensure ROAS column is present in demographic_grouped
-                                if 'ROAS' not in demographic_grouped.columns:
-                                    if 'Purchases' in demographic_grouped.columns and 'Amount Spent' in demographic_grouped.columns:
-                                        demographic_grouped['ROAS'] = demographic_grouped['Purchases'] / demographic_grouped['Amount Spent']
-                                        demographic_grouped['ROAS'] = demographic_grouped['ROAS'].replace([np.inf, -np.inf], 0).fillna(0)
-                                    else:
-                                        demographic_grouped['ROAS'] = 0  # fallback if source columns are missing
+                                # if 'ROAS' not in demographic_grouped.columns:
+                                #     if 'Purchases' in demographic_grouped.columns and 'Amount Spent' in demographic_grouped.columns:
+                                #         demographic_grouped['ROAS'] = demographic_grouped['Purchases'] / demographic_grouped['Amount Spent']
+                                #         demographic_grouped['ROAS'] = demographic_grouped['ROAS'].replace([np.inf, -np.inf], 0).fillna(0)
+                                #     else:
+                                #         demographic_grouped['ROAS'] = 0  
 
 
                                 # 📋 Draw Table
