@@ -1225,6 +1225,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 demographic_grouped['Amount Spent'] = demographic_grouped['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
                                 demographic_grouped['CPA'] = demographic_grouped['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
                                 demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
+                                
+                                # Ensure ROAS column is present in demographic_grouped
+                                if 'ROAS' not in demographic_grouped.columns:
+                                    if 'Purchases' in demographic_grouped.columns and 'Amount Spent' in demographic_grouped.columns:
+                                        demographic_grouped['ROAS'] = demographic_grouped['Purchases'] / demographic_grouped['Amount Spent']
+                                        demographic_grouped['ROAS'] = demographic_grouped['ROAS'].replace([np.inf, -np.inf], 0).fillna(0)
+                                    else:
+                                        demographic_grouped['ROAS'] = 0  # fallback if source columns are missing
+
 
                                 # 📋 Draw Table
                                 table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
@@ -1262,9 +1271,16 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Row 1: Cost, Revenue by Age
                                 if not demographic_grouped.empty and {'Age', 'Amount Spent', 'Purchase Value', 'Purchases', 'ROAS'}.issubset(demographic_grouped.columns):
                                     try:
-                                # Cost by Age Chart
-                                        cost_age_chart_buf = generate_cost_split_by_age_chart(demographic_grouped)
-                                        c.drawImage(ImageReader(cost_age_chart_buf), LEFT_MARGIN, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                        # Cost by Age Chart
+                                        try:
+                                            buf = generate_cost_split_by_age_chart(demographic_grouped)
+                                            c.drawImage(ImageReader(buf), x, y, width=chart_width, height=chart_height)
+                                        except Exception as e:
+                                            print(f"⚠️ Chart error: Cost Split By Age - {e}")
+
+                                        
+                                        #cost_age_chart_buf = generate_cost_split_by_age_chart(demographic_grouped)
+                                        #c.drawImage(ImageReader(cost_age_chart_buf), LEFT_MARGIN, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
                                     # Revenue by Age Chart
                                         revenue_age_chart_buf = generate_revenue_split_by_age_chart(demographic_grouped)
@@ -1351,7 +1367,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             adjust_page_height(c, next_section)
 
                         # next_section = sections[i + 1]
-                        # adjust_page_height(c, next_section)            
+                        # adjust_page_height(c, next_section)
+            elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
+                continue  # Skip fallback layout; already custom rendered above            
             else:
                 
                 # Default layout
