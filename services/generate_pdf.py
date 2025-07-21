@@ -65,7 +65,8 @@ def run_async_in_thread(coro):
     return result["value"]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-font_path = os.path.join(BASE_DIR, "assets", "fonts", "DejaVuSans.ttf")
+
+font_path = os.path.join("assets", "fonts", "DejaVuSans.ttf")
 pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
 
 PAGE_WIDTH = 1000
