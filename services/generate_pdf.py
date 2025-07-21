@@ -1222,15 +1222,22 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     'cpa': 'CPA'
                                 }, inplace=True)
 
-                                # demographic_grouped['Amount Spent'] = demographic_grouped['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                # demographic_grouped['CPA'] = demographic_grouped['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                # demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
                                 
-                                # ⚠️ Create a separate copy for table display with formatted values
-                                demographic_table_df = demographic_grouped.copy()
-                                demographic_table_df['Amount Spent'] = demographic_table_df['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                demographic_table_df['CPA'] = demographic_table_df['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                demographic_table_df['ROAS'] = demographic_table_df['ROAS'].round(2)
+                                
+                                #
+                                # demographic_table_df = demographic_grouped.copy()
+                                # demographic_table_df['Amount Spent'] = demographic_table_df['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                                # demographic_table_df['CPA'] = demographic_table_df['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                                # demographic_table_df['ROAS'] = demographic_table_df['ROAS'].round(2)
+                                
+                                # ⚠️ Keep numeric for charts
+                                demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
+
+                                # 🧱 Create a copy for table only (to format text safely)
+                                demographic_table = demographic_grouped.copy()
+                                demographic_table['Amount Spent'] = demographic_table['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                                demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+
 
                                 
                                 # Ensure ROAS column is present in demographic_grouped
@@ -1244,7 +1251,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 # 📋 Draw Table
                                 #table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
-                                table_data = [demographic_table_df.columns.tolist()] + demographic_table_df.values.tolist()
+                                table_data = [demographic_table.columns.tolist()] + demographic_table.values.tolist()
+
 
                                 # Adjust colWidths if needed based on content
                                 table_col_widths = [100, 80, 100, 80, 80, 80] # Example widths
