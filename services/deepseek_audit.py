@@ -614,7 +614,107 @@ async def generate_ad_summary(full_df: pd.DataFrame, currency_symbol: str) -> st
 
     return await generate_llm_content(prompt, summary_data)
 
+# async def fetch_demographic_insights(account_id: str, access_token: str):
+#     url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
+#     now = datetime.now()
+#     since = (now - timedelta(days=30)).strftime('%Y-%m-%d')
+#     until = now.strftime('%Y-%m-%d')
+
+#     params = {
+#         "fields": "spend,impressions,clicks,reach,actions,action_values",
+#         "level": "ad",
+#         "breakdowns": "age,gender",
+#         "time_range": json.dumps({"since": since, "until": until}),
+#         "access_token": access_token
+#     }
+
+#     async with httpx.AsyncClient() as client:
+#         response = await client.get(url, params=params)
+#         response.raise_for_status()
+#         data = response.json().get("data", [])
+#         print("📦 Raw demographic data:", json.dumps(data, indent=2)) 
+#         df = pd.DataFrame(data)
+
+#         # ✅ String-type safety
+#         if 'gender' in df.columns:
+#             df['gender'] = df['gender'].astype(str)
+
+#         if 'age' in df.columns:
+#             df['age'] = df['age'].astype(str)
+
+#         # Preprocess data
+#         for col in ['spend', 'reach', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpa', 'roas']:
+#             if col not in df.columns:
+#                 df[col] = 0
+#             else:
+#                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                
+#         if df.empty:
+#             return df
+#         #df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+#         def extract_purchase(acts):
+#             if isinstance(acts, list):
+#                 for a in acts:
+#                     if isinstance(a, dict) and a.get("action_type") == "purchase":
+#                         return float(a.get("value", 0))
+#             return 0.0
+        
+#         def extract_purchase_value(vals):
+#             if isinstance(vals, list):
+#                 for a in vals:
+#                     if isinstance(a, dict) and a.get("action_type") == "purchase":
+#                         return float(a.get("value", 0))
+#             return 0.0
+        
+#         df['spend'] = df['spend'].astype(float)
+
+#         if 'action_values' in df.columns:
+#             df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+#         else:
+#             df['purchase_value'] = 0.0
+
+#         if 'actions' in df.columns:
+#             df['purchases'] = df['actions'].apply(extract_purchase)
+#         else:
+#             df['purchases'] = 0.0
+
+        
+        
+        
+#         # df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else 0.0
+#         df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else pd.Series(0.0, index=df.index)
+#         df['purchases'] = df['actions'].apply(extract_purchase) if 'actions' in df.columns else pd.Series(0.0, index=df.index)
+
+
+
+#         #df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+#         df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+#         df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+        
+#         if 'gender' in df.columns:
+#             df['gender'] = df['gender'].astype(str)
+#             df = df[df['gender'].str.lower().str.strip() != 'unknown']
+            
+#         if 'age' in df.columns:
+#             df['age'] = df['age'].astype(str)
+            
+            
+#         print("📊 Demographic DataFrame Columns:", df.columns)
+#         print("📊 Demographic DataFrame Preview:\n", df.head(2))
+
+#         expected_cols = ['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']
+#         for col in expected_cols:
+#             if col not in df.columns:
+#                 df[col] = 0
+
+#         return df[expected_cols]
+
 async def fetch_demographic_insights(account_id: str, access_token: str):
+    from datetime import datetime, timedelta
+    import json
+    import pandas as pd
+    import httpx
+
     url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
     now = datetime.now()
     since = (now - timedelta(days=30)).strftime('%Y-%m-%d')
@@ -632,82 +732,58 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         response = await client.get(url, params=params)
         response.raise_for_status()
         data = response.json().get("data", [])
-        print("📦 Raw demographic data:", json.dumps(data, indent=2)) 
+        print("📦 Raw demographic data:", json.dumps(data, indent=2))
         df = pd.DataFrame(data)
 
-        # ✅ String-type safety
-        if 'gender' in df.columns:
-            df['gender'] = df['gender'].astype(str)
-
-        if 'age' in df.columns:
-            df['age'] = df['age'].astype(str)
-
-        # Preprocess data
-        for col in ['spend', 'reach', 'impressions', 'clicks', 'purchases', 'purchase_value', 'cpa', 'roas']:
-            if col not in df.columns:
-                df[col] = 0
-            else:
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-                
+        # 🛡 Ensure required structure even if empty
         if df.empty:
-            return df
-        #df['purchases'] = df['actions'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
+            return pd.DataFrame(columns=['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas'])
+
+        # 🧩 Fill missing complex columns with empty lists
+        for col in ['actions', 'action_values']:
+            if col not in df.columns:
+                df[col] = [[] for _ in range(len(df))]
+
+        # 🧼 Ensure 'age' and 'gender' are strings and filter "unknown"
+        df['age'] = df['age'].astype(str) if 'age' in df.columns else "unknown"
+        df['gender'] = df['gender'].astype(str) if 'gender' in df.columns else "unknown"
+        df = df[(df['age'].str.lower().str.strip() != 'unknown') & 
+                (df['gender'].str.lower().str.strip() != 'unknown')]
+
+        # 🧮 Extract purchase value and count from nested fields
         def extract_purchase(acts):
             if isinstance(acts, list):
                 for a in acts:
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
             return 0.0
-        
+
         def extract_purchase_value(vals):
             if isinstance(vals, list):
                 for a in vals:
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
             return 0.0
-        
-        df['spend'] = df['spend'].astype(float)
 
-        if 'action_values' in df.columns:
-            df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
-        else:
-            df['purchase_value'] = 0.0
+        df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+        df['purchases'] = df['actions'].apply(extract_purchase)
 
-        if 'actions' in df.columns:
-            df['purchases'] = df['actions'].apply(extract_purchase)
-        else:
-            df['purchases'] = 0.0
-
-        
-        
-        
-        # df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else 0.0
-        df['purchase_value'] = df['action_values'].apply(extract_purchase_value) if 'action_values' in df.columns else pd.Series(0.0, index=df.index)
-        df['purchases'] = df['actions'].apply(extract_purchase) if 'actions' in df.columns else pd.Series(0.0, index=df.index)
-
-
-
-        #df['purchase_value'] = df['action_values'].apply(lambda acts: next((float(a.get('value')) for a in acts if a.get("action_type") == "purchase"), 0))
-        df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
-        df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-        
-        if 'gender' in df.columns:
-            df['gender'] = df['gender'].astype(str)
-            df = df[df['gender'].str.lower().str.strip() != 'unknown']
-            
-        if 'age' in df.columns:
-            df['age'] = df['age'].astype(str)
-            
-            
-        print("📊 Demographic DataFrame Columns:", df.columns)
-        print("📊 Demographic DataFrame Preview:\n", df.head(2))
-
-        expected_cols = ['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']
-        for col in expected_cols:
+        # 🧹 Ensure all numeric fields exist and are cleaned
+        required_cols = ['spend', 'reach', 'impressions', 'clicks', 'purchases', 'purchase_value']
+        for col in required_cols:
             if col not in df.columns:
                 df[col] = 0
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-        return df[expected_cols]
+        # 🧠 Derived metrics
+        df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+        df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+
+        print("📊 Demographic DataFrame Columns:", df.columns.tolist())
+        print("📊 Demographic DataFrame Preview:\n", df.head(2))
+
+        return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
+
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
