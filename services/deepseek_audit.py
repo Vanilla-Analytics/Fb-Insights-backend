@@ -5,6 +5,7 @@ import requests
 from datetime import datetime, timedelta, timezone
 import json
 import pandas as pd
+import numpy as np
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
