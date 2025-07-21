@@ -1372,9 +1372,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     text_x = left_section_width + 20
                     text_width = PAGE_WIDTH - text_x - RIGHT_MARGIN
-                    c.setStrokeColor(colors.HexColor("#007bff"))
-                    c.setLineWidth(8)
-                    c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
+                    # c.setStrokeColor(colors.HexColor("#007bff"))
+                    # c.setLineWidth(8)
+                    # c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
 
                     #text_y = PAGE_HEIGHT - TOP_MARGIN - 30
                     text_y = PAGE_HEIGHT - 110  # Reduces top margin
