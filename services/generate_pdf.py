@@ -1192,7 +1192,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             
 
                             # Check for required columns
-                            if  demographic_df is None or demographic_df.empty or 'age' not in demographic_df.columns or 'gender' not in demographic_df.columns:
+                            if  (demographic_df is not None and not demographic_df.empty and 'age' in demographic_df.columns and 'gender' in demographic_df.columns and demographic_df['spend'].sum() > 0):
                                 print("⚠️ Missing 'age' or 'gender' columns — skipping Demographic section.")
                                 c.setFont("Helvetica", 14)
                                 c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 100, "⚠️ Demographic data not available for this account.")
@@ -1337,12 +1337,18 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         try:
                                 
                             from services.deepseek_audit import build_demographic_summary_prompt
+                            
+                            try:
+                                summary_text = run_async_in_thread(build_demographic_summary_prompt(demographic_df, currency_symbol))
+                            except Exception as e:
+                                print(f"⚠️ Demographic LLM Summary generation failed: {e}")
+                                summary_text = "⚠️ Not enough data to generate summary."
 
                             # 🔥 Run LLM summary in async thread
-                            summary_text = run_async_in_thread(
-                            build_demographic_summary_prompt(demographic_grouped, currency_symbol)
-                            )
-                            print("📄 Demographic LLM Summary Generated")
+                            # summary_text = run_async_in_thread(
+                            # build_demographic_summary_prompt(demographic_grouped, currency_symbol)
+                            # )
+                            # print("📄 Demographic LLM Summary Generated")
 
                             import re
 
