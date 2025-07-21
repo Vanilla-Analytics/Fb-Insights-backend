@@ -1183,42 +1183,34 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.showPage()
                             adjust_page_height(c, {"title": "Demographic Performance", "contains_table": True})
                             draw_header(c)
-                            
-                            # ✅ Add title
+
                             c.setFont("Helvetica-Bold", 16)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
-                            # 📊 Prepare Demographic Table Data
-                            
 
-                            # Check for required columns
-                            if  (demographic_df is not None and not demographic_df.empty and 'age' in demographic_df.columns and 'gender' in demographic_df.columns and demographic_df['spend'].sum() > 0):
-                                print("⚠️ Missing 'age' or 'gender' columns — skipping Demographic section.")
-                                c.setFont("Helvetica", 14)
-                                c.drawString(LEFT_MARGIN, PAGE_HEIGHT - 100, "⚠️ Demographic data not available for this account.")
-                                draw_footer_cta(c)
-                            else:
-                                # ✅ Continue only if demographic columns are present
-                                # Ensure all required columns exist
+                            # ✅ Check for valid demographic data *before* attempting to process it
+                            if demographic_df is not None and not demographic_df.empty and \
+                                'age' in demographic_df.columns and 'gender' in demographic_df.columns and \
+                                demographic_df['spend'].sum() > 0: # Ensure there's some spend data too
+
+                                logger.info("Proceeding with Demographic Performance section as data is valid.")
+
+                                # Ensure all required columns for aggregation exist and are numeric
                                 for col in ['spend', 'purchase_value', 'purchases']:
                                     if col not in demographic_df.columns:
-                                        demographic_df[col] = 0
-                                demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
-                                demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
-                                demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
+                                        demographic_df[col] = 0 # Add missing column with default 0
+                                    else:
+                                        demographic_df[col] = pd.to_numeric(demographic_df[col], errors='coerce').fillna(0)
+
+                                 # Recalculate ROAS and CPA after ensuring numeric columns
                                 demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
                                 demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
-                                # demographic_df['spend'] = pd.to_numeric(demographic_df['spend'], errors='coerce').fillna(0)
-                                # demographic_df['purchase_value'] = pd.to_numeric(demographic_df['purchase_value'], errors='coerce').fillna(0)
-                                # demographic_df['purchases'] = pd.to_numeric(demographic_df['purchases'], errors='coerce').fillna(0)
-                                # demographic_df['roas'] = demographic_df['purchase_value'] / demographic_df['spend'].replace(0, 1)
-                                # demographic_df['cpa'] = demographic_df['spend'] / demographic_df['purchases'].replace(0, 1)
 
                                 demographic_grouped = demographic_df.groupby(['age', 'gender']).agg({
                                     'spend': 'sum',
                                     'purchases': 'sum',
-                                    'roas': 'mean',
-                                    'cpa': 'mean'
+                                    'roas': 'mean', # Mean ROAS for the group
+                                    'cpa': 'mean'  # Mean CPA for the group
                                 }).reset_index()
 
                                 demographic_grouped.rename(columns={
@@ -1236,149 +1228,117 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 # 📋 Draw Table
                                 table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
-                                table = Table(table_data, colWidths=[80, 60, 90, 70, 60, 60])
+                                # Adjust colWidths if needed based on content
+                                table_col_widths = [100, 80, 100, 80, 80, 80] # Example widths
+                                table = Table(table_data, colWidths=table_col_widths)
                                 table.setStyle(TableStyle([
                                     ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
                                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                                    ('FONTSIZE', (0, 0), (-1, 0), 10), # Slightly smaller font for table header
                                     ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
                                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                                     ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                                    ('FONTNAME', (0, 1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica"), # Body font
+                                    ('FONTSIZE', (0, 1), (-1, -1), 8), # Body font size
                                 ]))
-                                table_y = PAGE_HEIGHT - 1000
-                                table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                                table.drawOn(c, LEFT_MARGIN, table_y)
-                                
-                                if ad_insights_df is not None and {'age', 'spend', 'purchase_value', 'purchases'}.issubset(ad_insights_df.columns):
-                                    age_df = ad_insights_df[['age', 'spend', 'purchase_value', 'purchases']].copy()
-                                    age_df.rename(columns={
-                                        'age': 'Age',
-                                        'spend': 'Amount Spent',
-                                        'purchase_value': 'Purchase Value',
-                                        'purchases': 'Purchases'
-                                    }, inplace=True)
-                                    age_df['ROAS'] = age_df['Purchase Value'] / age_df['Amount Spent'].replace(0, 1)
 
+                                # Calculate table height to position charts below it
+                                table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
+                                table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
+                                table.drawOn(c, table_x, table_y_start - table_height)
+
+                                current_y_pos = table_y_start - table_height - 40 # Start charts 40 units below table
+
+                                # --- Draw Demographic Charts ---
+                                # Use demographic_grouped for charts as it's already aggregated
+                                chart_width = 300
+                                chart_height = 250
+                                chart_padding_x = 50
+                                chart_padding_y = 30
+
+                                # Row 1: Cost, Revenue by Age
+                                if not demographic_grouped.empty and {'Age', 'Amount Spent', 'Purchase Value', 'Purchases', 'ROAS'}.issubset(demographic_grouped.columns):
                                     try:
-                                        cost_age_chart = generate_cost_split_by_age_chart(age_df)
-                                        revenue_age_chart = generate_revenue_split_by_age_chart(age_df)
-                                        roas_age_chart = generate_roas_split_by_age_chart(age_df)
+                                # Cost by Age Chart
+                                        cost_age_chart_buf = generate_cost_split_by_age_chart(demographic_grouped)
+                                        c.drawImage(ImageReader(cost_age_chart_buf), LEFT_MARGIN, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                        c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
-                                        c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
-                                        c.drawImage(ImageReader(roas_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 1100, width=250, height=250)
+                                    # Revenue by Age Chart
+                                        revenue_age_chart_buf = generate_revenue_split_by_age_chart(demographic_grouped)
+                                        c.drawImage(ImageReader(revenue_age_chart_buf), LEFT_MARGIN + chart_width + chart_padding_x, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                                        current_y_pos -= (chart_height + chart_padding_y)
+
+                                    # Row 2: ROAS by Age & Cost, Revenue by Gender
+                                    # ROAS by Age Chart (positioned below Cost/Revenue by Age)
+                                        roas_age_chart_buf = generate_roas_split_by_age_chart(demographic_grouped)
+                                        c.drawImage(ImageReader(roas_age_chart_buf), LEFT_MARGIN, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+
+                                    # Cost by Gender Chart
+                                        cost_gender_chart_buf = generate_cost_split_by_gender_chart(demographic_grouped)
+                                        c.drawImage(ImageReader(cost_gender_chart_buf), LEFT_MARGIN + chart_width + chart_padding_x, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                                        current_y_pos -= (chart_height + chart_padding_y)
+
+                                    # Row 3: ROAS by Gender
+                                    # Revenue by Gender Chart
+                                        revenue_gender_chart_buf = generate_revenue_split_by_gender_chart(demographic_grouped)
+                                        c.drawImage(ImageReader(revenue_gender_chart_buf), LEFT_MARGIN, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                                    # ROAS by Gender Chart
+                                        roas_gender_chart_buf = generate_roas_split_by_gender_chart(demographic_grouped)
+                                        c.drawImage(ImageReader(roas_gender_chart_buf), LEFT_MARGIN + chart_width + chart_padding_x, current_y_pos - chart_height, width=chart_width, height=chart_height, preserveAspectRatio=True)
+
+                                        current_y_pos -= (chart_height + chart_padding_y)
+
                                     except Exception as e:
-                                        print(f"⚠️ Skipping age-based charts: {e}")
+                                        logger.error(f"Error drawing demographic charts: {e}")
+                                        c.setFont("Helvetica", 12)
+                                        c.setFillColor(colors.red)
+                                        c.drawString(LEFT_MARGIN, current_y_pos - 50, f"⚠️ Error generating demographic charts: {str(e)}")
+                                        current_y_pos -= 100 # Move down to avoid overlap
 
-                                if ad_insights_df is not None and {'gender', 'spend', 'purchase_value', 'purchases'}.issubset(ad_insights_df.columns):
-                                    gender_df = ad_insights_df[['gender', 'spend', 'purchase_value', 'purchases']].copy()
-                                    gender_df.rename(columns={
-                                        'gender': 'Gender',
-                                        'spend': 'Amount Spent',
-                                        'purchase_value': 'Purchase Value',
-                                        'purchases': 'Purchases'
-                                    }, inplace=True)
-                                    gender_df['ROAS'] = gender_df['Purchase Value'] / gender_df['Amount Spent'].replace(0, 1)
 
-                                    try:
-                                        cost_gender_chart = generate_cost_split_by_gender_chart(gender_df)
-                                        revenue_gender_chart = generate_revenue_split_by_gender_chart(gender_df)
-                                        roas_gender_chart = generate_roas_split_by_gender_chart(gender_df)
+                    # 📝 LLM Summary - Dynamic
+                                try:
+                                    summary_text = run_async_in_thread(build_demographic_summary_prompt(demographic_grouped, currency_symbol))
+                                    logger.info("Demographic LLM Summary Generated.")
 
-                                        c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
-                                        c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
-                                        c.drawImage(ImageReader(roas_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 1100, width=250, height=250)
-                                    except Exception as e:
-                                        print(f"⚠️ Skipping gender-based charts: {e}")
+                                    clean_text = re.sub(r"[*#]", "", summary_text).strip()
+                                    clean_text = re.sub(r"\s{2,}", " ", clean_text)
 
-                                
-                            # if ad_insights_df is not None and {'age', 'spend'}.issubset(ad_insights_df.columns):
-                            #     demographic_df = ad_insights_df[['age', 'spend']].copy()
-                            #     demographic_df.rename(columns={'age': 'Age', 'spend': 'Amount Spent'}, inplace=True)
+                                    summary_y = current_y_pos - 40 # Position below the last chart
 
-                            #     try:
-                            #         cost_age_chart = generate_cost_split_by_age_chart(demographic_df)
-                            #         revenue_age_chart = generate_revenue_split_by_age_chart(demographic_df)
+                                    styles = getSampleStyleSheet()
+                                    styleN = styles["Normal"]
+                                    styleN.fontName = "DejaVuSans" if currency_symbol == "₹" else "Helvetica"
+                                    styleN.fontSize = 11
+                                    styleN.leading = 14
+                                    styleN.textColor = colors.HexColor("#333333")
 
-                            #         c.drawImage(ImageReader(cost_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 500, width=250, height=250)
-                            #         c.drawImage(ImageReader(revenue_age_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 500, width=250, height=250)
-                            #         # ✅ Proceed with using the chart
-                            #     except Exception as e:
-                            #         print(f"⚠️ Skipping cost by age chart: {e}")
-                            # else:
-                            #     print("⚠️ Demographic data missing — skipping age-based cost chart.")
-                            
-                            # if ad_insights_df is not None and {'gender', 'spend'}.issubset(ad_insights_df.columns):
-                            #     demographic_df = ad_insights_df[['gender', 'spend']].copy()
-                            #     demographic_df.rename(columns={'gender': 'Gender', 'spend': 'Amount Spent'}, inplace=True)
+                                    p = Paragraph(clean_text, styleN)
+                                    p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
+                                    p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
 
-                            #     try:
-                            #         cost_gender_chart = generate_cost_split_by_gender_chart(demographic_df)
-                            #         revenue_gender_chart = generate_revenue_split_by_gender_chart(demographic_df)
+                                    draw_footer_cta(c)
 
-                            #         c.drawImage(ImageReader(cost_gender_chart), LEFT_MARGIN, PAGE_HEIGHT - 800, width=250, height=250)
-                            #         c.drawImage(ImageReader(revenue_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 800, width=250, height=250)
-                            #         # ✅ Proceed with using the chart
-                            #     except Exception as e:
-                            #         print(f"⚠️ Skipping cost by age chart: {e}")
-                            # else:
-                            #     print("⚠️ Demographic data missing — skipping age-based cost chart.")
+                                except Exception as e:
+                                    logger.error(f"Demographic LLM Summary generation failed: {e}")
+                                    c.setFont("Helvetica", 12)
+                                    c.setFillColor(colors.red)
+                                    c.drawString(LEFT_MARGIN, current_y_pos - 50, f"⚠️ Unable to generate demographic summary: {str(e)}")
+                                    draw_footer_cta(c) # Still draw footer if summary fails
 
-                            # # 📊 Horizontal Bar Charts - ROAS
-                            # roas_age_chart = generate_roas_split_by_age_chart(demographic_df)
-                            # roas_gender_chart = generate_roas_split_by_gender_chart(demographic_df)
-
-                            # c.drawImage(ImageReader(roas_age_chart), LEFT_MARGIN, PAGE_HEIGHT - 1100, width=250, height=250)
-                            # c.drawImage(ImageReader(roas_gender_chart), LEFT_MARGIN + 300, PAGE_HEIGHT - 1100, width=250, height=250)
-                            
-                            # 📝 LLM Summary - Dynamic
-                        try:
-                                
-                            from services.deepseek_audit import build_demographic_summary_prompt
-                            
-                            try:
-                                summary_text = run_async_in_thread(build_demographic_summary_prompt(demographic_df, currency_symbol))
-                            except Exception as e:
-                                print(f"⚠️ Demographic LLM Summary generation failed: {e}")
-                                summary_text = "⚠️ Not enough data to generate summary."
-
-                            # 🔥 Run LLM summary in async thread
-                            # summary_text = run_async_in_thread(
-                            # build_demographic_summary_prompt(demographic_grouped, currency_symbol)
-                            # )
-                            # print("📄 Demographic LLM Summary Generated")
-
-                            import re
-
-                            # 🧹 Clean summary text
-                            clean_text = re.sub(r"[*#]", "", summary_text).strip()
-                            clean_text = re.sub(r"\s{2,}", " ", clean_text)  # Replace multiple spaces with one
-
-                            # 📍 Position summary below the last chart
-                            summary_y = PAGE_HEIGHT - 1250  # adjust as needed for spacing
-
-                            # 📄 Wrap and draw text as paragraph
-                            from reportlab.platypus import Paragraph
-                            from reportlab.lib.styles import getSampleStyleSheet
-
-                            styles = getSampleStyleSheet()
-                            styleN = styles["Normal"]
-                            styleN.fontName = "DejaVuSans" if currency_symbol == "₹" else "Helvetica"
-                            styleN.fontSize = 11
-                            styleN.leading = 14
-                            styleN.textColor = colors.HexColor("#333333")
-
-                            p = Paragraph(clean_text, styleN)
-                            p_width, p_height = p.wrap(PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
-                            p.drawOn(c, LEFT_MARGIN, summary_y - p_height)
-
-                            draw_footer_cta(c)  # 📌 Footer CTA after LLM summary
-
-                        except Exception as e:
-                            
-                            print(f"⚠️ Demographic LLM Summary generation failed: {str(e)}")
+                        else: # This block executes if demographic_df is not valid for processing
+                            logger.warning("Demographic data not available or insufficient for detailed analysis. Skipping section.")
+                            c.setFont("Helvetica", 14)
+                            c.setFillColor(colors.black)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠️ Demographic data not available for this account or contains no valid entries.")
+                            draw_footer_cta(c) # Still draw footer
 
 
 
