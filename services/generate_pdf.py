@@ -38,16 +38,24 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 def run_async_in_thread(coro):
-    result = {}
-    def runner():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result["value"] = loop.run_until_complete(coro)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(coro)
+        return result
+    finally:
         loop.close()
-    t = threading.Thread(target=runner)
-    t.start()
-    t.join()
-    return result["value"]
+# def run_async_in_thread(coro):
+#     result = {}
+#     def runner():
+#         loop = asyncio.new_event_loop()
+#         asyncio.set_event_loop(loop)
+#         result["value"] = loop.run_until_complete(coro)
+#         loop.close()
+#     t = threading.Thread(target=runner)
+#     t.start()
+#     t.join()
+#     return result["value"]
 
 
 
@@ -1295,6 +1303,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_height = 250
                                 chart_padding_x = 50
                                 chart_padding_y = 30
+                                
+                                # Calculate starting position with more space
+                                current_y_pos = table_y_start - table_height - 40  # Start charts 40 units below table
 
                                 # 🎯 Row 1: Cost + Revenue by Age
                                 try:
@@ -1306,8 +1317,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     x_revenue_age = x_cost_age + chart_width + chart_padding_x
                                     buf = generate_revenue_split_by_age_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_revenue_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
- 
-                                    current_y_pos -= (chart_height + chart_padding_y)
+
+                                    current_y_pos = y_cost_age - chart_padding_y  # Update position for next row
                                 except Exception as e:
                                     logger.error(f"❌ Row 1 (Cost/Revenue by Age) failed: {e}")
                                     c.setFillColor(colors.red)
@@ -1325,7 +1336,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     buf = generate_cost_split_by_gender_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_cost_gender, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    current_y_pos -= (chart_height + chart_padding_y)
+                                    current_y_pos = y_roas_age - chart_padding_y  # Update position for next row
                                 except Exception as e:
                                     logger.error(f"❌ Row 2 (ROAS by Age + Cost by Gender) failed: {e}")
                                     c.setFillColor(colors.red)
@@ -1343,75 +1354,69 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     buf = generate_roas_split_by_gender_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_roas_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    current_y_pos -= (chart_height + chart_padding_y)
+                                    current_y_pos = y_revenue_gender - chart_padding_y  # Update position for summary
                                 except Exception as e:
                                     logger.error(f"❌ Row 3 (Revenue/ROAS by Gender) failed: {e}")
                                     c.setFillColor(colors.red)
                                     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render Revenue/ROAS by Gender charts")
                                     current_y_pos -= (chart_height + chart_padding_y)
 
-                                
-                                
-                                # chart_width = 300
-                                # chart_height = 250
-                                # chart_padding_x = 50
-                                # chart_padding_y = 30
+# Adjust the page height for the demographic section to ensure all content fits
+                                adjust_page_height(c, {"title": "DEMOGRAPHIC PERFORMANCE", "contains_table": True})
 
-                                # # Row 1: Cost, Revenue by Age
-                                # if not demographic_grouped.empty and {'Age', 'Amount Spent', 'ROAS'}.issubset(demographic_grouped.columns):
-                                #     try:
-                                #         # Cost by Age Chart
-                                #         x_cost_age = LEFT_MARGIN # Define x for Cost by Age chart
-                                #         y_cost_age = current_y_pos - chart_height # Define y for Cost by Age chart
-                                #         buf = generate_cost_split_by_age_chart(demographic_grouped)
-                                #         c.drawImage(ImageReader(buf), x_cost_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                # # 🎯 Row 1: Cost + Revenue by Age
+                                # try:
+                                #     x_cost_age = LEFT_MARGIN
+                                #     y_cost_age = current_y_pos - chart_height
+                                #     buf = generate_cost_split_by_age_chart(chart_df)
+                                #     c.drawImage(ImageReader(buf), x_cost_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                #     # Revenue by Age Chart
-                                #         x_revenue_age = LEFT_MARGIN + chart_width + chart_padding_x # Define x for Revenue by Age chart
-                                #         y_revenue_age = current_y_pos - chart_height # Define y for Revenue by Age chart
-                                #         revenue_age_chart_buf = generate_revenue_split_by_age_chart(demographic_grouped)
-                                #         c.drawImage(ImageReader(revenue_age_chart_buf), x_revenue_age, y_revenue_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                #     x_revenue_age = x_cost_age + chart_width + chart_padding_x
+                                #     buf = generate_revenue_split_by_age_chart(chart_df)
+                                #     c.drawImage(ImageReader(buf), x_revenue_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+ 
+                                #     current_y_pos -= (chart_height + chart_padding_y)
+                                # except Exception as e:
+                                #     logger.error(f"❌ Row 1 (Cost/Revenue by Age) failed: {e}")
+                                #     c.setFillColor(colors.red)
+                                #     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render Cost/Revenue by Age charts")
+                                #     current_y_pos -= (chart_height + chart_padding_y)
 
-                                #         current_y_pos -= (chart_height + chart_padding_y)
+                                # # 🎯 Row 2: ROAS by Age + Cost by Gender
+                                # try:
+                                #     x_roas_age = LEFT_MARGIN
+                                #     y_roas_age = current_y_pos - chart_height
+                                #     buf = generate_roas_split_by_age_chart(chart_df)
+                                #     c.drawImage(ImageReader(buf), x_roas_age, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                #     # Row 2: ROAS by Age & Cost, Revenue by Gender
-                                #     # ROAS by Age Chart (positioned below Cost/Revenue by Age)
-                                #         x_roas_age = LEFT_MARGIN # Define x for ROAS by Age chart
-                                #         y_roas_age = current_y_pos - chart_height # Define y for ROAS by Age chart
-                                #         roas_age_chart_buf = generate_roas_split_by_age_chart(demographic_grouped)
-                                #         c.drawImage(ImageReader(roas_age_chart_buf), x_roas_age, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                #     x_cost_gender = x_roas_age + chart_width + chart_padding_x
+                                #     buf = generate_cost_split_by_gender_chart(chart_df)
+                                #     c.drawImage(ImageReader(buf), x_cost_gender, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
+                                #     current_y_pos -= (chart_height + chart_padding_y)
+                                # except Exception as e:
+                                #     logger.error(f"❌ Row 2 (ROAS by Age + Cost by Gender) failed: {e}")
+                                #     c.setFillColor(colors.red)
+                                #     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render ROAS by Age / Cost by Gender charts")
+                                #     current_y_pos -= (chart_height + chart_padding_y)
 
-                                #     # Cost by Gender Chart
-                                #         x_cost_gender = LEFT_MARGIN + chart_width + chart_padding_x # Define x for Cost by Gender chart
-                                #         y_cost_gender = current_y_pos - chart_height # Define y for Cost by Gender chart
-                                #         cost_gender_chart_buf = generate_cost_split_by_gender_chart(demographic_grouped)
-                                #         c.drawImage(ImageReader(cost_gender_chart_buf), x_cost_gender, y_cost_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                # # 🎯 Row 3: Revenue + ROAS by Gender
+                                # try:
+                                #     x_revenue_gender = LEFT_MARGIN
+                                #     y_revenue_gender = current_y_pos - chart_height
+                                #     buf = generate_revenue_split_by_gender_chart(chart_df)
+                                #     c.drawImage(ImageReader(buf), x_revenue_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                #         current_y_pos -= (chart_height + chart_padding_y)
+                                #     x_roas_gender = x_revenue_gender + chart_width + chart_padding_x
+                                #     buf = generate_roas_split_by_gender_chart(chart_df)
+                                #     c.drawImage(ImageReader(buf), x_roas_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                #     # Row 3: ROAS by Gender
-                                #     # Revenue by Gender Chart
-                                #         x_revenue_gender = LEFT_MARGIN # Define x for Revenue by Gender chart
-                                #         y_revenue_gender = current_y_pos - chart_height # Define y for Revenue by Gender chart
-                                #         revenue_gender_chart_buf = generate_revenue_split_by_gender_chart(demographic_grouped)
-                                #         c.drawImage(ImageReader(revenue_gender_chart_buf), x_revenue_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
-                                #     # ROAS by Gender Chart
-                                #         x_roas_gender = LEFT_MARGIN + chart_width + chart_padding_x # Define x for ROAS by Gender chart
-                                #         y_roas_gender = current_y_pos - chart_height # Define y for ROAS by Gender chart
-                                #         roas_gender_chart_buf = generate_roas_split_by_gender_chart(demographic_grouped)
-                                #         c.drawImage(ImageReader(roas_gender_chart_buf), x_roas_gender, y_roas_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
-                                #         current_y_pos -= (chart_height + chart_padding_y)
-
-                                #     except Exception as e:
-                                #         logger.error(f"Error drawing demographic charts: {e}")
-                                #         c.setFont("Helvetica", 12)
-                                #         c.setFillColor(colors.red)
-                                #         c.drawString(LEFT_MARGIN, current_y_pos - 50, f"⚠️ Error generating demographic charts: {str(e)}")
-                                #         current_y_pos -= 100 # Move down to avoid overlap
-                                
+                                #     current_y_pos -= (chart_height + chart_padding_y)
+                                # except Exception as e:
+                                #     logger.error(f"❌ Row 3 (Revenue/ROAS by Gender) failed: {e}")
+                                #     c.setFillColor(colors.red)
+                                #     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render Revenue/ROAS by Gender charts")
+                                #     current_y_pos -= (chart_height + chart_padding_y)                                
 
 
                                 # 📝 LLM Summary - Dynamic
