@@ -603,72 +603,92 @@ def generate_roas_split_by_gender_chart(df):
 
 def generate_platform_split_charts(df):
     df = df.copy()
+    df['platform'] = df['platform'].fillna("Uncategorized")
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
-    cost_split = df.groupby('platform')['spend'].sum().sort_values(ascending=False)
-    rev_split = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False)
+    cost = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5)
+    revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
 
-    figs = []
-    if not cost_split.empty:
-        fig1 = draw_donut_chart(cost_split.values, cost_split.index, "Cost Split")
-        figs.append(("Cost Split", generate_chart_image(fig1)))
-    if not rev_split.empty:
-        fig2 = draw_donut_chart(rev_split.values, rev_split.index, "Revenue Split")
-        figs.append(("Revenue Split", generate_chart_image(fig2)))
+    charts = []
 
-    return figs
+    # Cost Split Pie
+    fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
+    ax1.pie(cost, labels=cost.index, autopct='%1.1f%%', startangle=90)
+    ax1.set_title("Cost Split by Platform")
+    charts.append(("Cost Split", generate_chart_image(fig1)))
+
+    # Revenue Split Pie
+    fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
+    ax2.pie(revenue, labels=revenue.index, autopct='%1.1f%%', startangle=90)
+    ax2.set_title("Revenue Split by Platform")
+    charts.append(("Revenue Split", generate_chart_image(fig2)))
+
+    return charts
 
 def generate_platform_roas_chart(df):
-    roas = df.groupby('platform').apply(lambda g: g['purchase_value'].sum() / g['spend'].sum() if g['spend'].sum() > 0 else 0)
-    return draw_roas_split_bar_chart(roas)
+    df = df.copy()
+    df['platform'] = df['platform'].fillna("Uncategorized")
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
+    platform_data = df.groupby('platform').agg({'spend': 'sum', 'purchase_value': 'sum'})
+    platform_data['roas'] = platform_data['purchase_value'] / platform_data['spend'].replace(0, 1)
+    platform_data = platform_data.sort_values(by='spend', ascending=False).head(5)
+
+    fig, ax = plt.subplots(figsize=(10, 4), dpi=200)
+    ax.barh(platform_data.index, platform_data['roas'], color='#1f77b4')
+    ax.set_title("ROAS by Platform")
+    ax.set_xlabel("ROAS")
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+    fig.tight_layout()
+
+    return generate_chart_image(fig)
 
 def generate_platform_cost_line_chart(df):
     df = df.copy()
     df['date'] = pd.to_datetime(df['date'])
+    df['platform'] = df['platform'].fillna("Uncategorized")
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
-    df['platform'] = df['platform'].fillna("Unknown Platform")
 
-    grouped = df.groupby(['platform', 'date'])['spend'].sum().reset_index()
-    pivot_df = grouped.pivot(index='date', columns='platform', values='spend').fillna(0)
+    grouped = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5).index
+    df = df[df['platform'].isin(grouped)]
 
     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    for column in pivot_df.columns:
-        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2, marker='o')
+    for column in df.columns:
+        ax.plot(df.index, df[column], label=column, linewidth=2)
 
-    ax.set_title("Cost by Platform", fontsize=14, weight='bold')
+    ax.set_title("Cost by Platform Over Time", fontsize=14)
     ax.set_ylabel("Amount Spent")
-    ax.set_xlabel("Day")
+    ax.set_xlabel("Date")
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=8, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
 
     fig.tight_layout()
     return ("Cost by Platform", generate_chart_image(fig))
 
-
 def generate_platform_revenue_line_chart(df):
     df = df.copy()
     df['date'] = pd.to_datetime(df['date'])
+    df['platform'] = df['platform'].fillna("Uncategorized")
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
-    df['platform'] = df['platform'].fillna("Unknown Platform")
 
     grouped = df.groupby(['platform', 'date'])['purchase_value'].sum().reset_index()
     pivot_df = grouped.pivot(index='date', columns='platform', values='purchase_value').fillna(0)
 
     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
     for column in pivot_df.columns:
-        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2, marker='o')
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
-    ax.set_title("Revenue by Platform", fontsize=14, weight='bold')
+    ax.set_title("Revenue by Platform Over Time", fontsize=14)
     ax.set_ylabel("Revenue")
-    ax.set_xlabel("Day")
+    ax.set_xlabel("Date")
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=8, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
 
     fig.tight_layout()
     return ("Revenue by Platform", generate_chart_image(fig))

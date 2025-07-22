@@ -1472,13 +1472,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # --- Platform Performance Page Code ---
                             # Add this block inside your generate_pdf_report() function in generate_pdf.py
 
-                           # 📄 New Page - Platform Level Performance
+                            # 📄 New Page - Platform Level Performance
                             c.showPage()
                             platform_section = {"title": "Platform Level Performance"}
                             adjust_page_height(c, platform_section)
                             draw_header(c)
 
-                            # Title
+                           # Title
                             c.setFont("Helvetica-Bold", 18)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 20, "Platform Level Performance")
@@ -1487,16 +1487,32 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             from services.deepseek_audit import group_by_platform
                             platform_df = group_by_platform(full_ad_insights_df, currency_symbol)
 
+                           # Clean nulls
+                            platform_df['platform'] = platform_df['platform'].fillna("Uncategorized")
+
+                            # Add Grand Total row
+                            total_row = {
+                                'platform': 'Grand Total',
+                                'spend': platform_df['spend'].sum(),
+                                'purchase_value': platform_df['purchase_value'].sum(),
+                                'purchases': platform_df['purchases'].sum(),
+                                'roas': platform_df['purchase_value'].sum() / platform_df['spend'].replace(0, 1).sum(),
+                                'cpa': platform_df['spend'].sum() / platform_df['purchases'].replace(0, 1).sum()
+                            }
+
+                            platform_df = pd.concat([platform_df, pd.DataFrame([total_row])], ignore_index=True)
+
+                            # Format table
                             table_data = [["Platform", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
                             for _, row in platform_df.iterrows():
                                 table_data.append([
-                                row['platform'],
-                                f"{currency_symbol}{row['spend']:,.2f}",
-                                f"{currency_symbol}{row['purchase_value']:,.2f}",
-                                int(row['purchases']),
-                                f"{row['roas']:.2f}",
-                                f"{currency_symbol}{row['cpa']:.2f}"
-                            ])
+                                    row['platform'],
+                                    f"{currency_symbol}{row['spend']:,.2f}" if pd.notna(row['spend']) else "-",
+                                    f"{currency_symbol}{row['purchase_value']:,.2f}" if pd.notna(row['purchase_value']) else "-",
+                                    int(row['purchases']) if pd.notna(row['purchases']) else "-",
+                                    f"{row['roas']:.2f}" if pd.notna(row['roas']) else "-",
+                                    f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "-"
+                                ])
 
                             # Draw table
                             from reportlab.platypus import Table, TableStyle
@@ -1532,7 +1548,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 img2 = ImageReader(split_charts[1][1])
                                 c.drawImage(img2, rev_x, donut_y, width=donut_width, height=donut_height)
 
-                             # Draw ROAS Bar Chart
+                            # Draw ROAS Bar Chart
                             roas_width = 700
                             roas_height = 280
                             roas_x = (PAGE_WIDTH - roas_width) / 2
@@ -1573,6 +1589,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             for line in lines:
                                 c.drawString(LEFT_MARGIN, text_y, line)
                                 text_y -= 16
+
 
 
 
