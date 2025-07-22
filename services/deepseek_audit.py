@@ -499,22 +499,29 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
 
         # 🧮 Extract purchase value and count from nested fields
         def extract_purchase(acts):
+            total = 0.0
             if isinstance(acts, list):
                 for a in acts:
                     act_type = a.get("action_type", "").lower()
-                    if "purchase" in act_type:  # Accepts 'purchase', 'offsite_conversion.purchase', etc.
+                    if "purchase" in act_type:
                         try:
-                            return float(a.get("value", 0))
+                            total += float(a.get("value", 0))
                         except:
-                            return 0.0
-            return 0.0
+                            continue
+            return total
+
 
         def extract_purchase_value(vals):
+            total = 0.0
             if isinstance(vals, list):
                 for a in vals:
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
-                        return float(a.get("value", 0))
-            return 0.0
+                        try:
+                            total += float(a.get("value", 0))
+                        except:
+                            continue
+            return total
+
         
         print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
 
