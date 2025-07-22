@@ -548,23 +548,175 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
 
         # Return only the relevant columns
         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
+    
+# services/deepseek_audit.py
 
-def group_by_platform(df, currency_symbol="₹"):
-    df = df.copy()
-    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
-    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
-    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+import httpx
+import os
+import pandas as pd
+from datetime import datetime, timedelta, timezone
+import json
+import logging
 
-    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+logger = logging.getLogger(__name__)
 
-    grouped = df.groupby('platform').agg({
-        'spend': 'sum',
-        'purchase_value': 'sum',
-        'purchases': 'sum',
-        'roas': 'mean',
-        'cpa': 'mean'
-    }).reset_index()
+DEEPSEEK_API_URL = os.getenv("DEEPSEEK_API_URL")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+
+# ... (other existing functions like generate_chart_1, generate_key_metrics_section, etc.)
+
+async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFrame:
+    """
+    Fetches platform-level insights from Facebook Graph API for a given ad account.
+    """
+    url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
+    now = datetime.now(timezone.utc)
+    safe_until = (now - timedelta(days=2)).strftime("%Y-%m-%d")
+    safe_since = (now - timedelta(days=32)).strftime("%Y-%m-%d")
+
+    params = {
+        "fields": "spend,impressions,clicks,reach,actions,action_values,date_start,publisher_platform",
+        "level": "ad", # Fetching at ad level to get publisher_platform breakdown
+        "breakdowns": "publisher_platform",
+        "time_range": json.dumps({"since": safe_since, "until": safe_until}),
+        "time_increment": 1,
+        "access_token": user_token
+    }
+
+    platform_data_raw = []
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            data_page = response.json()
+            platform_data_raw.extend(data_page.get("data", []))
+
+            while data_page.get("paging", {}).get("next"):
+                next_url = data_page["paging"]["next"]
+                next_response = await client.get(next_url, follow_redirects=True)
+                next_response.raise_for_status()
+                data_page = next_response.json()
+                platform_data_raw.extend(data_page.get("data", []))
+            
+            logger.info(f"✅ Fetched {len(platform_data_raw)} platform insights for account {account_id}")
+
+            if not platform_data_raw:
+                logger.warning("No raw platform data found.")
+                return pd.DataFrame(columns=[
+                    'date_start', 'spend', 'impressions', 'clicks', 'reach',
+                    'purchases', 'purchase_value', 'publisher_platform'
+                ])
+
+            df = pd.DataFrame(platform_data_raw)
+
+            # Ensure all required columns exist and are numeric, filling NaNs
+            required_numeric_cols = ['spend', 'impressions', 'clicks', 'reach']
+            for col in required_numeric_cols:
+                if col not in df.columns:
+                    df[col] = 0
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+            
+            # Handle actions and action_values for purchases and purchase_value
+            PURCHASE_KEYS = [
+                "offsite_conversion.purchase",
+                "offsite_conversion.fb_pixel_purchase",
+                "offsite_conversion.fb_pixel_custom",
+                "offsite_conversion.custom.1408006162945363",
+                "offsite_conversion.custom.587738624322885",
+                "purchase"
+            ]
+
+            def extract_purchase(acts):
+                total = 0.0
+                if isinstance(acts, list):
+                    for a in acts:
+                        act_type = a.get("action_type", "").lower()
+                        if "purchase" in act_type:
+                            try:
+                                total += float(a.get("value", 0))
+                            except:
+                                continue
+                return total
+
+            def extract_purchase_value(vals):
+                total = 0.0
+                if isinstance(vals, list):
+                    for a in vals:
+                        if isinstance(a, dict) and a.get("action_type") == "purchase":
+                            try:
+                                total += float(a.get("value", 0))
+                            except:
+                                continue
+                return total
+            
+            df['purchases'] = df['actions'].apply(extract_purchase)
+            df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+
+            # Ensure 'publisher_platform' exists and fill NaNs
+            if 'publisher_platform' not in df.columns:
+                df['publisher_platform'] = 'unknown'
+            else:
+                df['publisher_platform'] = df['publisher_platform'].fillna('unknown')
+
+            # Aggregate by platform and date to get daily platform data
+            # This is important as raw insights can have multiple entries for platform/date combinations
+            df_agg = df.groupby(['date_start', 'publisher_platform']).agg(
+                spend=('spend', 'sum'),
+                impressions=('impressions', 'sum'),
+                clicks=('clicks', 'sum'),
+                reach=('reach', 'sum'),
+                purchases=('purchases', 'sum'),
+                purchase_value=('purchase_value', 'sum')
+            ).reset_index()
+
+            # Rename 'publisher_platform' to 'platform' for consistency with downstream functions
+            df_agg.rename(columns={'publisher_platform': 'platform'}, inplace=True)
+            
+            logger.info(f"📊 Platform DataFrame (aggregated) Head:\n{df_agg.head()}")
+            return df_agg
+
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP error fetching platform insights: {e.response.status_code} - {e.response.text}")
+            return pd.DataFrame()
+        except Exception as e:
+            logger.error(f"Error fetching platform insights: {str(e)}")
+            return pd.DataFrame()
+
+# services/deepseek_audit.py
+
+# ... (other existing functions)
+
+def group_by_platform(df: pd.DataFrame, currency_symbol="₹") -> pd.DataFrame:
+    """
+    Groups the provided DataFrame by 'platform' and calculates aggregated metrics.
+    Assumes 'platform' column already exists in the DataFrame.
+    """
+    df_copy = df.copy() # Use a copy to avoid SettingWithCopyWarning
+
+    # Ensure numeric columns, handling potential missing columns safely
+    for col in ['spend', 'purchase_value', 'purchases']:
+        if col not in df_copy.columns:
+            df_copy[col] = 0 # Add as 0 if missing
+        df_copy[col] = pd.to_numeric(df_copy[col], errors='coerce').fillna(0)
+
+    # Ensure 'platform' column exists and fill NaN values
+    if 'platform' not in df_copy.columns:
+        logger.warning("No 'platform' column found in the DataFrame passed to group_by_platform. Adding 'Unknown'.")
+        df_copy['platform'] = 'Unknown'
+    else:
+        df_copy['platform'] = df_copy['platform'].fillna("Unknown")
+
+    # Calculate ROAS and CPA, handling division by zero
+    df_copy['roas'] = df_copy['purchase_value'] / df_copy['spend'].replace(0, 1)
+    df_copy['cpa'] = df_copy['spend'] / df_copy['purchases'].replace(0, 1)
+
+    grouped = df_copy.groupby('platform').agg(
+        spend=('spend', 'sum'),
+        purchase_value=('purchase_value', 'sum'),
+        purchases=('purchases', 'sum'),
+        roas=('roas', 'mean'), # Using mean for aggregated ROAS
+        cpa=('cpa', 'mean')   # Using mean for aggregated CPA
+    ).reset_index()
 
     grouped['spend'] = grouped['spend'].round(2)
     grouped['purchase_value'] = grouped['purchase_value'].round(2)
@@ -843,6 +995,17 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             print("📊 Demographic DataFrame Head (after fetch):", demographic_df.head())
         else:
             print("⚠️ Could not determine account_id. Skipping demographic insights fetch.")
+            
+        # --- NEW: Fetch platform data ---
+        platform_df_raw = pd.DataFrame()
+        if account_id:
+            platform_df_raw = await fetch_platform_insights(account_id, user_token)
+            print(f"✅ Fetched platform_df_raw. Shape: {platform_df_raw.shape}")
+            print("📊 Platform DataFrame Raw Head:", platform_df_raw.head())
+        else:
+            print("⚠️ Could not determine account_id. Skipping platform insights fetch.")
+        # --- End NEW ---
+
         
         # --- Removed the problematic demographic_df re-initialization and processing from here ---
         # The processing of demographic_df columns (spend, impressions, reach) and grouping
@@ -1054,7 +1217,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             full_ad_insights_df=original_df,
             currency_symbol=currency_symbol,
             split_charts=split_charts,
-            demographic_df=demographic_df # Pass the fetched demographic_df here
+            demographic_df=demographic_df,
+            platform_df=platform_df_raw
         )
 
         print("✅ PDF generated successfully")
