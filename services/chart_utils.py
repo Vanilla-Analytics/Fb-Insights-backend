@@ -468,54 +468,98 @@ def create_empty_chart_image(message):
     return generate_chart_image(fig)
 
 def generate_revenue_split_by_age_chart(df):
-    if 'Age' not in df.columns or 'Purchases' not in df.columns:
-        raise ValueError("Required columns 'Age' and 'Purchases' not found")
-    grouped = df.groupby('Age')['Purchases'].sum()
+    # Standardize column names
+    df = df.rename(columns={
+        'Age': 'age',
+        'Purchases': 'purchases'
+    })
+    
+    if 'age' not in df.columns or 'purchases' not in df.columns:
+        raise ValueError("Required columns 'age' and 'purchases' not found")
+    
+    # Filter out rows with zero purchases
+    df = df[df['purchases'] > 0]
+    
+    if df.empty:
+        return create_empty_chart_image("No purchase data by age")
+    
+    grouped = df.groupby('age')['purchases'].sum()
+    
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90,
-           wedgeprops=dict(width=0.4), colors=PIE_COLORS)
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
+           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
     ax.set_title("Revenue Split By Age", fontsize=14)
     plt.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=200)
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    return generate_chart_image(fig)
 
 def generate_cost_split_by_gender_chart(df):
-    if 'Gender' not in df.columns or 'Amount Spent' not in df.columns:
-        raise ValueError("Required columns 'Gender' and 'Amount Spent' not found")
-    grouped = df.groupby('Gender')['Amount Spent'].sum()
+    # Standardize column names
+    df = df.rename(columns={
+        'Gender': 'gender',
+        'Amount Spent': 'amount_spent'
+    })
+    
+    if 'gender' not in df.columns or 'amount_spent' not in df.columns:
+        raise ValueError("Required columns 'gender' and 'amount_spent' not found")
+    
+    # Filter out rows with zero or negative spend
+    df = df[df['amount_spent'] > 0]
+    
+    if df.empty:
+        return create_empty_chart_image("No spend data by gender")
+    
+    grouped = df.groupby('gender')['amount_spent'].sum()
+    
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90,
-           wedgeprops=dict(width=0.4), colors=PIE_COLORS)
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
+           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
     ax.set_title("Cost Split By Gender", fontsize=14)
     plt.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=200)
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    return generate_chart_image(fig)
 
 def generate_revenue_split_by_gender_chart(df):
-    if 'Gender' not in df.columns or 'Purchases' not in df.columns:
-        raise ValueError("Required columns 'Gender' and 'Purchases' not found")
-    grouped = df.groupby('Gender')['Purchases'].sum()
+    # Standardize column names
+    df = df.rename(columns={
+        'Gender': 'gender',
+        'Purchases': 'purchases'
+    })
+    
+    if 'gender' not in df.columns or 'purchases' not in df.columns:
+        raise ValueError("Required columns 'gender' and 'purchases' not found")
+    
+    # Filter out rows with zero purchases
+    df = df[df['purchases'] > 0]
+    
+    if df.empty:
+        return create_empty_chart_image("No purchase data by gender")
+    
+    grouped = df.groupby('gender')['purchases'].sum()
+    
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90,
-           wedgeprops=dict(width=0.4), colors=PIE_COLORS)
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
+           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
     ax.set_title("Revenue Split By Gender", fontsize=14)
     plt.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=200)
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    return generate_chart_image(fig)
 
 def generate_roas_split_by_age_chart(df):
-    if 'Age' not in df.columns or 'ROAS' not in df.columns:
-        raise ValueError("Required columns 'Age' and 'ROAS' not found")
-    grouped = df.groupby('Age')['ROAS'].mean()
+    # Standardize column names
+    df = df.rename(columns={
+        'Age': 'age',
+        'ROAS': 'roas'
+    })
+    
+    if 'age' not in df.columns or 'roas' not in df.columns:
+        raise ValueError("Required columns 'age' and 'roas' not found")
+    
+    # Filter out invalid ROAS values
+    df = df[df['roas'].notna() & (df['roas'] >= 0)]
+    
+    if df.empty:
+        return create_empty_chart_image("No valid ROAS data by age")
+    
+    grouped = df.groupby('age')['roas'].mean()
+    
     fig, ax = plt.subplots(figsize=(6, 4))
     bars = ax.barh(grouped.index, grouped.values, color="#673AB7")
     ax.set_title("ROAS Split By Age", fontsize=14)
@@ -525,16 +569,26 @@ def generate_roas_split_by_age_chart(df):
         ax.text(width + 0.02, bar.get_y() + bar.get_height() / 2, f"{width:.2f}",
                 va='center', fontsize=8)
     plt.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=200)
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    return generate_chart_image(fig)
 
 def generate_roas_split_by_gender_chart(df):
-    if 'Gender' not in df.columns or 'ROAS' not in df.columns:
-        raise ValueError("Required columns 'Gender' and 'ROAS' not found")
-    grouped = df.groupby('Gender')['ROAS'].mean()
+    # Standardize column names
+    df = df.rename(columns={
+        'Gender': 'gender',
+        'ROAS': 'roas'
+    })
+    
+    if 'gender' not in df.columns or 'roas' not in df.columns:
+        raise ValueError("Required columns 'gender' and 'roas' not found")
+    
+    # Filter out invalid ROAS values
+    df = df[df['roas'].notna() & (df['roas'] >= 0)]
+    
+    if df.empty:
+        return create_empty_chart_image("No valid ROAS data by gender")
+    
+    grouped = df.groupby('gender')['roas'].mean()
+    
     fig, ax = plt.subplots(figsize=(6, 4))
     bars = ax.barh(grouped.index, grouped.values, color="#673AB7")
     ax.set_title("ROAS Split By Gender", fontsize=14)
@@ -544,8 +598,4 @@ def generate_roas_split_by_gender_chart(df):
         ax.text(width + 0.02, bar.get_y() + bar.get_height() / 2, f"{width:.2f}",
                 va='center', fontsize=8)
     plt.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=200)
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    return generate_chart_image(fig)
