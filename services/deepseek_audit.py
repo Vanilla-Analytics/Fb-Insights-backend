@@ -501,8 +501,12 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         def extract_purchase(acts):
             if isinstance(acts, list):
                 for a in acts:
-                    if isinstance(a, dict) and a.get("action_type") == "purchase":
-                        return float(a.get("value", 0))
+                    act_type = a.get("action_type", "").lower()
+                    if "purchase" in act_type:  # Accepts 'purchase', 'offsite_conversion.purchase', etc.
+                        try:
+                            return float(a.get("value", 0))
+                        except:
+                            return 0.0
             return 0.0
 
         def extract_purchase_value(vals):
@@ -511,9 +515,14 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
                     if isinstance(a, dict) and a.get("action_type") == "purchase":
                         return float(a.get("value", 0))
             return 0.0
+        
+        print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
+
 
         df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
         df['purchases'] = df['actions'].apply(extract_purchase)
+        print("🧪 Purchases extracted:", df['purchases'].describe())
+
 
         # 🧹 Ensure all numeric fields exist and are cleaned
         required_numeric_cols = ['spend', 'impressions', 'clicks', 'reach', 'purchases', 'purchase_value']
