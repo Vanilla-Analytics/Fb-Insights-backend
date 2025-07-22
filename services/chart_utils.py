@@ -609,6 +609,7 @@ def generate_platform_split_charts(df):
 
     cost = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5)
     revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
+    
 
     charts = []
 
@@ -645,18 +646,49 @@ def generate_platform_roas_chart(df):
 
     return generate_chart_image(fig)
 
+#def generate_platform_cost_line_chart(df):
+    # df = df.copy()
+    # df['date'] = pd.to_datetime(df['date'])
+    # df['platform'] = df['platform'].fillna("Uncategorized")
+    # df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+
+    # grouped = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5).index
+    # df = df[df['platform'].isin(grouped)]
+
+    # fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    # for column in df.columns:
+    #     ax.plot(df.index, df[column], label=column, linewidth=2)
+
+    # ax.set_title("Cost by Platform Over Time", fontsize=14)
+    # ax.set_ylabel("Amount Spent")
+    # ax.set_xlabel("Date")
+    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    # ax.tick_params(axis='x', rotation=45)
+    # ax.grid(True, linestyle='--', alpha=0.3)
+    # ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
+
+    # fig.tight_layout()
+    # return ("Cost by Platform", generate_chart_image(fig))
+    
 def generate_platform_cost_line_chart(df):
     df = df.copy()
-    df['date'] = pd.to_datetime(df['date'])
+    df['date'] = pd.to_datetime(df['date_start']) # Corrected to use 'date_start'
     df['platform'] = df['platform'].fillna("Uncategorized")
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
 
-    grouped = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5).index
-    df = df[df['platform'].isin(grouped)]
+    # Filter to top platforms by total spend
+    top_platforms = df.groupby('platform')['spend'].sum().nlargest(5).index
+    df_filtered = df[df['platform'].isin(top_platforms)]
+
+    # Pivot to get spend per platform per day
+    pivot_df = df_filtered.pivot_table(index='date', columns='platform', values='spend', aggfunc='sum').fillna(0)
+
+    if pivot_df.empty or pivot_df.sum().sum() <= 0: # Check if pivot_df is empty or all zeros
+        return create_empty_chart_image("No Cost Trend Data for Platforms")
 
     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    for column in df.columns:
-        ax.plot(df.index, df[column], label=column, linewidth=2)
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
     ax.set_title("Cost by Platform Over Time", fontsize=14)
     ax.set_ylabel("Amount Spent")
@@ -667,16 +699,23 @@ def generate_platform_cost_line_chart(df):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
 
     fig.tight_layout()
-    return ("Cost by Platform", generate_chart_image(fig))
+    return generate_chart_image(fig)
 
 def generate_platform_revenue_line_chart(df):
     df = df.copy()
-    df['date'] = pd.to_datetime(df['date'])
+    df['date'] = pd.to_datetime(df['date_start']) # Corrected to use 'date_start'
     df['platform'] = df['platform'].fillna("Uncategorized")
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
-    grouped = df.groupby(['platform', 'date'])['purchase_value'].sum().reset_index()
-    pivot_df = grouped.pivot(index='date', columns='platform', values='purchase_value').fillna(0)
+    # Filter to top platforms by total revenue
+    top_platforms = df.groupby('platform')['purchase_value'].sum().nlargest(5).index
+    df_filtered = df[df['platform'].isin(top_platforms)]
+
+    # Pivot to get revenue per platform per day
+    pivot_df = df_filtered.pivot_table(index='date', columns='platform', values='purchase_value', aggfunc='sum').fillna(0)
+
+    if pivot_df.empty or pivot_df.sum().sum() <= 0: # Check if pivot_df is empty or all zeros
+        return create_empty_chart_image("No Revenue Trend Data for Platforms")
 
     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
     for column in pivot_df.columns:
@@ -691,4 +730,28 @@ def generate_platform_revenue_line_chart(df):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
 
     fig.tight_layout()
-    return ("Revenue by Platform", generate_chart_image(fig))
+    return generate_chart_image(fig)
+
+# def generate_platform_revenue_line_chart(df):
+#     df = df.copy()
+#     df['date'] = pd.to_datetime(df['date'])
+#     df['platform'] = df['platform'].fillna("Uncategorized")
+#     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+
+#     grouped = df.groupby(['platform', 'date'])['purchase_value'].sum().reset_index()
+#     pivot_df = grouped.pivot(index='date', columns='platform', values='purchase_value').fillna(0)
+
+#     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+#     for column in pivot_df.columns:
+#         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
+
+#     ax.set_title("Revenue by Platform Over Time", fontsize=14)
+#     ax.set_ylabel("Revenue")
+#     ax.set_xlabel("Date")
+#     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+#     ax.tick_params(axis='x', rotation=45)
+#     ax.grid(True, linestyle='--', alpha=0.3)
+#     ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
+
+#     fig.tight_layout()
+#     return ("Revenue by Platform", generate_chart_image(fig))
