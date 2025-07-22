@@ -1588,6 +1588,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # Process the platform_df to get summarized data
                     platform_summary_df = group_by_platform(platform_df, currency_symbol)
                     
+                    
                     # Add Grand Total row for table
                     total_row = {
                         'platform': 'Grand Total',

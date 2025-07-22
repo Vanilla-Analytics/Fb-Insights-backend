@@ -586,13 +586,19 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
     platform_data_raw = []
     async with httpx.AsyncClient(timeout=60.0) as client:
         try:
+            logger.info(f"Attempting to fetch platform insights for account {account_id} with params: {params}")
             response = await client.get(url, params=params)
             response.raise_for_status()
             data_page = response.json()
+            logger.info(f"Raw API response data_page (first 5 items): {pprint.pformat(data_page.get('data', [])[:5])}")
+            if "error" in data_page:
+                logger.error(f"Facebook Graph API Error in platform insights: {data_page['error']['message']}")
+                return pd.DataFrame() # Return empty if API returns an error
             platform_data_raw.extend(data_page.get("data", []))
 
             while data_page.get("paging", {}).get("next"):
                 next_url = data_page["paging"]["next"]
+                logger.info(f"Fetching next page for platform insights: {next_url}")
                 next_response = await client.get(next_url, follow_redirects=True)
                 next_response.raise_for_status()
                 data_page = next_response.json()
@@ -601,13 +607,17 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
             logger.info(f"✅ Fetched {len(platform_data_raw)} platform insights for account {account_id}")
 
             if not platform_data_raw:
-                logger.warning("No raw platform data found.")
+                logger.warning("No raw platform data found after fetching all pages.")
                 return pd.DataFrame(columns=[
                     'date_start', 'spend', 'impressions', 'clicks', 'reach',
                     'purchases', 'purchase_value', 'publisher_platform'
                 ])
 
             df = pd.DataFrame(platform_data_raw)
+            
+            logger.info(f"DataFrame created from raw data. Columns: {df.columns.tolist()}")
+            logger.info(f"DataFrame head (before processing): \n{df.head().to_string()}")
+            logger.info(f"Unique 'publisher_platform' values (before fillna): {df.get('publisher_platform', pd.Series(dtype='object')).unique()}")
 
             # Ensure all required columns exist and are numeric, filling NaNs
             required_numeric_cols = ['spend', 'impressions', 'clicks', 'reach']
@@ -634,8 +644,8 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
                         if "purchase" in act_type:
                             try:
                                 total += float(a.get("value", 0))
-                            except:
-                                continue
+                            except (ValueError, TypeError):
+                                continue # Handle non-numeric values gracefully
                 return total
 
             def extract_purchase_value(vals):
@@ -645,18 +655,37 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
                         if isinstance(a, dict) and a.get("action_type") == "purchase":
                             try:
                                 total += float(a.get("value", 0))
-                            except:
-                                continue
+                            except (ValueError, TypeError):
+                                continue # Handle non-numeric values gracefully
                 return total
             
-            df['purchases'] = df['actions'].apply(extract_purchase)
-            df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+            # Check if 'actions' and 'action_values' columns exist before applying
+            if 'actions' in df.columns:
+                df['purchases'] = df['actions'].apply(extract_purchase)
+            else:
+                df['purchases'] = 0 # Default to 0 if column is missing
+                logger.warning(" 'actions' column not found in raw platform data. 'purchases' set to 0.")
+
+            if 'action_values' in df.columns:
+                df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+            else:
+                df['purchase_value'] = 0 # Default to 0 if column is missing
+                logger.warning(" 'action_values' column not found in raw platform data. 'purchase_value' set to 0.")
 
             # Ensure 'publisher_platform' exists and fill NaNs
             if 'publisher_platform' not in df.columns:
+                logger.warning(" 'publisher_platform' column not found in DataFrame. Adding 'unknown'.")
                 df['publisher_platform'] = 'unknown'
             else:
                 df['publisher_platform'] = df['publisher_platform'].fillna('unknown')
+                
+            # Convert date_start to datetime for grouping
+            if 'date_start' in df.columns:
+                df['date_start'] = pd.to_datetime(df['date_start'], errors='coerce')
+                df = df.dropna(subset=['date_start']) # Drop rows where date_start couldn't be parsed
+            else:
+                logger.error(" 'date_start' column is missing in platform insights data. Cannot group by date.")
+                return pd.DataFrame()
 
             # Aggregate by platform and date to get daily platform data
             # This is important as raw insights can have multiple entries for platform/date combinations
@@ -671,12 +700,19 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
 
             # Rename 'publisher_platform' to 'platform' for consistency with downstream functions
             df_agg.rename(columns={'publisher_platform': 'platform'}, inplace=True)
+            # --- Final DataFrame Debugging ---
+            logger.info(f"📊 Platform DataFrame (aggregated and renamed). Columns: {df_agg.columns.tolist()}")
+            logger.info(f"📊 Platform DataFrame (aggregated and renamed) Head:\n{df_agg.head().to_string()}")
+            logger.info(f"Unique 'platform' values in aggregated DF: {df_agg['platform'].unique()}")
+
             
             logger.info(f"📊 Platform DataFrame (aggregated) Head:\n{df_agg.head()}")
             return df_agg
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error fetching platform insights: {e.response.status_code} - {e.response.text}")
+            logger.error(f"HTTP error fetching platform insights: {e.response.status_code} - {e.response.text} for URL: {e.request.url}")
+            logger.error(f"Response headers: {e.response.headers}")
+            logger.error(f"Response content: {e.response.text}")
             return pd.DataFrame()
         except Exception as e:
             logger.error(f"Error fetching platform insights: {str(e)}")
