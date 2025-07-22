@@ -600,7 +600,6 @@ def generate_roas_split_by_gender_chart(df):
     plt.tight_layout()
     return generate_chart_image(fig)
 
-
 def generate_platform_split_charts(df):
     df = df.copy()
     df['platform'] = df['platform'].fillna("Uncategorized")
@@ -610,20 +609,30 @@ def generate_platform_split_charts(df):
     cost = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5)
     revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
     
-
     charts = []
 
     # Cost Split Pie
-    fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
-    ax1.pie(cost, labels=cost.index, autopct='%1.1f%%', startangle=90)
-    ax1.set_title("Cost Split by Platform")
-    charts.append(("Cost Split", generate_chart_image(fig1)))
+    # Add a check here for empty 'cost' series or all zeros
+    if not cost.empty and cost.sum() > 0:
+        fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
+        ax1.pie(cost, labels=cost.index, autopct='%1.1f%%', startangle=90)
+        ax1.set_title("Cost Split by Platform")
+        charts.append(("Cost Split", generate_chart_image(fig1)))
+    else:
+        # If no valid data, append a placeholder/empty chart image
+        charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
+
 
     # Revenue Split Pie
-    fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
-    ax2.pie(revenue, labels=revenue.index, autopct='%1.1f%%', startangle=90)
-    ax2.set_title("Revenue Split by Platform")
-    charts.append(("Revenue Split", generate_chart_image(fig2)))
+    # Add a check here for empty 'revenue' series or all zeros
+    if not revenue.empty and revenue.sum() > 0:
+        fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
+        ax2.pie(revenue, labels=revenue.index, autopct='%1.1f%%', startangle=90)
+        ax2.set_title("Revenue Split by Platform")
+        charts.append(("Revenue Split", generate_chart_image(fig2)))
+    else:
+        # If no valid data, append a placeholder/empty chart image
+        charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
 
@@ -634,8 +643,15 @@ def generate_platform_roas_chart(df):
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
     platform_data = df.groupby('platform').agg({'spend': 'sum', 'purchase_value': 'sum'})
+    
+    # Filter out entries where spend is zero to avoid division by zero and NaN in ROAS
+    platform_data = platform_data[platform_data['spend'] > 0]
+    
     platform_data['roas'] = platform_data['purchase_value'] / platform_data['spend'].replace(0, 1)
     platform_data = platform_data.sort_values(by='spend', ascending=False).head(5)
+
+    if platform_data.empty or platform_data['roas'].sum() <= 0:
+        return create_empty_chart_image("No ROAS Data for Platforms")
 
     fig, ax = plt.subplots(figsize=(10, 4), dpi=200)
     ax.barh(platform_data.index, platform_data['roas'], color='#1f77b4')
