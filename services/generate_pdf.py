@@ -1629,7 +1629,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
                     # Charts (2 pie + 3 line/bar)
-                    split_charts = generate_platform_split_charts(platform_df) # Pass original platform_df here for charts
+                    split_charts = generate_platform_split_charts(platform_df)
+                    roas_chart_img_buf = generate_platform_roas_chart(platform_df)
+                    cost_line_chart_img_buf = generate_platform_cost_line_chart(platform_df)
+                    revenue_line_chart_img_buf = generate_platform_revenue_line_chart(platform_df)
+
                     
                     chart_y = table_y - 420
                     if len(split_charts) >= 2:
@@ -1639,24 +1643,26 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         img1 = ImageReader(split_charts[0][1])
                         c.drawImage(img1, LEFT_MARGIN, chart_y, width=donut_width, height=donut_height)
 
+
                         # Revenue Split (right)
                         img2 = ImageReader(split_charts[1][1])
                         c.drawImage(img2, PAGE_WIDTH - RIGHT_MARGIN - donut_width, chart_y, width=donut_width, height=donut_height)
 
+
                     # ROAS Bar Chart
-                    roas_chart_img_buf = generate_platform_roas_chart(platform_df) # Pass original platform_df
+                    #roas_chart_img_buf = generate_platform_roas_chart(platform_df) # Pass original platform_df
                     roas_y = chart_y - 360
                     img3 = ImageReader(roas_chart_img_buf)
                     c.drawImage(img3, LEFT_MARGIN, roas_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
 
                     # Cost Line Chart
-                    cost_line_chart_img_buf = generate_platform_cost_line_chart(platform_df) # Pass original platform_df
+                    #cost_line_chart_img_buf = generate_platform_cost_line_chart(platform_df) # Pass original platform_df
                     cost_y = roas_y - 350
                     img4 = ImageReader(cost_line_chart_img_buf)
                     c.drawImage(img4, LEFT_MARGIN, cost_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
 
                     # Revenue Line Chart
-                    revenue_line_chart_img_buf = generate_platform_revenue_line_chart(platform_df) # Pass original platform_df
+                    #revenue_line_chart_img_buf = generate_platform_revenue_line_chart(platform_df) # Pass original platform_df
                     rev_y = cost_y - 350
                     img5 = ImageReader(revenue_line_chart_img_buf)
                     c.drawImage(img5, LEFT_MARGIN, rev_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)

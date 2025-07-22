@@ -470,6 +470,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         response = await client.get(url, params=params)
         response.raise_for_status()
         data = response.json().get("data", [])
+        logger.info(f"📦 Raw demographic data (first 2 entries): {json.dumps(data[:2], indent=2)}")
         print("📦 Raw demographic data:", json.dumps(data, indent=2))
 
         # Create DataFrame from fetched data. If data is empty, it will be an empty DataFrame.
@@ -498,38 +499,83 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
             return pd.DataFrame(columns=['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas'])
 
         # 🧮 Extract purchase value and count from nested fields
-        def extract_purchase(acts):
-            total = 0.0
-            if isinstance(acts, list):
-                for a in acts:
-                    act_type = a.get("action_type", "").lower()
-                    if "purchase" in act_type:
-                        try:
-                            total += float(a.get("value", 0))
-                        except:
-                            continue
-            return total
+        # def extract_purchase(acts):
+        #     total = 0.0
+        #     if isinstance(acts, list):
+        #         for a in acts:
+        #             act_type = a.get("action_type", "").lower()
+        #             if "purchase" in act_type:
+        #                 try:
+        #                     total += float(a.get("value", 0))
+        #                 except:
+        #                     continue
+        #     return total
+        
+        def parse_actions_for_purchases(actions_list):
+            purchases_count = 0
+            purchase_value = 0.0
+            if isinstance(actions_list, list):
+                for action in actions_list:
+                    if isinstance(action, dict):
+                        action_type = action.get("action_type")
+                        value = action.get("value")
+                        if action_type == "offsite_conversion.fb_pixel_purchase": # Primary purchase action type
+                            try:
+                                purchases_count += float(value)
+                            except (ValueError, TypeError):
+                                pass
+                        elif action_type == "purchase": # Another common purchase type
+                             try:
+                                purchases_count += float(value)
+                             except (ValueError, TypeError):
+                                pass
+            return purchases_count
 
 
-        def extract_purchase_value(vals):
-            total = 0.0
-            if isinstance(vals, list):
-                for a in vals:
-                    if isinstance(a, dict) and a.get("action_type") == "purchase":
-                        try:
-                            total += float(a.get("value", 0))
-                        except:
-                            continue
-            return total
+        # def extract_purchase_value(vals):
+        #     total = 0.0
+        #     if isinstance(vals, list):
+        #         for a in vals:
+        #             if isinstance(a, dict) and a.get("action_type") == "purchase":
+        #                 try:
+        #                     total += float(a.get("value", 0))
+        #                 except:
+        #                     continue
+        #     return total
+        
+        def parse_action_values_for_purchase_value(action_values_list):
+            total_purchase_value = 0.0
+            if isinstance(action_values_list, list):
+                for action_value in action_values_list:
+                    if isinstance(action_value, dict):
+                        action_type = action_value.get("action_type")
+                        value = action_value.get("value")
+                        if action_type == "offsite_conversion.fb_pixel_purchase": # Primary purchase value type
+                            try:
+                                total_purchase_value += float(value)
+                            except (ValueError, TypeError):
+                                pass
+                        elif action_type == "purchase": # Another common purchase value type
+                             try:
+                                total_purchase_value += float(value)
+                             except (ValueError, TypeError):
+                                pass
+            return total_purchase_value
 
         
-        print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
-        print("🧪 Actions field sample:", json.dumps(df['actions'].tolist(), indent=2))
+        # print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
+        # print("🧪 Actions field sample:", json.dumps(df['actions'].tolist(), indent=2))
 
 
-        df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
-        df['purchases'] = df['actions'].apply(extract_purchase)
-        print("🧪 Purchases extracted:", df['purchases'].describe())
+        # df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+        # df['purchases'] = df['actions'].apply(extract_purchase)
+        # print("🧪 Purchases extracted:", df['purchases'].describe())
+        
+        # Apply the new extraction functions
+        df['purchases'] = df['actions'].apply(parse_actions_for_purchases)
+        df['purchase_value'] = df['action_values'].apply(parse_action_values_for_purchase_value)
+
+        # 🧹 Ensure all numeric fields exist and are cleaned
 
 
         # 🧹 Ensure all numeric fields exist and are cleaned
@@ -543,8 +589,11 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1)
         df['roas'] = df.apply(lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, axis=1)
 
-        print("📊 Demographic DataFrame Columns:", df.columns.tolist())
-        print("📊 Demographic DataFrame Preview:\n", df.head(2))
+        logger.info(f"📊 Demographic DataFrame Columns (after processing): {df.columns.tolist()}")
+        logger.info(f"📊 Demographic DataFrame Preview (after processing): \n{df.head(2)}")
+        logger.info(f"📊 Demographic DataFrame 'purchases' describe: \n{df['purchases'].describe().to_string()}")
+        logger.info(f"📊 Demographic DataFrame 'purchase_value' describe: \n{df['purchase_value'].describe().to_string()}")
+
 
         # Return only the relevant columns
         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
@@ -636,27 +685,54 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
                 "purchase"
             ]
 
+            # def extract_purchase(acts):
+            #     total = 0.0
+            #     if isinstance(acts, list):
+            #         for a in acts:
+            #             act_type = a.get("action_type", "").lower()
+            #             if "purchase" in act_type:
+            #                 try:
+            #                     total += float(a.get("value", 0))
+            #                 except (ValueError, TypeError):
+            #                     continue # Handle non-numeric values gracefully
+            #     return total
+            
+
+            # def extract_purchase_value(vals):
+            #     total = 0.0
+            #     if isinstance(vals, list):
+            #         for a in vals:
+            #             if isinstance(a, dict) and a.get("action_type") == "purchase":
+            #                 try:
+            #                     total += float(a.get("value", 0))
+            #                 except (ValueError, TypeError):
+            #                     continue # Handle non-numeric values gracefully
+            
             def extract_purchase(acts):
                 total = 0.0
                 if isinstance(acts, list):
                     for a in acts:
                         act_type = a.get("action_type", "").lower()
-                        if "purchase" in act_type:
+                        # Explicitly check for known purchase action types
+                        if "purchase" in act_type or act_type == "offsite_conversion.fb_pixel_purchase":
                             try:
                                 total += float(a.get("value", 0))
                             except (ValueError, TypeError):
-                                continue # Handle non-numeric values gracefully
+                                continue
                 return total
 
             def extract_purchase_value(vals):
                 total = 0.0
                 if isinstance(vals, list):
                     for a in vals:
-                        if isinstance(a, dict) and a.get("action_type") == "purchase":
-                            try:
-                                total += float(a.get("value", 0))
-                            except (ValueError, TypeError):
-                                continue # Handle non-numeric values gracefully
+                        if isinstance(a, dict):
+                            act_type = a.get("action_type", "")
+                            # Explicitly check for known purchase action types
+                            if act_type == "purchase" or act_type == "offsite_conversion.fb_pixel_purchase":
+                                try:
+                                    total += float(a.get("value", 0))
+                                except (ValueError, TypeError):
+                                    continue
                 return total
             
             # Check if 'actions' and 'action_values' columns exist before applying
