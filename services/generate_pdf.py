@@ -221,6 +221,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
     if currency_symbol is None:
         currency_symbol = "₹"
         
+    if 'actions' in full_ad_insights_df.columns:
+        full_ad_insights_df.drop(columns=['actions'], inplace=True)
+        
     # if ad_insights_df is not None and 'reach' not in ad_insights_df.columns:
     #     print("⚠️ 'reach' missing in ad_insights_df, creating fallback.")
     #     ad_insights_df['reach'] = ad_insights_df['impressions']
@@ -244,6 +247,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
         elif 'reach' not in full_ad_insights_df.columns:
             print("⚠️ Both 'reach' and 'impressions' missing - setting reach to 1 to avoid division errors")
             full_ad_insights_df['reach'] = 1
+
         
     # 🔥 Fallback: Ensure 'roas' exists
     if ad_insights_df is not None and 'roas' not in ad_insights_df.columns:
@@ -1477,6 +1481,18 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             platform_section = {"title": "Platform Level Performance"}
                             adjust_page_height(c, platform_section)
                             draw_header(c)
+                            # 🔧 Clean + fix data
+                            if 'actions' in full_ad_insights_df.columns:
+                                full_ad_insights_df.drop(columns=['actions'], inplace=True)
+                                                         
+                            full_ad_insights_df['spend'] = pd.to_numeric(full_ad_insights_df['spend'], errors='coerce').fillna(0)
+                            full_ad_insights_df['purchase_value'] = pd.to_numeric(full_ad_insights_df['purchase_value'], errors='coerce').fillna(0)
+                            full_ad_insights_df['purchases'] = pd.to_numeric(full_ad_insights_df['purchases'], errors='coerce').fillna(0)
+
+                            if 'platform' not in full_ad_insights_df.columns:
+                                full_ad_insights_df['platform'] = "Uncategorized"
+                            else:
+                                full_ad_insights_df['platform'] = full_ad_insights_df['platform'].fillna("Uncategorized")
 
                            # Title
                             c.setFont("Helvetica-Bold", 18)
@@ -1485,8 +1501,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             # 💾 Prepare table data
                             from services.deepseek_audit import group_by_platform
-                            platform_df = group_by_platform(full_ad_insights_df, currency_symbol)
-
+                            platform_df = group_by_platform(full_ad_insights_df, currency_symbol)                
                            # Clean nulls
                             platform_df['platform'] = platform_df['platform'].fillna("Uncategorized")
 
