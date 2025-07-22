@@ -1472,13 +1472,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # --- Platform Performance Page Code ---
                             # Add this block inside your generate_pdf_report() function in generate_pdf.py
 
-                            # 📄 New Page - Platform Level Performance
+                           # 📄 New Page - Platform Level Performance
                             c.showPage()
                             platform_section = {"title": "Platform Level Performance"}
                             adjust_page_height(c, platform_section)
                             draw_header(c)
 
-                            #   Title
+                            # Title
                             c.setFont("Helvetica-Bold", 18)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 20, "Platform Level Performance")
@@ -1490,13 +1490,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             table_data = [["Platform", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
                             for _, row in platform_df.iterrows():
                                 table_data.append([
-                                    row['platform'],
-                                    f"{currency_symbol}{row['spend']:,.2f}",
-                                    f"{currency_symbol}{row['purchase_value']:,.2f}",
-                                    int(row['purchases']),
-                                    f"{row['roas']:.2f}",
-                                    f"{currency_symbol}{row['cpa']:.2f}"
-                                ])
+                                row['platform'],
+                                f"{currency_symbol}{row['spend']:,.2f}",
+                                f"{currency_symbol}{row['purchase_value']:,.2f}",
+                                int(row['purchases']),
+                                f"{row['roas']:.2f}",
+                                f"{currency_symbol}{row['cpa']:.2f}"
+                            ])
 
                             # Draw table
                             from reportlab.platypus import Table, TableStyle
@@ -1513,7 +1513,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
-                           # 📊 Platform Split Charts
+                            # 📊 Platform Split Charts
                             from services.chart_utils import generate_platform_split_charts, generate_platform_roas_chart
                             split_charts = generate_platform_split_charts(full_ad_insights_df)
                             roas_chart = generate_platform_roas_chart(full_ad_insights_df)
@@ -1532,7 +1532,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 img2 = ImageReader(split_charts[1][1])
                                 c.drawImage(img2, rev_x, donut_y, width=donut_width, height=donut_height)
 
-                            # Draw ROAS Bar Chart
+                             # Draw ROAS Bar Chart
                             roas_width = 700
                             roas_height = 280
                             roas_x = (PAGE_WIDTH - roas_width) / 2
@@ -1540,27 +1540,24 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             img3 = ImageReader(roas_chart)
                             c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
 
-                            # 📈 Cost by Platform + Revenue by Platform
-                            from services.chart_utils import generate_bar_chart
+                            # 📈 Line Charts: Cost and Revenue by Platform
+                            from services.chart_utils import generate_platform_cost_line_chart, generate_platform_revenue_line_chart
 
-                            cost_series = full_ad_insights_df.groupby("platform")["spend"].sum().sort_values(ascending=False)
-                            rev_series = full_ad_insights_df.groupby("platform")["purchase_value"].sum().sort_values(ascending=False)
+                            cost_line_chart = generate_platform_cost_line_chart(full_ad_insights_df)
+                            revenue_line_chart = generate_platform_revenue_line_chart(full_ad_insights_df)
 
-                            cost_chart = generate_bar_chart(cost_series, "Cost by Platform")
-                            rev_chart = generate_bar_chart(rev_series, "Revenue by Platform", color="#00aa7f")
+                            img4 = ImageReader(cost_line_chart[1])
+                            img5 = ImageReader(revenue_line_chart[1])
 
-                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                            chart_height = 300
-                            chart_x = (PAGE_WIDTH - chart_width) / 2
+                            line_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            line_height = 300
+                            chart_x = (PAGE_WIDTH - line_width) / 2
 
-                            img4 = ImageReader(cost_chart[1])
-                            img5 = ImageReader(rev_chart[1])
+                            cost_line_y = roas_y - line_height - 40
+                            revenue_line_y = cost_line_y - line_height - 30
 
-                            cost_chart_y = roas_y - chart_height - 40
-                            rev_chart_y = cost_chart_y - chart_height - 30
-
-                            c.drawImage(img4, chart_x, cost_chart_y, width=chart_width, height=chart_height)
-                            c.drawImage(img5, chart_x, rev_chart_y, width=chart_width, height=chart_height)
+                            c.drawImage(img4, chart_x, cost_line_y, width=line_width, height=line_height)
+                            c.drawImage(img5, chart_x, revenue_line_y, width=line_width, height=line_height)
 
                             # 🤖 LLM Summary
                             from services.deepseek_audit import generate_platform_summary
@@ -1576,6 +1573,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             for line in lines:
                                 c.drawString(LEFT_MARGIN, text_y, line)
                                 text_y -= 16
+
 
 
 

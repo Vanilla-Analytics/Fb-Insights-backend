@@ -623,3 +623,52 @@ def generate_platform_roas_chart(df):
     roas = df.groupby('platform').apply(lambda g: g['purchase_value'].sum() / g['spend'].sum() if g['spend'].sum() > 0 else 0)
     return draw_roas_split_bar_chart(roas)
 
+
+def generate_platform_cost_line_chart(df):
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['platform'] = df['platform'].fillna("Unknown Platform")
+
+    grouped = df.groupby(['platform', 'date'])['spend'].sum().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='platform', values='spend').fillna(0)
+
+    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2, marker='o')
+
+    ax.set_title("Cost by Platform", fontsize=14, weight='bold')
+    ax.set_ylabel("Amount Spent")
+    ax.set_xlabel("Day")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, linestyle='--', alpha=0.3)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=8, frameon=False)
+
+    fig.tight_layout()
+    return ("Cost by Platform", generate_chart_image(fig))
+
+
+def generate_platform_revenue_line_chart(df):
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['platform'] = df['platform'].fillna("Unknown Platform")
+
+    grouped = df.groupby(['platform', 'date'])['purchase_value'].sum().reset_index()
+    pivot_df = grouped.pivot(index='date', columns='platform', values='purchase_value').fillna(0)
+
+    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    for column in pivot_df.columns:
+        ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2, marker='o')
+
+    ax.set_title("Revenue by Platform", fontsize=14, weight='bold')
+    ax.set_ylabel("Revenue")
+    ax.set_xlabel("Day")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, linestyle='--', alpha=0.3)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=8, frameon=False)
+
+    fig.tight_layout()
+    return ("Revenue by Platform", generate_chart_image(fig))
