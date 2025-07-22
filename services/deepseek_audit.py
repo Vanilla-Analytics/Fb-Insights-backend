@@ -575,7 +575,7 @@ async def fetch_platform_insights(account_id: str, user_token: str) -> pd.DataFr
     safe_since = (now - timedelta(days=32)).strftime("%Y-%m-%d")
 
     params = {
-        "fields": "spend,impressions,clicks,reach,actions,action_values,date_start,publisher_platform",
+        "fields": "spend,impressions,clicks,reach,actions,action_values,date_start",
         "level": "ad", # Fetching at ad level to get publisher_platform breakdown
         "breakdowns": "publisher_platform",
         "time_range": json.dumps({"since": safe_since, "until": safe_until}),
