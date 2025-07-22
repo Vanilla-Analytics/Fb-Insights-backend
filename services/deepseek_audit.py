@@ -1040,6 +1040,8 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         
         # Add a placeholder for Demographic Performance
         sections.append({"title": "DEMOGRAPHIC PERFORMANCE", "content": "", "charts": []})
+        sections.append({"title": "Platform Level Performance","contains_table": True})
+
 
 
         print("📊 Sample of original_df:")

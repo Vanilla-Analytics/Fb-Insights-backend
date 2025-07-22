@@ -120,7 +120,9 @@ def adjust_page_height(c, section: dict):
     elif title == "AD FATIGUE ANALYSIS":
         PAGE_HEIGHT = 4500 
     elif title == "DEMOGRAPHIC PERFORMANCE":
-        PAGE_HEIGHT = 3000    
+        PAGE_HEIGHT = 3000   
+    elif title == "PLATFORM LEVEL PERFORMANCE":
+        PAGE_HEIGHT = 3000 
     else:
         PAGE_HEIGHT = 600
 
@@ -1564,7 +1566,127 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         # next_section = sections[i + 1]
                         # adjust_page_height(c, next_section)
             elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
-                continue  # Skip fallback layout; already custom rendered above            
+                continue  # Skip fallback layout; already custom rendered above
+            elif section_title.strip().upper() == "PLATFORM LEVEL PERFORMANCE":
+                from services.chart_utils import (
+                    generate_platform_split_charts,
+                    generate_platform_roas_chart,
+                    generate_platform_cost_line_chart,
+                    generate_platform_revenue_line_chart,
+                )
+                from services.deepseek_audit import generate_platform_summary
+
+
+                c.showPage()
+                adjust_page_height(c, section)
+                draw_header(c)
+
+                c.setFont("Helvetica-Bold", 20)
+                c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Platform Level Performance")
+
+                platform_df = full_ad_insights_df.copy()
+                platform_df['platform'] = platform_df['platform'].fillna("Uncategorized")
+
+                platform_df['spend'] = pd.to_numeric(platform_df['spend'], errors='coerce').fillna(0)
+                platform_df['purchase_value'] = pd.to_numeric(platform_df['purchase_value'], errors='coerce').fillna(0)
+                platform_df['purchases'] = pd.to_numeric(platform_df['purchases'], errors='coerce').fillna(0)
+
+                summary = platform_df.groupby('platform').agg({
+                    'spend': 'sum',
+                    'purchase_value': 'sum',
+                    'purchases': 'sum'
+                }).reset_index()
+
+                summary['roas'] = summary['purchase_value'] / summary['spend'].replace(0, 1)
+                summary['cpa'] = summary['spend'] / summary['purchases'].replace(0, 1)
+
+                table_data = [["Platform", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
+                for _, row in summary.iterrows():
+                    table_data.append([
+                        row['platform'],
+                        f"{currency_symbol}{row['spend']:,.2f}",
+                        f"{currency_symbol}{row['purchase_value']:,.2f}",
+                        int(row['purchases']),
+                        f"{row['roas']:.2f}",
+                        f"{currency_symbol}{row['cpa']:.2f}" if row['purchases'] > 0 else "—"
+                    ])
+
+                # Grand Total
+                total_row = {
+                    'spend': summary['spend'].sum(),
+                    'purchase_value': summary['purchase_value'].sum(),
+                    'purchases': summary['purchases'].sum()
+                }
+                total_row['roas'] = total_row['purchase_value'] / total_row['spend'] if total_row['spend'] > 0 else 0
+                total_row['cpa'] = total_row['spend'] / total_row['purchases'] if total_row['purchases'] > 0 else 0
+
+                table_data.append([
+                    "Grand Total",
+                    f"{currency_symbol}{total_row['spend']:,.2f}",
+                    f"{currency_symbol}{total_row['purchase_value']:,.2f}",
+                    int(total_row['purchases']),
+                    f"{total_row['roas']:.2f}",
+                    f"{currency_symbol}{total_row['cpa']:.2f}"
+                ])
+
+                performance_table = Table(table_data, repeatRows=1, colWidths=[160, 120, 120, 100, 80, 80])
+                performance_table.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 8),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
+                ]))
+                table_y = PAGE_HEIGHT - 300
+                performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                performance_table.drawOn(c, LEFT_MARGIN, table_y)
+
+                # Charts (2 pie + 3 line/bar)
+                split_charts = generate_platform_split_charts(platform_df)
+                chart_y = table_y - 420
+                if len(split_charts) >= 2:
+                    donut_width = 300
+                    donut_height = 300
+                    # Cost Split (left)
+                    img1 = ImageReader(split_charts[0][1])
+                    c.drawImage(img1, LEFT_MARGIN, chart_y, width=donut_width, height=donut_height)
+
+                    # Revenue Split (right)
+                    img2 = ImageReader(split_charts[1][1])
+                    c.drawImage(img2, PAGE_WIDTH - RIGHT_MARGIN - donut_width, chart_y, width=donut_width, height=donut_height)
+
+                # ROAS Bar Chart
+                roas_chart = generate_platform_roas_chart(platform_df)
+                roas_y = chart_y - 360
+                img3 = ImageReader(roas_chart[1])
+                c.drawImage(img3, LEFT_MARGIN, roas_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
+
+                # Cost Line Chart
+                cost_chart = generate_platform_cost_line_chart(platform_df)
+                cost_y = roas_y - 350
+                img4 = ImageReader(cost_chart[1])
+                c.drawImage(img4, LEFT_MARGIN, cost_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
+
+                # Revenue Line Chart
+                revenue_chart = generate_platform_revenue_line_chart(platform_df)
+                rev_y = cost_y - 350
+                img5 = ImageReader(revenue_chart[1])
+                c.drawImage(img5, LEFT_MARGIN, rev_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
+
+                # Add LLM summary
+                try:
+                    summary_text = run_async_in_thread(generate_platform_summary(platform_df, currency_symbol))
+                    c.setFont("Helvetica", 11)
+                    lines = simpleSplit(summary_text, "Helvetica", 11, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN)
+                    text_y = rev_y - 40
+                    for line in lines:
+                        c.drawString(LEFT_MARGIN, text_y, line)
+                        text_y -= 14
+                except Exception as e:
+                    print("⚠️ Failed to generate platform summary:", str(e))
+
+            
             else:
                 
                 # Default layout
