@@ -427,20 +427,45 @@ import matplotlib.pyplot as plt
 # Pie chart colors
 PIE_COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#00BCD4']
 
+# def generate_cost_split_by_age_chart(df):
+#     if 'Age' not in df.columns or 'Amount Spent' not in df.columns:
+#         raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
+#     grouped = df.groupby('Age')['Amount Spent'].sum()
+#     fig, ax = plt.subplots(figsize=(5, 5))
+#     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90,
+#            wedgeprops=dict(width=0.4), colors=PIE_COLORS)
+#     ax.set_title("Cost Split By Age", fontsize=14)
+#     plt.tight_layout()
+#     buf = BytesIO()
+#     fig.savefig(buf, format='png', dpi=200)
+#     buf.seek(0)
+#     plt.close(fig)
+#     return buf
+
 def generate_cost_split_by_age_chart(df):
-    if 'Age' not in df.columns or 'Amount Spent' not in df.columns:
-        raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
-    grouped = df.groupby('Age')['Amount Spent'].sum()
+    # Ensure column name consistency
+    df = df.rename(columns={'Amount Spent': 'amount_spent', 'Age': 'age'})
+    if 'age' not in df.columns or 'amount_spent' not in df.columns:
+        raise ValueError("Required columns not found")
+    
+    grouped = df.groupby('age')['amount_spent'].sum()
+    if grouped.sum() <= 0:
+        return create_empty_chart_image("No spend data by age")
+    
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90,
-           wedgeprops=dict(width=0.4), colors=PIE_COLORS)
+    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
+           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
     ax.set_title("Cost Split By Age", fontsize=14)
     plt.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=200)
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    return generate_chart_image(fig)
+
+def create_empty_chart_image(message):
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.text(0.5, 0.5, message, 
+            ha='center', va='center', 
+            fontsize=12, color='red')
+    ax.axis('off')
+    return generate_chart_image(fig)
 
 def generate_revenue_split_by_age_chart(df):
     if 'Age' not in df.columns or 'Purchases' not in df.columns:

@@ -524,6 +524,7 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
 
         
         print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
+        print("🧪 Actions field sample:", json.dumps(df['actions'].tolist(), indent=2))
 
 
         df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
