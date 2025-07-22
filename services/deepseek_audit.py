@@ -452,6 +452,103 @@ async def generate_ad_summary(full_df: pd.DataFrame, currency_symbol: str) -> st
     )
     return await generate_llm_content(prompt, summary_data)
 
+# async def fetch_demographic_insights(account_id: str, access_token: str):
+#     url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
+#     now = datetime.now()
+#     since = (now - timedelta(days=30)).strftime('%Y-%m-%d')
+#     until = now.strftime('%Y-%m-%d')
+
+#     params = {
+#         "fields": "spend,impressions,clicks,reach,actions,action_values",
+#         "level": "ad",
+#         "breakdowns": "age,gender",
+#         "time_range": json.dumps({"since": since, "until": until}),
+#         "access_token": access_token
+#     }
+
+#     async with httpx.AsyncClient() as client:
+#         response = await client.get(url, params=params)
+#         response.raise_for_status()
+#         data = response.json().get("data", [])
+#         print("📦 Raw demographic data:", json.dumps(data, indent=2))
+
+#         # Create DataFrame from fetched data. If data is empty, it will be an empty DataFrame.
+#         df = pd.DataFrame(data)
+
+#         # 🛡 Ensure required columns exist, filling with default values if missing
+#         required_breakdown_cols = ['age', 'gender']
+#         for col in required_breakdown_cols:
+#             if col not in df.columns:
+#                 df[col] = 'unknown' # Default to 'unknown' if breakdown column is entirely missing
+#             else:
+#                 df[col] = df[col].astype(str).fillna('unknown') # Ensure string type and fill NaN
+
+#         # 🧩 Fill missing complex columns with empty lists for consistent processing
+#         for col in ['actions', 'action_values']:
+#             if col not in df.columns:
+#                 df[col] = [[] for _ in range(len(df))] # Ensure column exists with empty lists
+
+#         # 🧼 Filter out "unknown" entries in age and gender (case-insensitive)
+#         df = df[(df['age'].str.lower().str.strip() != 'unknown') &
+#                 (df['gender'].str.lower().str.strip() != 'unknown')]
+
+#         # If after filtering, the DataFrame is empty, return an empty structured DataFrame
+#         if df.empty:
+#             logger.warning("Demographic data is empty or all entries are 'unknown' after filtering.")
+#             return pd.DataFrame(columns=['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas'])
+
+#         # 🧮 Extract purchase value and count from nested fields
+#         def extract_purchase(acts):
+#             total = 0.0
+#             if isinstance(acts, list):
+#                 for a in acts:
+#                     act_type = a.get("action_type", "").lower()
+#                     if "purchase" in act_type:
+#                         try:
+#                             total += float(a.get("value", 0))
+#                         except:
+#                             continue
+#             return total
+
+
+#         def extract_purchase_value(vals):
+#             total = 0.0
+#             if isinstance(vals, list):
+#                 for a in vals:
+#                     if isinstance(a, dict) and a.get("action_type") == "purchase":
+#                         try:
+#                             total += float(a.get("value", 0))
+#                         except:
+#                             continue
+#             return total
+
+        
+#         print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
+#         print("🧪 Actions field sample:", json.dumps(df['actions'].tolist(), indent=2))
+
+
+#         df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
+#         df['purchases'] = df['actions'].apply(extract_purchase)
+#         print("🧪 Purchases extracted:", df['purchases'].describe())
+
+
+#         # 🧹 Ensure all numeric fields exist and are cleaned
+#         required_numeric_cols = ['spend', 'impressions', 'clicks', 'reach', 'purchases', 'purchase_value']
+#         for col in required_numeric_cols:
+#             if col not in df.columns:
+#                 df[col] = 0 # Add column if missing
+#             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0) # Convert to numeric and fill NaN
+
+#         # 🧠 Derived metrics, handling potential division by zero
+#         df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1)
+#         df['roas'] = df.apply(lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, axis=1)
+
+#         print("📊 Demographic DataFrame Columns:", df.columns.tolist())
+#         print("📊 Demographic DataFrame Preview:\n", df.head(2))
+
+#         # Return only the relevant columns
+#         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
+
 async def fetch_demographic_insights(account_id: str, access_token: str):
     url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
     now = datetime.now()
@@ -470,86 +567,58 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         response = await client.get(url, params=params)
         response.raise_for_status()
         data = response.json().get("data", [])
-        print("📦 Raw demographic data:", json.dumps(data, indent=2))
-
-        # Create DataFrame from fetched data. If data is empty, it will be an empty DataFrame.
-        df = pd.DataFrame(data)
-
-        # 🛡 Ensure required columns exist, filling with default values if missing
-        required_breakdown_cols = ['age', 'gender']
-        for col in required_breakdown_cols:
-            if col not in df.columns:
-                df[col] = 'unknown' # Default to 'unknown' if breakdown column is entirely missing
-            else:
-                df[col] = df[col].astype(str).fillna('unknown') # Ensure string type and fill NaN
-
-        # 🧩 Fill missing complex columns with empty lists for consistent processing
-        for col in ['actions', 'action_values']:
-            if col not in df.columns:
-                df[col] = [[] for _ in range(len(df))] # Ensure column exists with empty lists
-
-        # 🧼 Filter out "unknown" entries in age and gender (case-insensitive)
-        df = df[(df['age'].str.lower().str.strip() != 'unknown') &
-                (df['gender'].str.lower().str.strip() != 'unknown')]
-
-        # If after filtering, the DataFrame is empty, return an empty structured DataFrame
-        if df.empty:
-            logger.warning("Demographic data is empty or all entries are 'unknown' after filtering.")
+        
+        if not data:
+            logger.warning("No demographic data returned from API")
             return pd.DataFrame(columns=['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas'])
 
-        # 🧮 Extract purchase value and count from nested fields
-        def extract_purchase(acts):
-            total = 0.0
-            if isinstance(acts, list):
-                for a in acts:
-                    act_type = a.get("action_type", "").lower()
-                    if "purchase" in act_type:
-                        try:
-                            total += float(a.get("value", 0))
-                        except:
-                            continue
-            return total
-
-
-        def extract_purchase_value(vals):
-            total = 0.0
-            if isinstance(vals, list):
-                for a in vals:
-                    if isinstance(a, dict) and a.get("action_type") == "purchase":
-                        try:
-                            total += float(a.get("value", 0))
-                        except:
-                            continue
-            return total
-
+        df = pd.DataFrame(data)
         
-        print("🔍 Sample actions list:", df['actions'].iloc[0] if not df.empty else "No data")
-        print("🧪 Actions field sample:", json.dumps(df['actions'].tolist(), indent=2))
-
-
-        df['purchase_value'] = df['action_values'].apply(extract_purchase_value)
-        df['purchases'] = df['actions'].apply(extract_purchase)
-        print("🧪 Purchases extracted:", df['purchases'].describe())
-
-
-        # 🧹 Ensure all numeric fields exist and are cleaned
-        required_numeric_cols = ['spend', 'impressions', 'clicks', 'reach', 'purchases', 'purchase_value']
-        for col in required_numeric_cols:
+        # Ensure required columns exist
+        for col in ['age', 'gender']:
             if col not in df.columns:
-                df[col] = 0 # Add column if missing
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0) # Convert to numeric and fill NaN
+                df[col] = 'unknown'
+            else:
+                df[col] = df[col].fillna('unknown').astype(str)
 
-        # 🧠 Derived metrics, handling potential division by zero
-        df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1)
-        df['roas'] = df.apply(lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, axis=1)
+        # Extract purchase metrics more robustly
+        def extract_purchases(actions):
+            if not isinstance(actions, list):
+                return 0
+            return sum(
+                float(action.get('value', 0))
+                for action in actions
+                if isinstance(action, dict) and 'purchase' in action.get('action_type', '').lower()
+            )
 
-        print("📊 Demographic DataFrame Columns:", df.columns.tolist())
-        print("📊 Demographic DataFrame Preview:\n", df.head(2))
+        def extract_purchase_values(action_values):
+            if not isinstance(action_values, list):
+                return 0
+            return sum(
+                float(action.get('value', 0))
+                for action in action_values
+                if isinstance(action, dict) and 'purchase' in action.get('action_type', '').lower()
+            )
 
-        # Return only the relevant columns
+        df['purchases'] = df['actions'].apply(extract_purchases)
+        df['purchase_value'] = df['action_values'].apply(extract_purchase_values)
+        
+        # Ensure numeric columns
+        numeric_cols = ['spend', 'impressions', 'clicks', 'reach', 'purchases', 'purchase_value']
+        for col in numeric_cols:
+            if col not in df.columns:
+                df[col] = 0
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
+        # Calculate metrics with safeguards
+        df['cpa'] = np.where(df['purchases'] > 0, df['spend'] / df['purchases'], 0)
+        df['roas'] = np.where(df['spend'] > 0, df['purchase_value'] / df['spend'], 0)
+        
+        # Filter out invalid rows
+        df = df[(df['age'] != 'unknown') & (df['gender'] != 'unknown')]
+        
+        logger.info(f"Processed demographic data with {len(df)} rows")
         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
-
-
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""
     try:

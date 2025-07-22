@@ -41,8 +41,7 @@ def run_async_in_thread(coro):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-        result = loop.run_until_complete(coro)
-        return result
+        return loop.run_until_complete(coro)
     finally:
         loop.close()
 # def run_async_in_thread(coro):
@@ -1303,6 +1302,18 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_height = 250
                                 chart_padding_x = 50
                                 chart_padding_y = 30
+                                # Before generating charts, ensure data is properly formatted
+                                chart_df = demographic_grouped.rename(columns={
+                                    "Amount Spent": "amount_spent",
+                                    "Purchases": "purchases",
+                                    "ROAS": "roas",
+                                    "CPA": "cpa",
+                                    "Age": "age",
+                                    "Gender": "gender"
+                                })
+
+                                # Filter out invalid data
+                                chart_df = chart_df[(chart_df['amount_spent'] > 0) & (chart_df['purchases'] >= 0) &(chart_df['roas'] >= 0)]
                                 
                                 # Calculate starting position with more space
                                 current_y_pos = table_y_start - table_height - 40  # Start charts 40 units below table
@@ -1421,13 +1432,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 # 📝 LLM Summary - Dynamic
                                 try:
-                                    summary_text = run_async_in_thread(build_demographic_summary_prompt(demographic_grouped, currency_symbol))
+                                    prompt = build_demographic_summary_prompt(demographic_grouped, currency_symbol)
+                                    summary_text = run_async_in_thread( generate_llm_content(prompt, demographic_grouped.to_dict()))
+    
                                     logger.info("Demographic LLM Summary Generated.")
-
                                     clean_text = re.sub(r"[*#]", "", summary_text).strip()
                                     clean_text = re.sub(r"\s{2,}", " ", clean_text)
 
-                                    summary_y = current_y_pos - 40 # Position below the last chart
+                                    summary_y = current_y_pos - 40
 
                                     styles = getSampleStyleSheet()
                                     styleN = styles["Normal"]
@@ -1447,7 +1459,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     c.setFont("Helvetica", 12)
                                     c.setFillColor(colors.red)
                                     c.drawString(LEFT_MARGIN, current_y_pos - 50, f"⚠️ Unable to generate demographic summary: {str(e)}")
-                                    draw_footer_cta(c) # Still draw footer if summary fails
+                                    draw_footer_cta(c)
 
                         else: # This block executes if demographic_df is not valid for processing
                             logger.warning("Demographic data not available or insufficient for detailed analysis. Skipping section.")
