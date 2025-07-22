@@ -916,12 +916,24 @@ async def fetch_ad_insights(user_token: str):
                     reach_df["date_start"] = pd.to_datetime(reach_df["date_start"])
                     for ad in ad_results:
                         if "adset_id" in ad and "date_start" in ad:
+                            # Ensure ad['date_start'] is also datetime for consistent comparison--newline
+                            ad_date_start_dt = pd.to_datetime(ad["date_start"])
                             match = reach_df[
                                 (reach_df["adset_id"] == ad["adset_id"]) &
-                                (pd.to_datetime(reach_df["date_start"]) == pd.to_datetime(ad["date_start"]))
+                                (reach_df["date_start"] == ad_date_start_dt)
+                                #newline
+                                # (reach_df["adset_id"] == ad["adset_id"]) &
+                                # (pd.to_datetime(reach_df["date_start"]) == pd.to_datetime(ad["date_start"]))
                             ]
                             if not match.empty:
                                 ad["reach"] = match["reach"].values[0]
+                                logger.debug(f"Merged reach {ad['reach']} for adset {ad['adset_id']} on {ad['date_start']}") # Added debug log newline
+                            else:
+                                logger.debug(f"No matching reach found for adset {ad['adset_id']} on {ad['date_start']}") # Added debug log newline
+                                
+                else:
+                    logger.info("Reach DataFrame is empty, skipping reach merge.") # Added logger newline
+
                 
                 # Removed the problematic demographic_df = pd.DataFrame() initializations here
                 # and the subsequent if not demographic_df.empty blocks.
@@ -933,7 +945,10 @@ async def fetch_ad_insights(user_token: str):
                     ad["account_id"] = acc.get("id")
                     insights_data.append(ad)
                     
-            print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
+            logger.info(f"📦 Fetched total {len(insights_data)} ads across all accounts after all processing.") # Changed from print to logger.info newline
+            
+                    
+            #print(f"📦 Fetched total {len(insights_data)} ads across all accounts.")
             
             # fetch_ad_insights should now only return insights_data, not demographic_df
             # demographic_df will be fetched separately in generate_audit
@@ -1096,6 +1111,12 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Create original DataFrame with date_start intact
         original_df = pd.DataFrame(ad_data)
+        
+        # --- Logger: Check 'reach' column in original_df after its creation --- newline
+        logger.info(f"📊 original_df columns after initial processing: {original_df.columns.tolist()}") # Added logger
+        logger.info(f"📊 original_df head (with reach) before final date processing: \n{original_df[['ad_name', 'impressions', 'reach']].head().to_string()}") # Added logger
+        logger.info(f"📊 original_df descriptive stats for 'reach': \n{original_df['reach'].describe().to_string()}") # Added logger
+
         # Ensure reach column exists
         if 'reach' not in original_df.columns:
             if 'impressions' in original_df.columns:

@@ -1380,7 +1380,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render Revenue/ROAS by Gender charts")
                                     current_y_pos -= (chart_height + chart_padding_y)
 
-# Adjust the page height for the demographic section to ensure all content fits
+                                # Adjust the page height for the demographic section to ensure all content fits
                                 adjust_page_height(c, {"title": "DEMOGRAPHIC PERFORMANCE", "contains_table": True})
 
                                                                
@@ -1416,6 +1416,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     c.setFillColor(colors.red)
                                     c.drawString(LEFT_MARGIN, current_y_pos - 50, f"⚠️ Unable to generate demographic summary: {str(e)}")
                                     draw_footer_cta(c)
+                                c.showPage()
 
                         else: # This block executes if demographic_df is not valid for processing
                             logger.warning("Demographic data not available or insufficient for detailed analysis. Skipping section.")
@@ -1570,6 +1571,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
             elif section_title.strip().upper() == "PLATFORM LEVEL PERFORMANCE":
                 # Ensure platform_df is valid before processing
                 if platform_df is not None and not platform_df.empty:
+                    c.showPage()
+                    adjust_page_height(c, section)
+                    draw_header(c)
                     from services.chart_utils import (
                         generate_platform_split_charts,
                         generate_platform_roas_chart,
@@ -1578,9 +1582,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     )
                     from services.deepseek_audit import generate_platform_summary, group_by_platform # Import group_by_platform here
 
-                    c.showPage()
-                    adjust_page_height(c, section)
-                    draw_header(c)
+                    
 
                     c.setFont("Helvetica-Bold", 20)
                     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Platform Level Performance")
@@ -1598,7 +1600,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         'roas': platform_summary_df['purchase_value'].sum() / platform_summary_df['spend'].replace(0, 1).sum(),
                         'cpa': platform_summary_df['spend'].sum() / platform_summary_df['purchases'].replace(0, 1).sum()
                     }
-                    platform_table_data = platform_summary_df.append(total_row, ignore_index=True)
+                    platform_table_data = pd.concat([platform_summary_df, pd.DataFrame([total_row])], ignore_index=True)
 
 
                     # Format table data
