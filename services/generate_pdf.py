@@ -1467,6 +1467,116 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠️ Demographic data not available for this account or contains no valid entries.")
                             draw_footer_cta(c) # Still draw footer
+                            
+                            
+                            # --- Platform Performance Page Code ---
+                            # Add this block inside your generate_pdf_report() function in generate_pdf.py
+
+                            # 📄 New Page - Platform Level Performance
+                            c.showPage()
+                            platform_section = {"title": "Platform Level Performance"}
+                            adjust_page_height(c, platform_section)
+                            draw_header(c)
+
+                            #   Title
+                            c.setFont("Helvetica-Bold", 18)
+                            c.setFillColor(colors.black)
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 20, "Platform Level Performance")
+
+                            # 💾 Prepare table data
+                            from services.deepseek_audit import group_by_platform
+                            platform_df = group_by_platform(full_ad_insights_df, currency_symbol)
+
+                            table_data = [["Platform", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
+                            for _, row in platform_df.iterrows():
+                                table_data.append([
+                                    row['platform'],
+                                    f"{currency_symbol}{row['spend']:,.2f}",
+                                    f"{currency_symbol}{row['purchase_value']:,.2f}",
+                                    int(row['purchases']),
+                                    f"{row['roas']:.2f}",
+                                    f"{currency_symbol}{row['cpa']:.2f}"
+                                ])
+
+                            # Draw table
+                            from reportlab.platypus import Table, TableStyle
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[110, 120, 120, 90, 80, 80])
+                            summary_table.setStyle(TableStyle([
+                                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                                ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                            ]))
+
+                            table_y = PAGE_HEIGHT - 180
+                            summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
+                            summary_table.drawOn(c, LEFT_MARGIN, table_y)
+
+                           # 📊 Platform Split Charts
+                            from services.chart_utils import generate_platform_split_charts, generate_platform_roas_chart
+                            split_charts = generate_platform_split_charts(full_ad_insights_df)
+                            roas_chart = generate_platform_roas_chart(full_ad_insights_df)
+
+                            # Chart positions
+                            donut_width = 330
+                            donut_height = 330
+                            donut_y = table_y - donut_height - 40
+                            cost_x = LEFT_MARGIN
+                            rev_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
+
+                            if len(split_charts) > 0:
+                                img1 = ImageReader(split_charts[0][1])
+                                c.drawImage(img1, cost_x, donut_y, width=donut_width, height=donut_height)
+                            if len(split_charts) > 1:
+                                img2 = ImageReader(split_charts[1][1])
+                                c.drawImage(img2, rev_x, donut_y, width=donut_width, height=donut_height)
+
+                            # Draw ROAS Bar Chart
+                            roas_width = 700
+                            roas_height = 280
+                            roas_x = (PAGE_WIDTH - roas_width) / 2
+                            roas_y = donut_y - roas_height - 30
+                            img3 = ImageReader(roas_chart)
+                            c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
+
+                            # 📈 Cost by Platform + Revenue by Platform
+                            from services.chart_utils import generate_bar_chart
+
+                            cost_series = full_ad_insights_df.groupby("platform")["spend"].sum().sort_values(ascending=False)
+                            rev_series = full_ad_insights_df.groupby("platform")["purchase_value"].sum().sort_values(ascending=False)
+
+                            cost_chart = generate_bar_chart(cost_series, "Cost by Platform")
+                            rev_chart = generate_bar_chart(rev_series, "Revenue by Platform", color="#00aa7f")
+
+                            chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                            chart_height = 300
+                            chart_x = (PAGE_WIDTH - chart_width) / 2
+
+                            img4 = ImageReader(cost_chart[1])
+                            img5 = ImageReader(rev_chart[1])
+
+                            cost_chart_y = roas_y - chart_height - 40
+                            rev_chart_y = cost_chart_y - chart_height - 30
+
+                            c.drawImage(img4, chart_x, cost_chart_y, width=chart_width, height=chart_height)
+                            c.drawImage(img5, chart_x, rev_chart_y, width=chart_width, height=chart_height)
+
+                            # 🤖 LLM Summary
+                            from services.deepseek_audit import generate_platform_summary
+                            summary_text = run_async_in_thread(generate_platform_summary(full_ad_insights_df, currency_symbol))
+                            
+                            c.setFont("Helvetica-Bold", 16)
+                            c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Platform Performance Summary")
+
+                            c.setFont("Helvetica", 12)
+                            text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+                            lines = simpleSplit(summary_text, "Helvetica", 12, text_width)
+                            text_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                            for line in lines:
+                                c.drawString(LEFT_MARGIN, text_y, line)
+                                text_y -= 16
+
 
 
 

@@ -549,6 +549,51 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
         # Return only the relevant columns
         return df[['age', 'gender', 'spend', 'purchases', 'purchase_value', 'cpa', 'roas']]
 
+def group_by_platform(df, currency_symbol="₹"):
+    df = df.copy()
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+
+    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+
+    grouped = df.groupby('platform').agg({
+        'spend': 'sum',
+        'purchase_value': 'sum',
+        'purchases': 'sum',
+        'roas': 'mean',
+        'cpa': 'mean'
+    }).reset_index()
+
+    grouped['spend'] = grouped['spend'].round(2)
+    grouped['purchase_value'] = grouped['purchase_value'].round(2)
+    grouped['roas'] = grouped['roas'].round(2)
+    grouped['cpa'] = grouped['cpa'].round(2)
+
+    return grouped
+
+async def generate_platform_summary(df, currency_symbol):
+    df = df.copy()
+    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    df = df.groupby('platform').agg({
+        'spend': 'sum',
+        'purchase_value': 'sum',
+        'purchases': 'sum',
+        'roas': 'mean',
+        'cpa': 'mean'
+    }).reset_index()
+
+    summary_data = df.to_dict(orient='records')
+    prompt = f"""
+    Write a concise summary of platform-level performance across Meta Ads.
+    Include top-performing platforms (high ROAS or low CPA), and platforms underperforming.
+    Conclude with 1 actionable recommendation.
+    Use {currency_symbol} in monetary values.
+    """
+    return await generate_llm_content(prompt, summary_data)
+
 
 async def fetch_facebook_insights(page_id: str, page_token: str):
     """Fetch Facebook page insights"""

@@ -599,3 +599,27 @@ def generate_roas_split_by_gender_chart(df):
                 va='center', fontsize=8)
     plt.tight_layout()
     return generate_chart_image(fig)
+
+
+def generate_platform_split_charts(df):
+    df = df.copy()
+    df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+    df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+
+    cost_split = df.groupby('platform')['spend'].sum().sort_values(ascending=False)
+    rev_split = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False)
+
+    figs = []
+    if not cost_split.empty:
+        fig1 = draw_donut_chart(cost_split.values, cost_split.index, "Cost Split")
+        figs.append(("Cost Split", generate_chart_image(fig1)))
+    if not rev_split.empty:
+        fig2 = draw_donut_chart(rev_split.values, rev_split.index, "Revenue Split")
+        figs.append(("Revenue Split", generate_chart_image(fig2)))
+
+    return figs
+
+def generate_platform_roas_chart(df):
+    roas = df.groupby('platform').apply(lambda g: g['purchase_value'].sum() / g['spend'].sum() if g['spend'].sum() > 0 else 0)
+    return draw_roas_split_bar_chart(roas)
+
