@@ -1395,16 +1395,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 # 🎯 Row 1: Cost + Revenue by Age
                                 try:
-                                    x_cost_age = LEFT_MARGIN
-                                    y_cost_age = PAGE_WIDTH - RIGHT_MARGIN - chart_width
+                                    y_pos = current_y_pos
+                                    x_left = LEFT_MARGIN
+                                    x_right = PAGE_WIDTH - RIGHT_MARGIN - chart_width
+
                                     buf = generate_cost_split_by_age_chart(chart_df)
-                                    c.drawImage(ImageReader(buf), x_cost_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                    c.drawImage(ImageReader(buf), x_left, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    x_revenue_age = x_cost_age + chart_width + chart_padding_x
                                     buf = generate_revenue_split_by_age_chart(chart_df)
-                                    c.drawImage(ImageReader(buf), x_revenue_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                    c.drawImage(ImageReader(buf), x_right, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    current_y_pos = y_cost_age - chart_padding_y  # Update position for next row
+                                    current_y_pos -= (chart_height + chart_padding_y)
                                 except Exception as e:
                                     logger.error(f"❌ Row 1 (Cost/Revenue by Age) failed: {e}")
                                     c.setFillColor(colors.red)
@@ -1413,16 +1414,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 # 🎯 Row 2: ROAS by Age + Cost by Gender
                                 try:
-                                    x_roas_age = LEFT_MARGIN
-                                    y_roas_age = PAGE_WIDTH - RIGHT_MARGIN - chart_width
+                                    y_pos = current_y_pos
+                                    x_left = LEFT_MARGIN
+                                    x_right = PAGE_WIDTH - RIGHT_MARGIN - chart_width
+
                                     buf = generate_roas_split_by_age_chart(chart_df)
-                                    c.drawImage(ImageReader(buf), x_roas_age, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                    c.drawImage(ImageReader(buf), x_left, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    x_cost_gender = x_roas_age + chart_width + chart_padding_x
                                     buf = generate_cost_split_by_gender_chart(chart_df)
-                                    c.drawImage(ImageReader(buf), x_cost_gender, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                    c.drawImage(ImageReader(buf), x_right, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    current_y_pos = y_roas_age - chart_padding_y  # Update position for next row
+                                    current_y_pos -= (chart_height + chart_padding_y)
                                 except Exception as e:
                                     logger.error(f"❌ Row 2 (ROAS by Age + Cost by Gender) failed: {e}")
                                     c.setFillColor(colors.red)
@@ -1431,16 +1433,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                                 # 🎯 Row 3: Revenue + ROAS by Gender
                                 try:
-                                    x_revenue_gender = LEFT_MARGIN
-                                    y_revenue_gender = PAGE_WIDTH - RIGHT_MARGIN - chart_width
+                                    y_pos = current_y_pos
+                                    x_left = LEFT_MARGIN
+                                    x_right = PAGE_WIDTH - RIGHT_MARGIN - chart_width
+
                                     buf = generate_revenue_split_by_gender_chart(chart_df)
-                                    c.drawImage(ImageReader(buf), x_revenue_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                    c.drawImage(ImageReader(buf), x_left, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    x_roas_gender = x_revenue_gender + chart_width + chart_padding_x
                                     buf = generate_roas_split_by_gender_chart(chart_df)
-                                    c.drawImage(ImageReader(buf), x_roas_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
+                                    c.drawImage(ImageReader(buf), x_right, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
-                                    current_y_pos = y_revenue_gender - chart_padding_y  # Update position for summary
+                                    current_y_pos -= (chart_height + chart_padding_y)
                                 except Exception as e:
                                     logger.error(f"❌ Row 3 (Revenue/ROAS by Gender) failed: {e}")
                                     c.setFillColor(colors.red)
@@ -1448,7 +1451,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     current_y_pos -= (chart_height + chart_padding_y)
 
                                 # Adjust the page height for the demographic section to ensure all content fits
-                                adjust_page_height(c, {"title": "DEMOGRAPHIC PERFORMANCE", "contains_table": True})
+                                #adjust_page_height(c, {"title": "DEMOGRAPHIC PERFORMANCE", "contains_table": True})
 
                                                                
 
@@ -1500,12 +1503,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # next_section = sections[i + 1]
                         # adjust_page_height(c, next_section)
-            # elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
-            #     continue  
+            elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
+                 continue  
             elif section_title.strip().upper() == "PLATFORM LEVEL PERFORMANCE":
+                c.showPage()
                 # Ensure platform_df is valid before processing
                 if platform_df is not None and not platform_df.empty:
-                    c.showPage()
+                    
                     adjust_page_height(c, section)
                     draw_header(c)
                     from services.chart_utils import (
