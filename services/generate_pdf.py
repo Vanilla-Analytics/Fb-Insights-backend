@@ -285,6 +285,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
             draw_header(c)
                 # Draw divider on first 5 section pages only
             if section_title.upper() in ["EXECUTIVE SUMMARY","ACCOUNT NAMING & STRUCTURE","TESTING ACTIVITY","REMARKETING ACTIVITY","RESULTS SETUP"]:
+                left_section_width = PAGE_WIDTH * 0.4
+                text_x = left_section_width + 20
                 c.setStrokeColor(colors.HexColor("#007bff"))
                 c.setLineWidth(8)
                 c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)

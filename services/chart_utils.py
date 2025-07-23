@@ -391,13 +391,55 @@ def generate_cost_split_by_age_chart(df):
     plt.tight_layout()
     return generate_chart_image(fig)
 
+# def create_empty_chart_image(message):
+#     fig, ax = plt.subplots(figsize=(5, 3))
+#     ax.text(0.5, 0.5, message, 
+#             ha='center', va='center', 
+#             fontsize=12, color='red')
+#     ax.axis('off')
+#     return generate_chart_image(fig)
+
+# In chart_utils.py
+
 def create_empty_chart_image(message):
-    fig, ax = plt.subplots(figsize=(5, 3))
-    ax.text(0.5, 0.5, message, 
-            ha='center', va='center', 
-            fontsize=12, color='red')
+    """
+    Generates a blank chart image with a custom message.
+    Enhanced to provide better UI for missing data.
+    """
+    # Use a size consistent with your actual charts for better layout
+    # You might need to pass figsize from the original chart functions for consistency
+    fig, ax = plt.subplots(figsize=(7, 4)) # Example size, adjust as needed for different chart types
+
+    # 1. Set a light background color for the plot area itself
+    ax.set_facecolor('#f8f8f8') # Very light grey
+
+    # 2. Add the message (allow wrapping for longer messages)
+    ax.text(0.5, 0.5, message,
+            ha='center', va='center',
+            fontsize=12, color='darkred', # Use a more noticeable color for error messages
+            weight='bold', # Make text bold for emphasis
+            wrap=True) # Allow text to wrap if it's long
+
+    # 3. Hide axes and spines as it's an empty chart
     ax.axis('off')
-    return generate_chart_image(fig)
+
+    # 4. Add a subtle dashed border around the entire figure (plot area)
+    fig.patch.set_edgecolor('lightgray')
+    fig.patch.set_linewidth(1.5)
+    fig.patch.set_linestyle('--') # Dashed border
+
+    # You could optionally add a simple icon here using ax.text with a symbol,
+    # or if you have an icon file, use fig.figimage for a watermark-like effect.
+    # For instance, a simple '🚫' or '❓' symbol.
+    # ax.text(0.5, 0.7, '🚫', fontsize=30, color='gray', ha='center', va='center', alpha=0.5, transform=ax.transAxes)
+
+
+    # Convert to image bytes
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png', dpi=200) # Ensure DPI is consistent with other charts
+    buffer.seek(0)
+    plt.close(fig)
+    return buffer
 
 def generate_revenue_split_by_age_chart(df):
     # Standardize column names
