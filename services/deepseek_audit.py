@@ -169,7 +169,10 @@ async def generate_ad_fatigue_summary(full_df: pd.DataFrame, currency_symbol: st
     df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
     df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
     df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    #df['cpa'] = df['spend'] / df['purchases'].replace(0, 1) NA
+    # Ensure purchases are numeric and handle NaN
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
     df['ctr'] = pd.to_numeric(df['ctr'], errors='coerce').fillna(0)
     records = df[['ad_name', 'frequency', 'ctr', 'roas', 'cpa']].to_dict(orient='records')
     summary_data = {"ads": records}
@@ -345,7 +348,10 @@ async def generate_roas_summary_text(full_df: pd.DataFrame, currency_symbol: str
     df = full_df[['campaign_name', 'spend', 'purchase_value', 'purchases']].copy()
     df = df[df['campaign_name'].notna()]
     df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    #df['cpa'] = df['spend'] / df['purchases'].replace(0, 1) NA
+    # Ensure purchases are numeric and handle NaN
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
     df = df.sort_values('roas', ascending=False)
     df['spend'] = df['spend'].round(2)
     df['purchase_value'] = df['purchase_value'].round(2)
@@ -384,7 +390,10 @@ async def generate_adset_summary(full_df: pd.DataFrame, currency_symbol: str) ->
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
     df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
     df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    #df['cpa'] = df['spend'] / df['purchases'].replace(0, 1) NA
+    # Ensure purchases are numeric and handle NaN
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
     df = df.sort_values('roas', ascending=False)
     df['spend'] = df['spend'].round(2)
     df['purchase_value'] = df['purchase_value'].round(2)
@@ -424,7 +433,10 @@ async def generate_ad_summary(full_df: pd.DataFrame, currency_symbol: str) -> st
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
     df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
     df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    #df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+    # Ensure purchases are numeric and handle NaN
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
     df = df.sort_values('roas', ascending=False)
     df['spend'] = df['spend'].round(2)
     df['purchase_value'] = df['purchase_value'].round(2)
@@ -586,7 +598,8 @@ async def fetch_demographic_insights(account_id: str, access_token: str):
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0) # Convert to numeric and fill NaN
 
         # 🧠 Derived metrics, handling potential division by zero
-        df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1)
+        #df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, axis=1) NA
+        df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
         df['roas'] = df.apply(lambda row: row['purchase_value'] / row['spend'] if row['spend'] > 0 else 0, axis=1)
 
         logger.info(f"📊 Demographic DataFrame Columns (after processing): {df.columns.tolist()}")
@@ -820,7 +833,11 @@ def group_by_platform(df: pd.DataFrame, currency_symbol="₹") -> pd.DataFrame:
 
     # Calculate ROAS and CPA, handling division by zero
     df_copy['roas'] = df_copy['purchase_value'] / df_copy['spend'].replace(0, 1)
-    df_copy['cpa'] = df_copy['spend'] / df_copy['purchases'].replace(0, 1)
+    #df_copy['cpa'] = df_copy['spend'] / df_copy['purchases'].replace(0, 1) NA
+    # Ensure purchases column is numeric first
+    df_copy['purchases'] = pd.to_numeric(df_copy['purchases'], errors='coerce').fillna(0)
+    # Calculate CPA, setting to NaN if purchases are 0
+    df_copy['cpa'] = df_copy.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
 
     grouped = df_copy.groupby('platform').agg(
         spend=('spend', 'sum'),
@@ -1307,7 +1324,10 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
 
         # Recalculate daily level metrics after aggregation
         grouped_df['roas'] = grouped_df['purchase_value'] / grouped_df['spend'].replace(0, 1)
-        grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1)
+        #grouped_df['cpa'] = grouped_df['spend'] / grouped_df['purchases'].replace(0, 1) NA
+        # Ensure purchases are numeric and handle NaN
+        grouped_df['purchases'] = pd.to_numeric(grouped_df['purchases'], errors='coerce').fillna(0)
+        grouped_df['cpa'] = grouped_df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
         grouped_df['click_to_conversion'] = grouped_df['purchases'] / grouped_df['clicks'].replace(0, 1)
         grouped_df['frequency'] = grouped_df['impressions'] / grouped_df['reach'].replace(0,1) # Calculate daily frequency
 

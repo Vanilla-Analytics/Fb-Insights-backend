@@ -449,7 +449,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{row['spend']:,.2f}",
                                 int(row['purchases']),
                                 f"{currency_symbol}{row['purchase_value']:,.2f}",
-                                f"{currency_symbol}{row['cpa']:,.2f}",
+                                #f"{currency_symbol}{row['cpa']:,.2f}", NA
+                                f"{currency_symbol}{row['cpa']:,.2f}" if pd.notna(row['cpa']) else "N/A",
                                 f"{int(row['impressions']):,}",
                                 f"{row['ctr']:.2%}",
                                 int(row['clicks']),
@@ -468,7 +469,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             f"{currency_symbol}{totals['spend']:,.2f}",
                             int(totals['purchases']),
                             f"{currency_symbol}{totals['purchase_value']:,.2f}",
-                            f"{currency_symbol}{totals['cpa']:,.2f}",
+                            #f"{currency_symbol}{totals['cpa']:,.2f}", NA
+                            f"{currency_symbol}{totals['cpa']:,.2f}" if pd.notna(totals['cpa']) else "N/A",
                             f"{int(totals['impressions']):,}",
                             f"{totals['ctr']:.2%}",
                             int(totals['clicks']),
@@ -549,7 +551,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['purchase_value']:,.2f}",
                                     int(row['purchases']),
                                     f"{row['roas']:.2f}",
-                                    f"{currency_symbol}{row['cpa']:.2f}"
+                                    #f"{currency_symbol}{row['cpa']:.2f}" NA
+                                    f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                                 ])
 
                             next_section["contains_table"] = True
@@ -573,7 +576,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{grand_totals['purchase_value']:,.2f}",
                                 int(grand_totals['purchases']),
                                 f"{grand_totals['roas']:.2f}",
-                                f"{currency_symbol}{grand_totals['cpa']:.2f}"
+                                #f"{currency_symbol}{grand_totals['cpa']:.2f}" NA
+                                f"{currency_symbol}{grand_totals['cpa']:.2f}" if pd.notna(grand_totals['cpa']) else "N/A"
                             ])
 
                             performance_table = Table(table_data, repeatRows=1, colWidths=[260, 140, 140, 100, 100, 100])
@@ -781,7 +785,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['purchase_value']:.2f}",
                                     int(row['purchases']),
                                     f"{row['roas']:.2f}",
-                                    f"{currency_symbol}{row['cpa']:.2f}"
+                                    #f"{currency_symbol}{row['cpa']:.2f}" NA
+                                    f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                                 ])
 
                             summary_table = Table(table_data, repeatRows=1, colWidths=[270, 130, 130, 90, 90, 110])
@@ -985,7 +990,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{row['purchase_value']:.2f}",
                                 int(row['purchases']),
                                 f"{row['roas']:.2f}",
-                                f"{currency_symbol}{row['cpa']:.2f}"
+                                #f"{currency_symbol}{row['cpa']:.2f}" NA
+                                f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                             ])
 
                             ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[250, 130, 130, 80, 90, 120])
@@ -1253,7 +1259,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # 🧱 Copy for table formatting
                                 demographic_table = demographic_grouped.copy()
                                 demographic_table['Amount Spent'] = demographic_table['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
+                                #demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}") NA
+                                demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}" if pd.notna(x) else "N/A")
                                 
                                 # Ensure ROAS column is present in demographic_grouped
                                 # if 'ROAS' not in demographic_grouped.columns:
@@ -1612,7 +1619,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             f"{currency_symbol}{row['purchase_value']:,.2f}" if pd.notna(row['purchase_value']) else "-",
                             int(row['purchases']) if pd.notna(row['purchases']) else "-",
                             f"{row['roas']:.2f}" if pd.notna(row['roas']) else "-",
-                            f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "-"
+                            #f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "-" NA
+                            f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                         ])
 
                     performance_table = Table(table_data, repeatRows=1, colWidths=[160, 120, 120, 100, 80, 80])
