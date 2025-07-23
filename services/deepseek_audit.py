@@ -837,25 +837,76 @@ def group_by_platform(df: pd.DataFrame, currency_symbol="₹") -> pd.DataFrame:
 
     return grouped
 
-async def generate_platform_summary(df, currency_symbol):
-    df = df.copy()
-    df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
-    df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
-    df = df.groupby('platform').agg({
-        'spend': 'sum',
-        'purchase_value': 'sum',
-        'purchases': 'sum',
-        'roas': 'mean',
-        'cpa': 'mean'
-    }).reset_index()
+# async def generate_platform_summary(df, currency_symbol):
+#     df = df.copy()
+#     df['roas'] = df['purchase_value'] / df['spend'].replace(0, 1)
+#     df['cpa'] = df['spend'] / df['purchases'].replace(0, 1)
+#     df = df.groupby('platform').agg({
+#         'spend': 'sum',
+#         'purchase_value': 'sum',
+#         'purchases': 'sum',
+#         'roas': 'mean',
+#         'cpa': 'mean'
+#     }).reset_index()
 
-    summary_data = df.to_dict(orient='records')
-    prompt = f"""
-    Write a concise summary of platform-level performance across Meta Ads.
-    Include top-performing platforms (high ROAS or low CPA), and platforms underperforming.
-    Conclude with 1 actionable recommendation.
-    Use {currency_symbol} in monetary values.
+#     summary_data = df.to_dict(orient='records')
+#     prompt = f"""
+#     Write a concise summary of platform-level performance across Meta Ads.
+#     Include top-performing platforms (high ROAS or low CPA), and platforms underperforming.
+#     Conclude with 1 actionable recommendation.
+#     Use {currency_symbol} in monetary values.
+#     """
+#     return await generate_llm_content(prompt, summary_data)
+
+async def generate_platform_summary(platform_df: pd.DataFrame, currency_symbol: str) -> str:
     """
+    Generate a clean summary of platform-level ad performance.
+    """
+    if platform_df.empty or "Platform" not in platform_df.columns:
+        return "⚠️ No platform performance data available."
+
+    df = platform_df.copy()
+    df.columns = [col.lower().strip().replace(" ", "_") for col in df.columns]
+
+    df['amount_spent'] = pd.to_numeric(df['amount_spent'], errors='coerce').fillna(0)
+    df['revenue'] = pd.to_numeric(df['revenue'], errors='coerce').fillna(0)
+    df['purchases'] = pd.to_numeric(df['purchases'], errors='coerce').fillna(0)
+    df['roas'] = df['revenue'] / df['amount_spent'].replace(0, 1)
+    df['cpa'] = df['amount_spent'] / df['purchases'].replace(0, 1)
+
+    platform_summaries = []
+    for _, row in df.iterrows():
+        platform = row['platform'].capitalize()
+        spend = f"{currency_symbol}{row['amount_spent']:,.0f}"
+        roas = f"{row['roas']:.2f}"
+        purchases = int(row['purchases'])
+        cpa = f"{currency_symbol}{row['cpa']:,.2f}" if row['purchases'] > 0 else "N/A"
+        platform_summaries.append(f"{platform}: Spend = {spend}, Purchases = {purchases}, ROAS = {roas}, CPA = {cpa}")
+
+    if df['purchases'].sum() == 0:
+        recommendation = (
+            "Pause all campaigns immediately and evaluate your ad targeting, creative performance, "
+            "and landing page experience. Consider small-scale A/B tests to identify what drives conversions "
+            "before investing further."
+        )
+    else:
+        recommendation = (
+            "Continue optimizing by allocating more budget to platforms with higher ROAS and lower CPA. "
+            "Explore underperforming platforms to identify bottlenecks in the conversion funnel."
+        )
+
+    summary_data = (
+        "### Meta Ads Platform Performance Summary\n\n"
+        + "\n".join(platform_summaries) + "\n\n"
+        + "**Recommendation:** " + recommendation
+    )
+    prompt = f"""
+#     Write a concise summary of platform-level performance across Meta Ads.
+#     Include top-performing platforms (high ROAS or low CPA), and platforms underperforming.
+#     Conclude with 1 actionable recommendation.
+#     Use {currency_symbol} in monetary values.
+#     """
+
     return await generate_llm_content(prompt, summary_data)
 
 
