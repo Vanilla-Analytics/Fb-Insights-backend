@@ -513,11 +513,6 @@ def create_empty_chart_image(message):
     fig.patch.set_linewidth(1.5)
     fig.patch.set_linestyle('--') # Dashed border
 
-    # You could optionally add a simple icon here using ax.text with a symbol,
-    # or if you have an icon file, use fig.figimage for a watermark-like effect.
-    # For instance, a simple '🚫' or '❓' symbol.
-    # ax.text(0.5, 0.7, '🚫', fontsize=30, color='gray', ha='center', va='center', alpha=0.5, transform=ax.transAxes)
-
 
     # Convert to image bytes
     buffer = BytesIO()

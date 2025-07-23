@@ -116,9 +116,9 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 3800 
+        PAGE_HEIGHT = 3850 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4000 
+        PAGE_HEIGHT = 3800 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 2200   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -510,7 +510,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         
                         #table_y = LOGO_Y_OFFSET - LOGO_HEIGHT - 20  
-                        table_y = PAGE_HEIGHT - 730  # You can adjust this to 400 if still too high
+                        table_y = PAGE_HEIGHT - 700  # You can adjust this to 400 if still too high
                         summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                         summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -611,7 +611,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 #("FONTNAME", (0, -1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                             ]))
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 250
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 200
                             performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1004,7 +1004,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             }).reset_index()
 
                             #   ➤ Table Title
-                            c.setFont("Helvetica-Bold", 14)
+                            c.setFont("Helvetica-Bold", 16)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, "Ad Level Performance")
 
                             # ➤ Table
@@ -1029,7 +1029,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1650
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1267,6 +1267,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             cpm_y = freq_y - 470
                             c.drawImage(img_cpm, LEFT_MARGIN, cpm_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=420)  
                             
+                            draw_footer_cta(c)  # Draw footer CTA after Ad Fatigue section
+                            
                             
                             # 📄 New Page - Demographic Performance
                             c.showPage()
@@ -1338,13 +1340,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 table_col_widths = [100, 80, 100, 80, 80, 80] # Example widths
                                 table = Table(table_data, colWidths=table_col_widths)
                                 table.setStyle(TableStyle([
-                                    ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
-                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                    ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.BLACK),
                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                                     ('FONTSIZE', (0, 0), (-1, 0), 10), # Slightly smaller font for table header
                                     ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-                                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
                                     ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                                     ('FONTNAME', (0, 1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica"), # Body font
                                     ('FONTSIZE', (0, 1), (-1, -1), 8), # Body font size
@@ -1356,7 +1358,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
-                                current_y_pos = table_y_start - table_height - 40 # Start charts 40 units below table
+                                current_y_pos = table_y_start - table_height - 20 # Start charts 40 units below table
 
                                 # --- Draw Demographic Charts ---
                                 # Use demographic_grouped for charts as it's already aggregated
@@ -1488,140 +1490,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             c.setFont("Helvetica", 14)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠️ Demographic data not available for this account or contains no valid entries.")
-                            draw_footer_cta(c) # Still draw footer
-                            
-                            
-                            # --- Platform Performance Page Code ---
-                            # Add this block inside your generate_pdf_report() function in generate_pdf.py
-
-                        #     # 📄 New Page - Platform Level Performance
-                        #     c.showPage()
-                        #     platform_section = {"title": "Platform Level Performance"}
-                        #     adjust_page_height(c, platform_section)
-                        #     draw_header(c)
-                        #     # 🔧 Clean + fix data
-                        #     if 'actions' in full_ad_insights_df.columns:
-                        #         full_ad_insights_df.drop(columns=['actions'], inplace=True)
-                                                         
-                        #     full_ad_insights_df['spend'] = pd.to_numeric(full_ad_insights_df['spend'], errors='coerce').fillna(0)
-                        #     full_ad_insights_df['purchase_value'] = pd.to_numeric(full_ad_insights_df['purchase_value'], errors='coerce').fillna(0)
-                        #     full_ad_insights_df['purchases'] = pd.to_numeric(full_ad_insights_df['purchases'], errors='coerce').fillna(0)
-
-                        #     if 'platform' not in full_ad_insights_df.columns:
-                        #         full_ad_insights_df['platform'] = "Uncategorized"
-                        #     else:
-                        #         full_ad_insights_df['platform'] = full_ad_insights_df['platform'].fillna("Uncategorized")
-
-                        #    # Title
-                        #     c.setFont("Helvetica-Bold", 18)
-                        #     c.setFillColor(colors.black)
-                        #     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 20, "Platform Level Performance")
-
-                        #     # 💾 Prepare table data
-                        #     from services.deepseek_audit import group_by_platform
-                        #     platform_df = group_by_platform(full_ad_insights_df, currency_symbol)                
-                        #    # Clean nulls
-                        #     platform_df['platform'] = platform_df['platform'].fillna("Uncategorized")
-
-                        #     # Add Grand Total row
-                        #     total_row = {
-                        #         'platform': 'Grand Total',
-                        #         'spend': platform_df['spend'].sum(),
-                        #         'purchase_value': platform_df['purchase_value'].sum(),
-                        #         'purchases': platform_df['purchases'].sum(),
-                        #         'roas': platform_df['purchase_value'].sum() / platform_df['spend'].replace(0, 1).sum(),
-                        #         'cpa': platform_df['spend'].sum() / platform_df['purchases'].replace(0, 1).sum()
-                        #     }
-
-                        #     platform_df = pd.concat([platform_df, pd.DataFrame([total_row])], ignore_index=True)
-
-                        #     # Format table
-                        #     table_data = [["Platform", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
-                        #     for _, row in platform_df.iterrows():
-                        #         table_data.append([
-                        #             row['platform'],
-                        #             f"{currency_symbol}{row['spend']:,.2f}" if pd.notna(row['spend']) else "-",
-                        #             f"{currency_symbol}{row['purchase_value']:,.2f}" if pd.notna(row['purchase_value']) else "-",
-                        #             int(row['purchases']) if pd.notna(row['purchases']) else "-",
-                        #             f"{row['roas']:.2f}" if pd.notna(row['roas']) else "-",
-                        #             f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "-"
-                        #         ])
-
-                        #     # Draw table
-                        #     from reportlab.platypus import Table, TableStyle
-                        #     summary_table = Table(table_data, repeatRows=1, colWidths=[110, 120, 120, 90, 80, 80])
-                        #     summary_table.setStyle(TableStyle([
-                        #         ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                        #         ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                        #         ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
-                        #         ("FONTSIZE", (0, 0), (-1, -1), 8),
-                        #         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                        #     ]))
-
-                        #     table_y = PAGE_HEIGHT - 180
-                        #     summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
-                        #     summary_table.drawOn(c, LEFT_MARGIN, table_y)
-
-                        #     # 📊 Platform Split Charts
-                        #     from services.chart_utils import generate_platform_split_charts, generate_platform_roas_chart
-                        #     split_charts = generate_platform_split_charts(full_ad_insights_df)
-                        #     roas_chart = generate_platform_roas_chart(full_ad_insights_df)
-
-                        #     # Chart positions
-                        #     donut_width = 330
-                        #     donut_height = 330
-                        #     donut_y = table_y - donut_height - 40
-                        #     cost_x = LEFT_MARGIN
-                        #     rev_x = PAGE_WIDTH - RIGHT_MARGIN - donut_width
-
-                        #     if len(split_charts) > 0:
-                        #         img1 = ImageReader(split_charts[0][1])
-                        #         c.drawImage(img1, cost_x, donut_y, width=donut_width, height=donut_height)
-                        #     if len(split_charts) > 1:
-                        #         img2 = ImageReader(split_charts[1][1])
-                        #         c.drawImage(img2, rev_x, donut_y, width=donut_width, height=donut_height)
-
-                        #     # Draw ROAS Bar Chart
-                        #     roas_width = 700
-                        #     roas_height = 280
-                        #     roas_x = (PAGE_WIDTH - roas_width) / 2
-                        #     roas_y = donut_y - roas_height - 30
-                        #     img3 = ImageReader(roas_chart[1])
-                        #     c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
-
-                        #     # 📈 Line Charts: Cost and Revenue by Platform
-                        #     from services.chart_utils import generate_platform_cost_line_chart, generate_platform_revenue_line_chart
-
-                        #     cost_line_chart = generate_platform_cost_line_chart(full_ad_insights_df)
-                        #     revenue_line_chart = generate_platform_revenue_line_chart(full_ad_insights_df)
-
-                        #     img4 = ImageReader(cost_line_chart[1])
-                        #     img5 = ImageReader(revenue_line_chart[1])
-
-                        #     line_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                        #     line_height = 300
-                        #     chart_x = (PAGE_WIDTH - line_width) / 2
-
-                        #     cost_line_y = roas_y - line_height - 40
-                        #     revenue_line_y = cost_line_y - line_height - 30
-
-                        #     c.drawImage(img4, chart_x, cost_line_y, width=line_width, height=line_height)
-                        #     c.drawImage(img5, chart_x, revenue_line_y, width=line_width, height=line_height)
-
-                        #     # 🤖 LLM Summary
-                        #     from services.deepseek_audit import generate_platform_summary
-                        #     summary_text = run_async_in_thread(generate_platform_summary(full_ad_insights_df, currency_symbol))
-                            
-                        #     c.setFont("Helvetica-Bold", 16)
-                        #     c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Platform Performance Summary")
-
-                        #     c.setFont("Helvetica", 12)
-                        #     text_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
-                        #     lines = simpleSplit(summary_text, "Helvetica", 12, text_width)
-                        #     text_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                        #     for line in lines:
-                        #         c.drawString(LEFT_MARGIN, text_y, line)
-                        #         text_y -= 16
+                            draw_footer_cta(c) # Still draw footer                            
                                                                                                                                                                
                     else:
                         c.showPage()
@@ -1631,8 +1500,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # next_section = sections[i + 1]
                         # adjust_page_height(c, next_section)
-            elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
-                continue  # Skip fallback layout; already custom rendered above
+            # elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
+            #     continue  
             elif section_title.strip().upper() == "PLATFORM LEVEL PERFORMANCE":
                 # Ensure platform_df is valid before processing
                 if platform_df is not None and not platform_df.empty:
