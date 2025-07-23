@@ -1341,7 +1341,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 table = Table(table_data, colWidths=table_col_widths)
                                 table.setStyle(TableStyle([
                                     ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.BLACK),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                                     ('FONTSIZE', (0, 0), (-1, 0), 10), # Slightly smaller font for table header
