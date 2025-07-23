@@ -116,11 +116,11 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 4000 
+        PAGE_HEIGHT = 3800 
     elif title == "AD FATIGUE ANALYSIS":
         PAGE_HEIGHT = 4000 
     elif title == "DEMOGRAPHIC PERFORMANCE":
-        PAGE_HEIGHT = 3000   
+        PAGE_HEIGHT = 2200   
     elif title == "PLATFORM LEVEL PERFORMANCE":
         PAGE_HEIGHT = 3000 
     else:
@@ -556,6 +556,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else 0, 
                                 axis=1
                             )
+                            # Prepare ROAS data for campaign level
+                            campaign_roas = grouped_campaigns.set_index('campaign_name')['roas']
+
                             
 
                             table_data = [["Campaign Name", "Amount Spent", "Revenue", "Purchases", "ROAS", "CPA"]]
@@ -663,19 +666,27 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             roas_y = donut_y - 40 - roas_height  # ensures enough gap
 
 
-                        # Title
+                            # Title
                             c.setFont("Helvetica-Bold", 13)
                             c.setFillColor(colors.black)
                             #c.drawCentredString(PAGE_WIDTH / 2, roas_y + roas_height + 16, "ROAS Split")
 
-                        # Card Border
+                            # Card Border
                             c.setStrokeColor(colors.lightgrey)
                             c.setLineWidth(1)
                             c.roundRect(roas_x, roas_y, roas_width, roas_height, radius=8, fill=0, stroke=1)
 
-                            if len(split_charts) > 2:
-                                img3 = ImageReader(split_charts[2][1])
+                            # if len(split_charts) > 2:
+                            #     img3 = ImageReader(split_charts[2][1])
+                            #     c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
+                            from services.chart_utils import roas_split_campaign
+                            try:
+                                chart_title, chart_img = roas_split_campaign(campaign_roas)
+                                img3 = ImageReader(chart_img)
                                 c.drawImage(img3, roas_x, roas_y, width=roas_width, height=roas_height)
+                            except Exception as e:
+                                print(f"⚠️ Error rendering ROAS Split Campaign chart: {e}")
+
                             
                             try:
                                
@@ -1018,7 +1029,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1400
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1650
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1184,7 +1195,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ]))
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2500
+                            
+                            # Prepare ROAS series for Ad Fatigue
+                            ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
+
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1900
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1193,23 +1208,50 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             donut_width = 410
                             donut_height = 410
 
-                            # Cost Split
-                            cost_split = generate_campaign_split_charts(df, currency_symbol)[0][1]
-                            img_cost = ImageReader(cost_split)
+                            # # Cost Split
+                            # cost_split = generate_campaign_split_charts(df, currency_symbol)[0][1]
+                            # img_cost = ImageReader(cost_split)
+                            # c.drawImage(img_cost, LEFT_MARGIN, donut_y, width=donut_width, height=donut_height)
+
+                            # # Revenue Split
+                            # revenue_split = generate_campaign_split_charts(df, currency_symbol)[1][1]
+                            # img_revenue = ImageReader(revenue_split)
+                            # c.drawImage(img_revenue, PAGE_WIDTH - RIGHT_MARGIN - donut_width, donut_y, width=donut_width, height=donut_height)
+                            
+                            from services.chart_utils import ad_fatigue_cost_donut, ad_fatigue_revenue_donut
+
+                            # Cost Split (Ad Fatigue)
+                            chart_title, cost_img = ad_fatigue_cost_donut(df)
+                            img_cost = ImageReader(cost_img)
                             c.drawImage(img_cost, LEFT_MARGIN, donut_y, width=donut_width, height=donut_height)
 
-                            # Revenue Split
-                            revenue_split = generate_campaign_split_charts(df, currency_symbol)[1][1]
-                            img_revenue = ImageReader(revenue_split)
+                            # Revenue Split (Ad Fatigue)
+                            chart_title, revenue_img = ad_fatigue_revenue_donut(df)
+                            img_revenue = ImageReader(revenue_img)
                             c.drawImage(img_revenue, PAGE_WIDTH - RIGHT_MARGIN - donut_width, donut_y, width=donut_width, height=donut_height)
 
+
                             # ────────────── ROAS Split Bar Chart ──────────────
-                            roas_chart = generate_campaign_split_charts(df, currency_symbol)[2][1]
-                            img_roas = ImageReader(roas_chart)
-                            roas_y = donut_y - 300
-                            roas_width = 740
-                            roas_height = 320
-                            c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
+                            # roas_chart = generate_campaign_split_charts(df, currency_symbol)[2][1]
+                            # img_roas = ImageReader(roas_chart)
+                            # roas_y = donut_y - 300
+                            # roas_width = 740
+                            # roas_height = 320
+                            # c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
+                            
+                            # ────────────── ROAS Split Bar Chart (New Design) ──────────────
+                            from services.chart_utils import roas_split_Ad_Fatigue
+
+                            try:
+                                chart_title, chart_img = roas_split_Ad_Fatigue(ad_fatigue_roas)
+                                img_roas = ImageReader(chart_img)
+                                roas_y = donut_y - 300
+                                roas_width = 740
+                                roas_height = 320
+                                c.drawImage(img_roas, (PAGE_WIDTH - roas_width) / 2, roas_y, width=roas_width, height=roas_height)
+                            except Exception as e:
+                                print(f"⚠️ Error rendering ROAS Split Ad Fatigue chart: {e}")
+
 
                             # ────────────── Frequency Over Time Chart ──────────────
                             from services.chart_utils import generate_frequency_over_time_chart
@@ -1268,10 +1310,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     'roas': 'ROAS',
                                     'cpa': 'CPA'
                                 }, inplace=True)                                
-                                # demographic_table_df = demographic_grouped.copy()
-                                # demographic_table_df['Amount Spent'] = demographic_table_df['Amount Spent'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                # demographic_table_df['CPA'] = demographic_table_df['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}")
-                                # demographic_table_df['ROAS'] = demographic_table_df['ROAS'].round(2)
+                                
                                 
                                 # ⚠️ Keep numeric for charts
                                 demographic_grouped['ROAS'] = demographic_grouped['ROAS'].round(2)
@@ -1287,13 +1326,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 #demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}") NA
                                 demographic_table['CPA'] = demographic_table['CPA'].apply(lambda x: f"{currency_symbol}{x:,.2f}" if pd.notna(x) else "N/A")
                                 
-                                # Ensure ROAS column is present in demographic_grouped
-                                # if 'ROAS' not in demographic_grouped.columns:
-                                #     if 'Purchases' in demographic_grouped.columns and 'Amount Spent' in demographic_grouped.columns:
-                                #         demographic_grouped['ROAS'] = demographic_grouped['Purchases'] / demographic_grouped['Amount Spent']
-                                #         demographic_grouped['ROAS'] = demographic_grouped['ROAS'].replace([np.inf, -np.inf], 0).fillna(0)
-                                #     else:
-                                #         demographic_grouped['ROAS'] = 0  
+                                  
 
 
                                 # 📋 Draw Table
@@ -1361,7 +1394,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # 🎯 Row 1: Cost + Revenue by Age
                                 try:
                                     x_cost_age = LEFT_MARGIN
-                                    y_cost_age = current_y_pos - chart_height
+                                    y_cost_age = PAGE_WIDTH - RIGHT_MARGIN - chart_width
                                     buf = generate_cost_split_by_age_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_cost_age, y_cost_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
@@ -1379,7 +1412,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # 🎯 Row 2: ROAS by Age + Cost by Gender
                                 try:
                                     x_roas_age = LEFT_MARGIN
-                                    y_roas_age = current_y_pos - chart_height
+                                    y_roas_age = PAGE_WIDTH - RIGHT_MARGIN - chart_width
                                     buf = generate_roas_split_by_age_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_roas_age, y_roas_age, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
@@ -1397,7 +1430,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # 🎯 Row 3: Revenue + ROAS by Gender
                                 try:
                                     x_revenue_gender = LEFT_MARGIN
-                                    y_revenue_gender = current_y_pos - chart_height
+                                    y_revenue_gender = PAGE_WIDTH - RIGHT_MARGIN - chart_width
                                     buf = generate_revenue_split_by_gender_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_revenue_gender, y_revenue_gender, width=chart_width, height=chart_height, preserveAspectRatio=True)
 

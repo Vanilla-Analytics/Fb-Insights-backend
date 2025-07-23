@@ -112,6 +112,70 @@ def draw_roas_split_bar_chart(roas_series):
     plt.tight_layout()
     return fig
 
+import matplotlib.pyplot as plt
+from io import BytesIO
+
+def roas_split_campaign(roas_series):
+    """ROAS Split chart for Campaign Level Performance (Top 7)"""
+    roas_series = roas_series.sort_values(ascending=False).head(7)
+    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+
+    bars = ax.barh(roas_series.index[::-1], roas_series.values[::-1],
+                   color="#448bd4", edgecolor="grey", height=0.5)
+
+    ax.set_title("ROAS Split (Campaign Level)", fontsize=10)
+    ax.set_xlabel("ROAS", fontsize=9)
+    ax.tick_params(axis='both', labelsize=8)
+
+    for bar in bars:
+        width = bar.get_width()
+        # Add space manually for cleaner look
+        label = " ".join(list(f"{width:.2f}"))
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
+                label, va='center', fontsize=8)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+
+    fig.tight_layout()
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png")
+    buffer.seek(0)
+    plt.close(fig)
+    return ("ROAS Split (Campaign Level)", buffer)
+
+
+def roas_split_Ad_Fatigue(roas_series):
+    """ROAS Split chart for Ad Fatigue Analysis (Top 7)"""
+    roas_series = roas_series.sort_values(ascending=False).head(7)
+    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+
+    bars = ax.barh(roas_series.index[::-1], roas_series.values[::-1],
+                   color="#448bd4", edgecolor="grey", height=0.5)
+
+    ax.set_title("ROAS Split (Ad Fatigue)", fontsize=10)
+    ax.set_xlabel("ROAS", fontsize=9)
+    ax.tick_params(axis='both', labelsize=8)
+
+    for bar in bars:
+        width = bar.get_width()
+        label = " ".join(list(f"{width:.2f}"))
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
+                label, va='center', fontsize=8)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+
+    fig.tight_layout()
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png")
+    buffer.seek(0)
+    plt.close(fig)
+    return ("ROAS Split (Ad Fatigue)", buffer)
+
+
 def generate_campaign_split_charts(df, currency_symbol=None):
     if currency_symbol is None:
         currency_symbol = "₹"  # or "$" if you prefer USD fallback
@@ -368,30 +432,49 @@ def generate_cpm_over_time_chart(df):
     fig.tight_layout()
     return ("CPM Over Time", generate_chart_image(fig))
 
+#---------------DEMOGRAPHIC CHARTS----------------
 
-
-from io import BytesIO
 import matplotlib.pyplot as plt
+from io import BytesIO
 
-# Pie chart colors
 PIE_COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#00BCD4']
 
 def generate_cost_split_by_age_chart(df):
-    # Ensure column name consistency
     df = df.rename(columns={'Amount Spent': 'amount_spent', 'Age': 'age'})
     if 'age' not in df.columns or 'amount_spent' not in df.columns:
-        raise ValueError("Required columns not found")
-    
+        return create_empty_chart_image("No spend data by age")
+
     grouped = df.groupby('age')['amount_spent'].sum()
     if grouped.sum() <= 0:
         return create_empty_chart_image("No spend data by age")
-    
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
-           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
-    ax.set_title("Cost Split By Age", fontsize=14)
-    plt.tight_layout()
-    return generate_chart_image(fig)
+
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+    wedges, _, _ = ax.pie(
+        grouped,
+        startangle=90,
+        wedgeprops=dict(width=0.4, edgecolor="white"),  # border
+        colors=PIE_COLORS,
+        autopct='%1.1f%%'
+    )
+
+    # Legend with label + percentage
+    percentages = 100 * grouped / grouped.sum()
+    ax.legend(
+        wedges,
+        [f"{name} ({pct:.1f}%)" for name, pct in zip(grouped.index, percentages)],
+        title="Age Groups",
+        loc="center left",
+        bbox_to_anchor=(1.05, 0.5),
+        fontsize=8
+    )
+    ax.set_title("Cost Split By Age", fontsize=12)
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png', dpi=200)
+    buffer.seek(0)
+    plt.close(fig)
+    return buffer
 
 # def create_empty_chart_image(message):
 #     fig, ax = plt.subplots(figsize=(5, 3))
@@ -444,137 +527,188 @@ def create_empty_chart_image(message):
     return buffer
 
 def generate_revenue_split_by_age_chart(df):
-    # Standardize column names
-    df = df.rename(columns={
-        'Age': 'age',
-        'Purchases': 'purchases'
-    })
-    
+    df = df.rename(columns={'Age': 'age', 'Purchases': 'purchases'})
     if 'age' not in df.columns or 'purchases' not in df.columns:
-        raise ValueError("Required columns 'age' and 'purchases' not found")
-    
-    # Filter out rows with zero purchases
+        return create_empty_chart_image("No purchase data by age")
+
     df = df[df['purchases'] > 0]
-    
     if df.empty:
         return create_empty_chart_image("No purchase data by age")
-    
+
     grouped = df.groupby('age')['purchases'].sum()
-    
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
-           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
-    ax.set_title("Revenue Split By Age", fontsize=14)
-    plt.tight_layout()
-    return generate_chart_image(fig)
+
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+    wedges, _, _ = ax.pie(
+        grouped,
+        startangle=90,
+        wedgeprops=dict(width=0.4, edgecolor="white"),
+        colors=PIE_COLORS,
+        autopct='%1.1f%%'
+    )
+
+    percentages = 100 * grouped / grouped.sum()
+    ax.legend(
+        wedges,
+        [f"{name} ({pct:.1f}%)" for name, pct in zip(grouped.index, percentages)],
+        title="Age Groups",
+        loc="center left",
+        bbox_to_anchor=(1.05, 0.5),
+        fontsize=8
+    )
+    ax.set_title("Revenue Split By Age", fontsize=12)
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png', dpi=200)
+    buffer.seek(0)
+    plt.close(fig)
+    return buffer
 
 def generate_cost_split_by_gender_chart(df):
-    # Standardize column names
-    df = df.rename(columns={
-        'Gender': 'gender',
-        'Amount Spent': 'amount_spent'
-    })
-    
+    df = df.rename(columns={'Gender': 'gender', 'Amount Spent': 'amount_spent'})
     if 'gender' not in df.columns or 'amount_spent' not in df.columns:
-        raise ValueError("Required columns 'gender' and 'amount_spent' not found")
-    
-    # Filter out rows with zero or negative spend
+        return create_empty_chart_image("No spend data by gender")
+
     df = df[df['amount_spent'] > 0]
-    
     if df.empty:
         return create_empty_chart_image("No spend data by gender")
-    
+
     grouped = df.groupby('gender')['amount_spent'].sum()
-    
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
-           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
-    ax.set_title("Cost Split By Gender", fontsize=14)
-    plt.tight_layout()
-    return generate_chart_image(fig)
+
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+    wedges, _, _ = ax.pie(
+        grouped,
+        startangle=90,
+        wedgeprops=dict(width=0.4, edgecolor="white"),
+        colors=PIE_COLORS,
+        autopct='%1.1f%%'
+    )
+
+    percentages = 100 * grouped / grouped.sum()
+    ax.legend(
+        wedges,
+        [f"{name} ({pct:.1f}%)" for name, pct in zip(grouped.index, percentages)],
+        title="Gender",
+        loc="center left",
+        bbox_to_anchor=(1.05, 0.5),
+        fontsize=8
+    )
+    ax.set_title("Cost Split By Gender", fontsize=12)
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png', dpi=200)
+    buffer.seek(0)
+    plt.close(fig)
+    return buffer
 
 def generate_revenue_split_by_gender_chart(df):
-    # Standardize column names
-    df = df.rename(columns={
-        'Gender': 'gender',
-        'Purchases': 'purchases'
-    })
-    
+    df = df.rename(columns={'Gender': 'gender', 'Purchases': 'purchases'})
     if 'gender' not in df.columns or 'purchases' not in df.columns:
-        raise ValueError("Required columns 'gender' and 'purchases' not found")
-    
-    # Filter out rows with zero purchases
+        return create_empty_chart_image("No purchase data by gender")
+
     df = df[df['purchases'] > 0]
-    
     if df.empty:
         return create_empty_chart_image("No purchase data by gender")
-    
+
     grouped = df.groupby('gender')['purchases'].sum()
-    
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', 
-           startangle=90, wedgeprops=dict(width=0.4), colors=PIE_COLORS)
-    ax.set_title("Revenue Split By Gender", fontsize=14)
-    plt.tight_layout()
-    return generate_chart_image(fig)
+
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+    wedges, _, _ = ax.pie(
+        grouped,
+        startangle=90,
+        wedgeprops=dict(width=0.4, edgecolor="white"),
+        colors=PIE_COLORS,
+        autopct='%1.1f%%'
+    )
+
+    percentages = 100 * grouped / grouped.sum()
+    ax.legend(
+        wedges,
+        [f"{name} ({pct:.1f}%)" for name, pct in zip(grouped.index, percentages)],
+        title="Gender",
+        loc="center left",
+        bbox_to_anchor=(1.05, 0.5),
+        fontsize=8
+    )
+    ax.set_title("Revenue Split By Gender", fontsize=12)
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png', dpi=200)
+    buffer.seek(0)
+    plt.close(fig)
+    return buffer
 
 def generate_roas_split_by_age_chart(df):
     # Standardize column names
-    df = df.rename(columns={
-        'Age': 'age',
-        'ROAS': 'roas'
-    })
-    
+    df = df.rename(columns={'Age': 'age', 'ROAS': 'roas'})
     if 'age' not in df.columns or 'roas' not in df.columns:
-        raise ValueError("Required columns 'age' and 'roas' not found")
-    
+        return create_empty_chart_image("No valid ROAS data by age")
+
     # Filter out invalid ROAS values
     df = df[df['roas'].notna() & (df['roas'] >= 0)]
-    
     if df.empty:
         return create_empty_chart_image("No valid ROAS data by age")
-    
-    grouped = df.groupby('age')['roas'].mean()
-    
-    fig, ax = plt.subplots(figsize=(6, 4))
-    bars = ax.barh(grouped.index, grouped.values, color="#673AB7")
-    ax.set_title("ROAS Split By Age", fontsize=14)
-    ax.set_xlabel("ROAS")
+
+    # Aggregate & sort → take top 7
+    grouped = df.groupby('age')['roas'].mean().sort_values(ascending=False).head(7)
+
+    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+    bars = ax.barh(grouped.index[::-1], grouped.values[::-1],
+                   color="#448bd4", edgecolor="grey", height=0.5)
+
+    ax.set_title("ROAS Split By Age", fontsize=10)
+    ax.set_xlabel("ROAS", fontsize=9)
+    ax.tick_params(axis='both', labelsize=8)
+
     for bar in bars:
         width = bar.get_width()
-        ax.text(width + 0.02, bar.get_y() + bar.get_height() / 2, f"{width:.2f}",
-                va='center', fontsize=8)
-    plt.tight_layout()
+        value_label = " ".join(list(f"{width:.2f}"))  # spacing instead of letterspacing
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
+                value_label, va='center', fontsize=8)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+    fig.tight_layout()
     return generate_chart_image(fig)
 
 def generate_roas_split_by_gender_chart(df):
     # Standardize column names
-    df = df.rename(columns={
-        'Gender': 'gender',
-        'ROAS': 'roas'
-    })
-    
+    df = df.rename(columns={'Gender': 'gender', 'ROAS': 'roas'})
     if 'gender' not in df.columns or 'roas' not in df.columns:
-        raise ValueError("Required columns 'gender' and 'roas' not found")
-    
+        return create_empty_chart_image("No valid ROAS data by gender")
+
     # Filter out invalid ROAS values
     df = df[df['roas'].notna() & (df['roas'] >= 0)]
-    
     if df.empty:
         return create_empty_chart_image("No valid ROAS data by gender")
-    
-    grouped = df.groupby('gender')['roas'].mean()
-    
-    fig, ax = plt.subplots(figsize=(6, 4))
-    bars = ax.barh(grouped.index, grouped.values, color="#673AB7")
-    ax.set_title("ROAS Split By Gender", fontsize=14)
-    ax.set_xlabel("ROAS")
+
+    # Aggregate & sort → take top 7
+    grouped = df.groupby('gender')['roas'].mean().sort_values(ascending=False).head(7)
+
+    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+    bars = ax.barh(grouped.index[::-1], grouped.values[::-1],
+                   color="#448bd4", edgecolor="grey", height=0.5)
+
+    ax.set_title("ROAS Split By Gender", fontsize=10)
+    ax.set_xlabel("ROAS", fontsize=9)
+    ax.tick_params(axis='both', labelsize=8)
+
     for bar in bars:
         width = bar.get_width()
-        ax.text(width + 0.02, bar.get_y() + bar.get_height() / 2, f"{width:.2f}",
-                va='center', fontsize=8)
-    plt.tight_layout()
+        value_label = " ".join(list(f"{width:.2f}"))
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
+                value_label, va='center', fontsize=8)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+    fig.tight_layout()
     return generate_chart_image(fig)
+
+#---------------PLATFORM CHARTS----------------
 
 def generate_platform_split_charts(df):
     df = df.copy()
@@ -611,32 +745,6 @@ def generate_platform_split_charts(df):
         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
-
-# def generate_platform_roas_chart(df):
-#     df = df.copy()
-#     df['platform'] = df['platform'].fillna("Uncategorized")
-#     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
-#     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
-
-#     platform_data = df.groupby('platform').agg({'spend': 'sum', 'purchase_value': 'sum'})
-    
-#     # Filter out entries where spend is zero to avoid division by zero and NaN in ROAS
-#     platform_data = platform_data[platform_data['spend'] > 0]
-    
-#     platform_data['roas'] = platform_data['purchase_value'] / platform_data['spend'].replace(0, 1)
-#     platform_data = platform_data.sort_values(by='spend', ascending=False).head(5)
-
-#     if platform_data.empty or platform_data['roas'].sum() <= 0:
-#         return create_empty_chart_image("No ROAS Data for Platforms")
-
-#     fig, ax = plt.subplots(figsize=(10, 4), dpi=200)
-#     ax.barh(platform_data.index, platform_data['roas'], color='#1f77b4')
-#     ax.set_title("ROAS by Platform")
-#     ax.set_xlabel("ROAS")
-#     ax.grid(axis='x', linestyle='--', alpha=0.5)
-#     fig.tight_layout()
-
-#     return generate_chart_image(fig)
 
 def generate_platform_roas_chart(df):
     df = df.copy()
@@ -734,4 +842,55 @@ def generate_platform_revenue_line_chart(df):
     fig.tight_layout()
     return generate_chart_image(fig)
 
+import matplotlib.pyplot as plt
+from io import BytesIO
+
+def ad_fatigue_cost_donut(df):
+    """Cost Split Donut Chart for Ad Fatigue (Top 7 Ads by spend)"""
+    cost_split = df.groupby('ad_name')['spend'].sum().sort_values(ascending=False).head(15)
+
+    if cost_split.empty or cost_split.sum() <= 0:
+        return ("Cost Split (Ad Fatigue)", create_empty_chart_image("No Cost Data for Ads"))
+
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+    wedges, _ = ax.pie(cost_split, startangle=90, wedgeprops=dict(width=0.4))
+
+    # Legend with ad names and %
+    percentages = 100 * cost_split / cost_split.sum()
+    ax.legend(wedges, [f"{name} ({pct:.1f}%)" for name, pct in zip(cost_split.index, percentages)],
+              title="Ads", loc="center left", bbox_to_anchor=(1.05, 0.5), fontsize=8)
+
+    ax.set_title("Cost Split (Ad Fatigue)", fontsize=12)
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png")
+    buffer.seek(0)
+    plt.close(fig)
+    return ("Cost Split (Ad Fatigue)", buffer)
+
+
+def ad_fatigue_revenue_donut(df):
+    """Revenue Split Donut Chart for Ad Fatigue (Top 7 Ads by revenue)"""
+    revenue_split = df.groupby('ad_name')['purchase_value'].sum().sort_values(ascending=False).head(15)
+
+    if revenue_split.empty or revenue_split.sum() <= 0:
+        return ("Revenue Split (Ad Fatigue)", create_empty_chart_image("No Revenue Data for Ads"))
+
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+    wedges, _ = ax.pie(revenue_split, startangle=90, wedgeprops=dict(width=0.4))
+
+    # Legend with ad names and %
+    percentages = 100 * revenue_split / revenue_split.sum()
+    ax.legend(wedges, [f"{name} ({pct:.1f}%)" for name, pct in zip(revenue_split.index, percentages)],
+              title="Ads", loc="center left", bbox_to_anchor=(1.05, 0.5), fontsize=8)
+
+    ax.set_title("Revenue Split (Ad Fatigue)", fontsize=12)
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png")
+    buffer.seek(0)
+    plt.close(fig)
+    return ("Revenue Split (Ad Fatigue)", buffer)
 
