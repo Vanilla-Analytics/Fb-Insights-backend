@@ -297,14 +297,18 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
-                    if i < len(sections) - 1:
-                        next_section = sections[i + 1]
-                        adjust_page_height(c, next_section)
+                    c.setPageSize((PAGE_WIDTH, 700))
+                    # if i < len(sections) - 1:
+                    #     next_section = sections[i + 1]
+                    #     adjust_page_height(c, next_section)
+                    global LOGO_Y_OFFSET, TOP_MARGIN # Declare global if you are re-assigning it here
+                    LOGO_Y_OFFSET = 700 - TOP_MARGIN + 10
 
                     # next_section = sections[i + 1]
                     # adjust_page_height(c, next_section)
 
                     draw_header(c)
+                    
 
                     c.setFont("Helvetica-Bold", 20)
                     c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Last 30 Days Trend Section")
@@ -333,7 +337,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #chart_title = "Amount Spent vs Purchase Conversion Value"
                             chart_title = charts[0][0]
                             c.setFont("Helvetica-Bold", 16)
-                            title_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                            title_y = trend_page_height - TOP_MARGIN - 60
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
@@ -363,6 +367,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #LOGO_Y_OFFSET = PAGE_HEIGHT - TOP_MARGIN + 10
                         #c.setPageSize((PAGE_WIDTH, PAGE_HEIGHT))
                         draw_header(c)
+                        
 
                         chart_titles = [
                             "Purchases vs ROAS",
@@ -1125,6 +1130,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ────────────── New Page: Ad Fatigue Analysis ──────────────
                             adjust_page_height(c, {"title": "Ad Fatigue Analysis", "contains_table": True})
                             draw_header(c)
+                            MAX_FATIGUE_TABLE_ROWS = 50
 
                             # ✅ Add title
                             c.setFont("Helvetica-Bold", 16)
@@ -1133,6 +1139,15 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             # ➤ Prepare table data
                             df = full_ad_insights_df.copy()
+                            # Sort by a relevant metric (e.g., spend, frequency) before limiting, to show most relevant ads
+                            # For ad fatigue, sorting by frequency descending might be useful.
+                            df['frequency'] = df['impressions'] / df['reach'].replace(0, 1) # Ensure frequency is calculated before sorting on it
+                            df['cpa'] = df.apply(lambda row: row['spend'] / row['purchases'] if row['purchases'] > 0 else np.nan, axis=1)
+
+                            # Sort by frequency (descending) or another relevant metric (e.g., spend)
+                            # Then take the top N rows using .head()
+                            df = df.sort_values(by='frequency', ascending=False).head(MAX_FATIGUE_TABLE_ROWS)
+                            # --- END MODIFICATION ---
                             logger.info(f"📊 Columns in DataFrame: {list(df.columns)}")
                             logger.info(f"📊 First 5 rows:\n{df.head(5).to_string()}")
                             df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
@@ -1423,7 +1438,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     c.setFillColor(colors.red)
                                     c.drawString(LEFT_MARGIN, current_y_pos - 50, f"⚠️ Unable to generate demographic summary: {str(e)}")
                                     draw_footer_cta(c)
-                                c.showPage()
+                                #c.showPage()
 
                         else: # This block executes if demographic_df is not valid for processing
                             logger.warning("Demographic data not available or insufficient for detailed analysis. Skipping section.")
