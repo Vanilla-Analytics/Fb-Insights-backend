@@ -301,7 +301,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # if i < len(sections) - 1:
                     #     next_section = sections[i + 1]
                     #     adjust_page_height(c, next_section)
-                    global LOGO_Y_OFFSET, TOP_MARGIN # Declare global if you are re-assigning it here
+                    global LOGO_Y_OFFSET # Declare global if you are re-assigning it here
                     LOGO_Y_OFFSET = 700 - TOP_MARGIN + 10
 
                     # next_section = sections[i + 1]
