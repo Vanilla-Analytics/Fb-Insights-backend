@@ -118,7 +118,7 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 4000 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4500 
+        PAGE_HEIGHT = 4000 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 3000   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -139,6 +139,8 @@ def parse_bold_segments(text):
         else:
             segments.append((part, False))
     return segments
+
+
 
 def draw_header(c):
     logo_y = LOGO_Y_OFFSET
@@ -281,6 +283,12 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
             content = section.get("content", "No content available.")
             charts = section.get("charts", [])
             draw_header(c)
+                # Draw divider on first 5 section pages only
+            if section_title.upper() in ["EXECUTIVE SUMMARY","ACCOUNT NAMING & STRUCTURE","TESTING ACTIVITY","REMARKETING ACTIVITY","RESULTS SETUP"]:
+                c.setStrokeColor(colors.HexColor("#007bff"))
+                c.setLineWidth(8)
+                c.line(text_x - 10, BOTTOM_MARGIN, text_x - 10, PAGE_HEIGHT - TOP_MARGIN)
+            
 
             if section_title.strip().upper() == "KEY METRICS":
                     # Debug print to verify currency symbol
@@ -337,7 +345,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             #chart_title = "Amount Spent vs Purchase Conversion Value"
                             chart_title = charts[0][0]
                             c.setFont("Helvetica-Bold", 16)
-                            title_y = trend_page_height - TOP_MARGIN - 60
+                            title_y = PAGE_HEIGHT - TOP_MARGIN - 60
                             c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
@@ -1008,7 +1016,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1400
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1130,7 +1138,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # ────────────── New Page: Ad Fatigue Analysis ──────────────
                             adjust_page_height(c, {"title": "Ad Fatigue Analysis", "contains_table": True})
                             draw_header(c)
-                            MAX_FATIGUE_TABLE_ROWS = 50
+                            MAX_FATIGUE_TABLE_ROWS = 100
 
                             # ✅ Add title
                             c.setFont("Helvetica-Bold", 16)

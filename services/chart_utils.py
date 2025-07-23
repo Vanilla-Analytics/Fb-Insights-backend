@@ -57,30 +57,58 @@ def draw_donut_chart(values, labels, title):
     plt.tight_layout()
     return fig
 
+# def draw_roas_split_bar_chart(roas_series):
+#     fig, ax = plt.subplots(figsize=(7, 4))  # Optional: slightly wider chart
+#     bars = ax.barh(roas_series.index, roas_series.values, color="#007fff", height=0.4)
+
+#     ax.set_xlabel("ROAS")
+#     ax.set_title("ROAS Split by Adset")
+
+#     # Add value labels
+#     for bar in bars:
+#         width = bar.get_width()
+#         ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
+#                 f"{width:.2f}", va='center', fontsize=8)
+
+#     # 🔧 Make bars longer by increasing x-axis range
+#     max_val = roas_series.max()
+#     ax.set_xlim(0, max_val * 2)  # ← increases available space to stretch bars
+
+#     # Clean up axes
+#     ax.spines['top'].set_visible(False)
+#     ax.spines['right'].set_visible(False)
+
+#     plt.tight_layout()
+#     return fig
+
 def draw_roas_split_bar_chart(roas_series):
-    fig, ax = plt.subplots(figsize=(7, 4))  # Optional: slightly wider chart
-    bars = ax.barh(roas_series.index, roas_series.values, color="#007fff", height=0.4)
+    # Take top 7 instead of 5
+    roas_series = roas_series.sort_values(ascending=False).head(7)
 
-    ax.set_xlabel("ROAS")
-    ax.set_title("ROAS Split by Adset")
+    fig, ax = plt.subplots(figsize=(9, 5))  # wider chart
+    bars = ax.barh(
+        roas_series.index[::-1],
+        roas_series.values[::-1],
+        color="#448bd4",
+        edgecolor="grey",
+        height=0.5
+    )
 
-    # Add value labels
+    ax.set_xlabel("ROAS", fontsize=9, labelpad=6)
+    ax.set_title("ROAS Split by Adset", fontsize=10)
+    ax.tick_params(axis='both', labelsize=8)
+
+    # value labels
     for bar in bars:
         width = bar.get_width()
         ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
-                f"{width:.2f}", va='center', fontsize=8)
+                f"{width:.2f}", va='center', fontsize=8,
+                letterspacing=2)  # extra space between characters
 
-    # 🔧 Make bars longer by increasing x-axis range
-    max_val = roas_series.max()
-    ax.set_xlim(0, max_val * 2)  # ← increases available space to stretch bars
-
-    # Clean up axes
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-
     plt.tight_layout()
     return fig
-
 
 def generate_campaign_split_charts(df, currency_symbol=None):
     if currency_symbol is None:
@@ -105,8 +133,8 @@ def generate_campaign_split_charts(df, currency_symbol=None):
     roas_split = revenue_split / spend_split.replace(0, 1)
     roas_split = roas_split.dropna()
     # Get top campaigns (but ensure we have data)
-    top_spend = spend_split.head(8) if not spend_split.empty else pd.Series(dtype=float)
-    top_revenue = revenue_split.head(8) if not revenue_split.empty else pd.Series(dtype=float)
+    top_spend = spend_split.head(10) if not spend_split.empty else pd.Series(dtype=float)
+    top_revenue = revenue_split.head(10) if not revenue_split.empty else pd.Series(dtype=float)
     top_roas = roas_split.sort_values(ascending=False).head(10) if not roas_split.empty else pd.Series(dtype=float)
     figs = []
 
@@ -310,7 +338,7 @@ def generate_frequency_over_time_chart(df):
     pivot_df = df.pivot_table(index='date', columns='ad_name', values='frequency').fillna(0)
 
     fig, ax = plt.subplots(figsize=(15, 7), dpi=200)
-    for column in pivot_df.columns[:5]:
+    for column in pivot_df.columns[:8]:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5)
     ax.axhline(y=3, color='red', linestyle='--', linewidth=1, label="Fatigue Threshold (3)")
     ax.set_title("Frequency Over Time", fontsize=16, weight='bold')
@@ -328,7 +356,7 @@ def generate_cpm_over_time_chart(df):
     pivot_df = df.pivot_table(index='date', columns='ad_name', values='cpm').fillna(0)
 
     fig, ax = plt.subplots(figsize=(15, 7), dpi=200)
-    for column in pivot_df.columns[:5]:
+    for column in pivot_df.columns[:8]:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=1.5)
     ax.set_title("CPM Over Time", fontsize=16, weight='bold')
     ax.set_ylabel("CPM (₹)")
@@ -338,109 +366,13 @@ def generate_cpm_over_time_chart(df):
     fig.tight_layout()
     return ("CPM Over Time", generate_chart_image(fig))
 
-# def generate_cost_split_by_age_chart(df):
-#     if 'Age' not in df.columns or 'Amount Spent' not in df.columns:
-#         raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
-#     grouped = df.groupby('Age')['Amount Spent'].sum()
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
-#     ax.set_title("Cost Split By Age", fontsize=14)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
-# def generate_revenue_split_by_age_chart(df):
-#     if 'Age' not in df.columns or 'Purchases' not in df.columns:
-#         raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
-#     grouped = df.groupby('Age')['Purchases'].sum()
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
-#     ax.set_title("Revenue Split By Age", fontsize=14)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
-# def generate_cost_split_by_gender_chart(df):
-#     if 'Gender' not in df.columns or 'Amount Spent' not in df.columns:
-#         raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
-#     grouped = df.groupby('Gender')['Amount Spent'].sum()
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
-#     ax.set_title("Cost Split By Gender", fontsize=14)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
-# def generate_revenue_split_by_gender_chart(df):
-#     if 'Gender' not in df.columns or 'Purchases' not in df.columns:
-#         raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
-#     grouped = df.groupby('Gender')['Purchases'].sum()
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.4))
-#     ax.set_title("Revenue Split By Gender", fontsize=14)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
-# def generate_roas_split_by_age_chart(df):
-#     grouped = df.groupby('Age')['ROAS'].mean()
-#     fig, ax = plt.subplots(figsize=(6, 4))
-#     bars = ax.barh(grouped.index, grouped.values, color="#ff00aa")
-#     ax.set_title("ROAS Split By Age", fontsize=14)
-#     ax.set_xlabel("ROAS")
-#     for bar in bars:
-#         width = bar.get_width()
-#         ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2, f"{width:.2f}", va='center', fontsize=8)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
-# def generate_roas_split_by_gender_chart(df):
-#     grouped = df.groupby('Gender')['ROAS'].mean()
-#     fig, ax = plt.subplots(figsize=(6, 4))
-#     bars = ax.barh(grouped.index, grouped.values, color="#ff00aa")
-#     ax.set_title("ROAS Split By Gender", fontsize=14)
-#     ax.set_xlabel("ROAS")
-#     for bar in bars:
-#         width = bar.get_width()
-#         ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2, f"{width:.2f}", va='center', fontsize=8)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
+
 
 from io import BytesIO
 import matplotlib.pyplot as plt
 
 # Pie chart colors
 PIE_COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#00BCD4']
-
-# def generate_cost_split_by_age_chart(df):
-#     if 'Age' not in df.columns or 'Amount Spent' not in df.columns:
-#         raise ValueError("Required columns 'Age' and 'Amount Spent' not found")
-#     grouped = df.groupby('Age')['Amount Spent'].sum()
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.pie(grouped, labels=grouped.index, autopct='%1.1f%%', startangle=90,
-#            wedgeprops=dict(width=0.4), colors=PIE_COLORS)
-#     ax.set_title("Cost Split By Age", fontsize=14)
-#     plt.tight_layout()
-#     buf = BytesIO()
-#     fig.savefig(buf, format='png', dpi=200)
-#     buf.seek(0)
-#     plt.close(fig)
-#     return buf
 
 def generate_cost_split_by_age_chart(df):
     # Ensure column name consistency
@@ -636,6 +568,32 @@ def generate_platform_split_charts(df):
 
     return charts
 
+# def generate_platform_roas_chart(df):
+#     df = df.copy()
+#     df['platform'] = df['platform'].fillna("Uncategorized")
+#     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+#     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+
+#     platform_data = df.groupby('platform').agg({'spend': 'sum', 'purchase_value': 'sum'})
+    
+#     # Filter out entries where spend is zero to avoid division by zero and NaN in ROAS
+#     platform_data = platform_data[platform_data['spend'] > 0]
+    
+#     platform_data['roas'] = platform_data['purchase_value'] / platform_data['spend'].replace(0, 1)
+#     platform_data = platform_data.sort_values(by='spend', ascending=False).head(5)
+
+#     if platform_data.empty or platform_data['roas'].sum() <= 0:
+#         return create_empty_chart_image("No ROAS Data for Platforms")
+
+#     fig, ax = plt.subplots(figsize=(10, 4), dpi=200)
+#     ax.barh(platform_data.index, platform_data['roas'], color='#1f77b4')
+#     ax.set_title("ROAS by Platform")
+#     ax.set_xlabel("ROAS")
+#     ax.grid(axis='x', linestyle='--', alpha=0.5)
+#     fig.tight_layout()
+
+#     return generate_chart_image(fig)
+
 def generate_platform_roas_chart(df):
     df = df.copy()
     df['platform'] = df['platform'].fillna("Uncategorized")
@@ -643,48 +601,29 @@ def generate_platform_roas_chart(df):
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
     platform_data = df.groupby('platform').agg({'spend': 'sum', 'purchase_value': 'sum'})
-    
-    # Filter out entries where spend is zero to avoid division by zero and NaN in ROAS
     platform_data = platform_data[platform_data['spend'] > 0]
-    
-    platform_data['roas'] = platform_data['purchase_value'] / platform_data['spend'].replace(0, 1)
-    platform_data = platform_data.sort_values(by='spend', ascending=False).head(5)
+    platform_data['roas'] = platform_data['purchase_value'] / platform_data['spend']
+    platform_data = platform_data.sort_values(by='spend', ascending=False).head(7)
 
-    if platform_data.empty or platform_data['roas'].sum() <= 0:
+    if platform_data.empty:
         return create_empty_chart_image("No ROAS Data for Platforms")
 
-    fig, ax = plt.subplots(figsize=(10, 4), dpi=200)
-    ax.barh(platform_data.index, platform_data['roas'], color='#1f77b4')
-    ax.set_title("ROAS by Platform")
-    ax.set_xlabel("ROAS")
+    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+    bars = ax.barh(platform_data.index[::-1], platform_data['roas'][::-1],
+                   color="#448bd4", edgecolor="grey", height=0.5)
+
+    ax.set_title("ROAS by Platform", fontsize=10)
+    ax.set_xlabel("ROAS", fontsize=9)
+    ax.tick_params(axis='both', labelsize=8)
+
+    for bar in bars:
+        width = bar.get_width()
+        ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
+                f"{width:.2f}", va='center', fontsize=8, letterspacing=2)
+
     ax.grid(axis='x', linestyle='--', alpha=0.5)
     fig.tight_layout()
-
     return generate_chart_image(fig)
-
-#def generate_platform_cost_line_chart(df):
-    # df = df.copy()
-    # df['date'] = pd.to_datetime(df['date'])
-    # df['platform'] = df['platform'].fillna("Uncategorized")
-    # df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
-
-    # grouped = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5).index
-    # df = df[df['platform'].isin(grouped)]
-
-    # fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-    # for column in df.columns:
-    #     ax.plot(df.index, df[column], label=column, linewidth=2)
-
-    # ax.set_title("Cost by Platform Over Time", fontsize=14)
-    # ax.set_ylabel("Amount Spent")
-    # ax.set_xlabel("Date")
-    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    # ax.tick_params(axis='x', rotation=45)
-    # ax.grid(True, linestyle='--', alpha=0.3)
-    # ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
-
-    # fig.tight_layout()
-    # return ("Cost by Platform", generate_chart_image(fig))
     
 def generate_platform_cost_line_chart(df):
     df = df.copy()
@@ -748,26 +687,4 @@ def generate_platform_revenue_line_chart(df):
     fig.tight_layout()
     return generate_chart_image(fig)
 
-# def generate_platform_revenue_line_chart(df):
-#     df = df.copy()
-#     df['date'] = pd.to_datetime(df['date'])
-#     df['platform'] = df['platform'].fillna("Uncategorized")
-#     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
-#     grouped = df.groupby(['platform', 'date'])['purchase_value'].sum().reset_index()
-#     pivot_df = grouped.pivot(index='date', columns='platform', values='purchase_value').fillna(0)
-
-#     fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
-#     for column in pivot_df.columns:
-#         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
-
-#     ax.set_title("Revenue by Platform Over Time", fontsize=14)
-#     ax.set_ylabel("Revenue")
-#     ax.set_xlabel("Date")
-#     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-#     ax.tick_params(axis='x', rotation=45)
-#     ax.grid(True, linestyle='--', alpha=0.3)
-#     ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
-
-#     fig.tight_layout()
-#     return ("Revenue by Platform", generate_chart_image(fig))
