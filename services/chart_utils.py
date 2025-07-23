@@ -101,9 +101,11 @@ def draw_roas_split_bar_chart(roas_series):
     # value labels
     for bar in bars:
         width = bar.get_width()
+        # Add spacing manually to text instead of letterspacing
+        value_label = " ".join(list(f"{width:.2f}"))
         ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
-                f"{width:.2f}", va='center', fontsize=8,
-                letterspacing=2)  # extra space between characters
+                value_label, va='center', fontsize=8)
+ 
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -660,8 +662,11 @@ def generate_platform_roas_chart(df):
 
     for bar in bars:
         width = bar.get_width()
+        # Add spacing manually to text instead of letterspacing
+        value_label = " ".join(list(f"{width:.2f}"))
         ax.text(width + 0.05, bar.get_y() + bar.get_height() / 2,
-                f"{width:.2f}", va='center', fontsize=8, letterspacing=2)
+                value_label, va='center', fontsize=8)
+
 
     ax.grid(axis='x', linestyle='--', alpha=0.5)
     fig.tight_layout()
