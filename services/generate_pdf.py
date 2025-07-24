@@ -307,7 +307,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
-                    c.setPageSize((PAGE_WIDTH, 700))
+                    c.setPageSize((PAGE_WIDTH, 600))
                     # if i < len(sections) - 1:
                     #     next_section = sections[i + 1]
                     #     adjust_page_height(c, next_section)
@@ -1277,7 +1277,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 16)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
+                            #c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1373,8 +1373,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                                 # Chart layout configs
-                                chart_width = 300
-                                chart_height = 250
+                                chart_width = 330
+                                chart_height = 330
                                 chart_padding_x = 50
                                 chart_padding_y = 30
                                 # Before generating charts, ensure data is properly formatted
@@ -1391,7 +1391,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 chart_df = chart_df[(chart_df['amount_spent'] > 0) & (chart_df['purchases'] >= 0) &(chart_df['roas'] >= 0)]
                                 
                                 # Calculate starting position with more space
-                                current_y_pos = table_y_start - table_height - 40  # Start charts 40 units below table
+                                current_y_pos = table_y_start - table_height - 100  # Start charts 40 units below table
 
                                 # 🎯 Row 1: Cost + Revenue by Age
                                 try:

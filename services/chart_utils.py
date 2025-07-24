@@ -453,8 +453,8 @@ def generate_cost_split_by_age_chart(df):
         grouped,
         startangle=90,
         wedgeprops=dict(width=0.4, edgecolor="white"),  # border
-        colors=PIE_COLORS,
-        autopct='%1.1f%%'
+        colors=PIE_COLORS
+        #autopct='%1.1f%%'
     )
 
     # Legend with label + percentage
@@ -537,8 +537,8 @@ def generate_revenue_split_by_age_chart(df):
         grouped,
         startangle=90,
         wedgeprops=dict(width=0.4, edgecolor="white"),
-        colors=PIE_COLORS,
-        autopct='%1.1f%%'
+        colors=PIE_COLORS
+        #autopct='%1.1f%%'
     )
 
     percentages = 100 * grouped / grouped.sum()
@@ -575,8 +575,8 @@ def generate_cost_split_by_gender_chart(df):
         grouped,
         startangle=90,
         wedgeprops=dict(width=0.4, edgecolor="white"),
-        colors=PIE_COLORS,
-        autopct='%1.1f%%'
+        colors=PIE_COLORS
+        #autopct='%1.1f%%'
     )
 
     percentages = 100 * grouped / grouped.sum()
@@ -613,8 +613,8 @@ def generate_revenue_split_by_gender_chart(df):
         grouped,
         startangle=90,
         wedgeprops=dict(width=0.4, edgecolor="white"),
-        colors=PIE_COLORS,
-        autopct='%1.1f%%'
+        colors=PIE_COLORS
+        #autopct='%1.1f%%'
     )
 
     percentages = 100 * grouped / grouped.sum()
