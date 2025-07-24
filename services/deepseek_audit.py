@@ -120,7 +120,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     for ax in [ax1, ax2]:
         for spine in ax.spines.values():
             spine.set_linewidth(0.5)
-    fig1.patch.set_boxstyle("round,pad=0.3")
+    #fig1.patch.set_boxstyle("round,pad=0.3")
     plt.tight_layout()
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
 
