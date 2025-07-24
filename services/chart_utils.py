@@ -791,7 +791,7 @@ def generate_platform_cost_line_chart(df):
     if pivot_df.empty or pivot_df.sum().sum() <= 0: # Check if pivot_df is empty or all zeros
         return create_empty_chart_image("No Cost Trend Data for Platforms")
 
-    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    fig, ax = plt.subplots(figsize=(17, 8), dpi=200)
     for column in pivot_df.columns:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
@@ -822,7 +822,7 @@ def generate_platform_revenue_line_chart(df):
     if pivot_df.empty or pivot_df.sum().sum() <= 0: # Check if pivot_df is empty or all zeros
         return create_empty_chart_image("No Revenue Trend Data for Platforms")
 
-    fig, ax = plt.subplots(figsize=(15, 6), dpi=200)
+    fig, ax = plt.subplots(figsize=(18, 8), dpi=200)
     for column in pivot_df.columns:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
