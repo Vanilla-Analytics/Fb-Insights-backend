@@ -118,9 +118,9 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 3750 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4400 
+        PAGE_HEIGHT = 5000 
     elif title == "DEMOGRAPHIC PERFORMANCE":
-        PAGE_HEIGHT = 2000   
+        PAGE_HEIGHT = 1800   
     elif title == "PLATFORM LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2000 
     else:
@@ -1198,7 +1198,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # Prepare ROAS series for Ad Fatigue
                             ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2200
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2800
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1776,7 +1776,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                         ])
 
-                    performance_table = Table(table_data, repeatRows=1, colWidths=[160, 120, 120, 100, 80, 80])
+                    performance_table = Table(table_data, repeatRows=1, colWidths=[200, 120, 120, 100, 90, 90])
                     performance_table.setStyle(TableStyle([
                         ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                         ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
