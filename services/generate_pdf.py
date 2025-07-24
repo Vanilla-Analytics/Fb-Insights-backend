@@ -118,7 +118,7 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 3750 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4200 
+        PAGE_HEIGHT = 4400 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 2000   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -307,6 +307,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
+                    draw_header(c)
                     c.setPageSize((PAGE_WIDTH, 600))
                     # if i < len(sections) - 1:
                     #     next_section = sections[i + 1]
@@ -316,9 +317,6 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # next_section = sections[i + 1]
                     # adjust_page_height(c, next_section)
-
-                    draw_header(c)
-                    
 
                     c.setFont("Helvetica-Bold", 20)
                     c.drawString(LEFT_MARGIN, PAGE_HEIGHT - TOP_MARGIN - 30, "Last 30 Days Trend Section")
@@ -348,7 +346,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             chart_title = charts[0][0]
                             c.setFont("Helvetica-Bold", 16)
                             title_y = PAGE_HEIGHT - TOP_MARGIN - 60
-                            c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
+                            #c.drawCentredString(PAGE_WIDTH / 2, title_y, chart_title)
 
                             chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                             chart_height = 350
@@ -386,9 +384,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ]
 
                         chart_y = PAGE_HEIGHT - TOP_MARGIN - 80
-                        chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                        chart_height = 330
-                        chart_spacing = 110  # space between charts
+                        #chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
+                        chart_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+                        chart_height = 350
+                        chart_spacing = 120  # space between charts
 
                         for idx, (title, chart_buf) in enumerate(charts[1:4]):
                             
@@ -1199,7 +1198,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # Prepare ROAS series for Ad Fatigue
                             ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1900
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1510,7 +1509,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                 c.setFont("Helvetica-Bold", 16)
                 c.setFillColor(colors.black)
-                #c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
+                c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
 
                 # ✅ Check for valid demographic data *before* attempting to process it
                 if demographic_df is not None and not demographic_df.empty and \

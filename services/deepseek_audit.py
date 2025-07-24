@@ -106,8 +106,8 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     for spine in ax1.spines.values(): spine.set_visible(False)
     for spine in ax2.spines.values(): spine.set_visible(False)
 
-    ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False)
-    ax2.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False)
+    ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
+    ax2.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
     ax1.grid(True, linestyle='--', alpha=0.3)
 
     fig1.patch.set_facecolor('white')
@@ -140,8 +140,8 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     for spine in ax3.spines.values(): spine.set_visible(False)
     for spine in ax4.spines.values(): spine.set_visible(False)
 
-    ax3.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False)
-    ax4.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False)
+    ax3.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
+    ax4.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
     ax3.grid(True, linestyle='--', alpha=0.3)
 
     fig2.patch.set_facecolor('white')
@@ -155,7 +155,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     # Chart 3: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
     fig3, ax5 = plt.subplots(figsize=(18, 8))
-    bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.6, color="#0000ff", label="Click to Conversion")
+    bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.8, color="#0000ff", label="Click to Conversion")
     ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=16)
     ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=14)
     ax6 = ax5.twinx()
@@ -170,8 +170,8 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     for spine in ax5.spines.values(): spine.set_visible(False)
     for spine in ax6.spines.values(): spine.set_visible(False)
 
-    ax5.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False)
-    ax6.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False)
+    ax5.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
+    ax6.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
     ax5.grid(True, linestyle='--', alpha=0.3)
 
     for bar in bars:
