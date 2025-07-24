@@ -118,7 +118,7 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 3850 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 3800 
+        PAGE_HEIGHT = 4600 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 2000   
     elif title == "PLATFORM LEVEL PERFORMANCE":
