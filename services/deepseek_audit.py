@@ -13,6 +13,7 @@ import matplotlib.dates as mdates
 from io import BytesIO
 import base64
 import matplotlib.ticker as mticker
+import matplotlib.patheffects as path_effects
 import pprint # For pretty printing
 from services.prompts import EXECUTIVE_SUMMARY_PROMPT, ACCOUNT_NAMING_STRUCTURE_PROMPT, TESTING_ACTIVITY_PROMPT, REMARKETING_ACTIVITY_PROMPT, RESULTS_SETUP_PROMPT
 
@@ -91,16 +92,16 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     purchases_df = ad_insights_df.sort_values("date")[-30:]
     fig1, ax1 = plt.subplots(figsize=(15, 6))
     ax1.bar(purchases_df["date"], purchases_df["purchases"], width=0.9, color="#0d0c42", label="Purchases")
-    ax1.set_ylabel("Purchases", color="#0d0c42")
-    ax1.tick_params(axis='y', labelcolor="#0d0c42")
+    ax1.set_ylabel("Purchases", color="#0d0c42", fontsize=12)
+    ax1.tick_params(axis='y', labelcolor="#0d0c42", labelsize=10)
     ax2 = ax1.twinx()
     ax2.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
-    ax2.set_ylabel("ROAS", color="#ff00aa")
-    ax2.tick_params(axis='y', labelcolor="#ff00aa")
+    ax2.set_ylabel("ROAS", color="#ff00aa", fontsize=12)
+    ax2.tick_params(axis='y', labelcolor="#ff00aa", labelsize=10)
 
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, fontsize=10)
 
     for spine in ax1.spines.values(): spine.set_visible(False)
     for spine in ax2.spines.values(): spine.set_visible(False)
@@ -111,9 +112,15 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     fig1.patch.set_facecolor('white')
     fig1.patch.set_alpha(1)
-    fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+    fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
     fig1.patch.set_linewidth(0)
     fig1.patch.set_edgecolor('none')
+
+    # Add shadow effect
+    for ax in [ax1, ax2]:
+        for spine in ax.spines.values():
+            spine.set_linewidth(0.5)
+    fig1.patch.set_boxstyle("round,pad=0.3")
     plt.tight_layout()
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
 
@@ -121,16 +128,16 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     cpa_df = ad_insights_df.sort_values("date")[-30:]
     fig2, ax3 = plt.subplots(figsize=(15, 6))
     ax3.plot(cpa_df["date"], cpa_df["cpa"], color="#2079b5", linewidth=2, marker='o', label="CPA")
-    ax3.set_ylabel("CPA", color="#2079b5")
-    ax3.tick_params(axis='y', labelcolor="#2079b5")
+    ax3.set_ylabel("CPA", color="#2079b5", fontsize=12)
+    ax3.tick_params(axis='y', labelcolor="#2079b5", labelsize=10)
     ax4 = ax3.twinx()
     ax4.plot(cpa_df["date"], cpa_df["cpc"], color="#b3e08b", linewidth=2, marker='o', label="Link CPC")
-    ax4.set_ylabel("Link CPC", color="#b3e08b")
-    ax4.tick_params(axis='y', labelcolor="#b3e08b")
+    ax4.set_ylabel("Link CPC", color="#b3e08b", fontsize=12)
+    ax4.tick_params(axis='y', labelcolor="#b3e08b", labelsize=10)
 
     ax3.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, fontsize=10)
 
     for spine in ax3.spines.values(): spine.set_visible(False)
     for spine in ax4.spines.values(): spine.set_visible(False)
@@ -141,7 +148,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     fig2.patch.set_facecolor('white')
     fig2.patch.set_alpha(1)
-    fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+    fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
     fig2.patch.set_linewidth(0)
     fig2.patch.set_edgecolor('none')
     plt.tight_layout()
@@ -150,17 +157,17 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     # Chart 3: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
     fig3, ax5 = plt.subplots(figsize=(15, 6))
-    ax5.bar(click_df["date"], click_df["click_to_conversion"], width=1.0, color="#0000ff", label="Click to Conversion")
-    ax5.set_ylabel("Click to Conversion", color="#0000ff")
-    ax5.tick_params(axis='y', labelcolor="#0000ff")
+    bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.6, color="#0000ff", label="Click to Conversion")
+    ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=12)
+    ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=10)
     ax6 = ax5.twinx()
     ax6.plot(click_df["date"], click_df["ctr"], color="#f8a83c", marker="o", label="CTR")
-    ax6.set_ylabel("CTR", color="#f8a83c")
-    ax6.tick_params(axis='y', labelcolor="#f8a83c")
+    ax6.set_ylabel("CTR", color="#f8a83c", fontsize=12)
+    ax6.tick_params(axis='y', labelcolor="#f8a83c", labelsize=10)
 
     ax5.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, fontsize=10)
 
     for spine in ax5.spines.values(): spine.set_visible(False)
     for spine in ax6.spines.values(): spine.set_visible(False)
@@ -169,9 +176,16 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax6.legend(loc='upper center')
     ax5.grid(True, linestyle='--', alpha=0.3)
 
+    for bar in bars:
+        bar.set_linewidth(0)
+        bar.set_path_effects([
+            path_effects.SimplePatchShadow(offset=(2, -2), alpha=0.2),
+            path_effects.Normal()
+        ])
+
     fig3.patch.set_facecolor('white')
     fig3.patch.set_alpha(1)
-    fig3.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+    fig3.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.25)
     fig3.patch.set_linewidth(0)
     fig3.patch.set_edgecolor('none')
     plt.tight_layout()
@@ -196,7 +210,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 #     if ad_insights_df.empty or len(ad_insights_df) < 2:
 #         print("⚠️ Not enough data to generate charts.")
 #         return "No data available for Key Metrics.", []
-    
+
 #     total_spend = ad_insights_df['spend'].sum()
 #     total_purchases = ad_insights_df['purchases'].sum()
 #     total_purchase_value = ad_insights_df['purchase_value'].sum()
@@ -216,67 +230,104 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 #         "Link CPC": f"{currency_symbol}{round(total_spend / total_clicks, 2) if total_clicks > 0 else 0:.2f}",
 #         "CTR (link)": f"{round((total_clicks / total_impressions), 4) if total_impressions > 0 else 0:.2%}"
 #     }
+
 #     summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
 #     chart_imgs = []
-#     fig1 = generate_chart_1(ad_insights_df)
-#     chart_imgs.append(("# ", generate_chart_image(fig1)))
+
+#     # Chart 0: Purchases vs Amount Spent
+#     fig0 = generate_chart_1(ad_insights_df)
+#     chart_imgs.append(("Purchases vs Amount Spent", generate_chart_image(fig0)))
+
+#     # Chart 1: Purchases vs ROAS
 #     purchases_df = ad_insights_df.sort_values("date")[-30:]
-#     fig2, ax3 = plt.subplots(figsize=(13, 5))
-#     bar_width = 0.8
-#     ax3.bar(purchases_df["date"], purchases_df["purchases"], width=bar_width, color="#0d0c42", label="Purchases")
-#     ax3.set_ylabel("Purchases", color="#0d0c42")
-#     ax3.tick_params(axis='y', labelcolor="#0d0c42")
-#     ax3.set_ylim(0, purchases_df["purchases"].max() * 1.2)
+#     fig1, ax1 = plt.subplots(figsize=(15, 6))
+#     ax1.bar(purchases_df["date"], purchases_df["purchases"], width=0.9, color="#0d0c42", label="Purchases")
+#     ax1.set_ylabel("Purchases", color="#0d0c42")
+#     ax1.tick_params(axis='y', labelcolor="#0d0c42")
+#     ax2 = ax1.twinx()
+#     ax2.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
+#     ax2.set_ylabel("ROAS", color="#ff00aa")
+#     ax2.tick_params(axis='y', labelcolor="#ff00aa")
+
+#     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+#     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+#     plt.xticks(rotation=45)
+
+#     for spine in ax1.spines.values(): spine.set_visible(False)
+#     for spine in ax2.spines.values(): spine.set_visible(False)
+
+#     ax1.legend(loc='upper center')
+#     ax2.legend(loc='upper center')
+#     ax1.grid(True, linestyle='--', alpha=0.3)
+
+#     fig1.patch.set_facecolor('white')
+#     fig1.patch.set_alpha(1)
+#     fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+#     fig1.patch.set_linewidth(0)
+#     fig1.patch.set_edgecolor('none')
+#     plt.tight_layout()
+#     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
+
+#     # Chart 2: CPA vs Link CPC (Line Chart)
+#     cpa_df = ad_insights_df.sort_values("date")[-30:]
+#     fig2, ax3 = plt.subplots(figsize=(15, 6))
+#     ax3.plot(cpa_df["date"], cpa_df["cpa"], color="#2079b5", linewidth=2, marker='o', label="CPA")
+#     ax3.set_ylabel("CPA", color="#2079b5")
+#     ax3.tick_params(axis='y', labelcolor="#2079b5")
+#     ax4 = ax3.twinx()
+#     ax4.plot(cpa_df["date"], cpa_df["cpc"], color="#b3e08b", linewidth=2, marker='o', label="Link CPC")
+#     ax4.set_ylabel("Link CPC", color="#b3e08b")
+#     ax4.tick_params(axis='y', labelcolor="#b3e08b")
+
 #     ax3.xaxis.set_major_locator(mdates.DayLocator(interval=2))
 #     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
 #     plt.xticks(rotation=45)
-#     ax4 = ax3.twinx()
-#     ax4.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
-#     ax4.set_ylabel("ROAS", color="#ff00aa")
-#     ax4.tick_params(axis='y', labelcolor="#ff00aa")
-#     ax4.set_ylim(0, purchases_df["roas"].max() * 1.2)
-#     ax3.grid(True, axis='y', linestyle='--', alpha=0.3)
-#     plt.title("Purchases vs ROAS", fontsize=14)
+
+#     for spine in ax3.spines.values(): spine.set_visible(False)
+#     for spine in ax4.spines.values(): spine.set_visible(False)
+
+#     ax3.legend(loc='upper center')
+#     ax4.legend(loc='upper center')
+#     ax3.grid(True, linestyle='--', alpha=0.3)
+
+#     fig2.patch.set_facecolor('white')
+#     fig2.patch.set_alpha(1)
+#     fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+#     fig2.patch.set_linewidth(0)
+#     fig2.patch.set_edgecolor('none')
 #     plt.tight_layout()
-#     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig2)))
-#     cpa_df = ad_insights_df.sort_values("date")[-30:]
-#     fig3, ax5 = plt.subplots(figsize=(13, 5))
-#     bar_width = 0.8
-#     ax5.bar(cpa_df["date"], cpa_df["cpa"], width=bar_width, color="blue", label="CPA")
-#     ax5.set_ylabel("CPA", color="blue")
-#     ax5.tick_params(axis='y', labelcolor="blue")
-#     ax5.set_ylim(0, cpa_df["cpa"].max() * 1.2)
+#     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig2)))
+
+#     # Chart 3: Click to Conversion vs CTR
+#     click_df = ad_insights_df.sort_values("date")[-30:]
+#     fig3, ax5 = plt.subplots(figsize=(15, 6))
+#     ax5.bar(click_df["date"], click_df["click_to_conversion"], width=1.0, color="#0000ff", label="Click to Conversion")
+#     ax5.set_ylabel("Click to Conversion", color="#0000ff")
+#     ax5.tick_params(axis='y', labelcolor="#0000ff")
+#     ax6 = ax5.twinx()
+#     ax6.plot(click_df["date"], click_df["ctr"], color="#f8a83c", marker="o", label="CTR")
+#     ax6.set_ylabel("CTR", color="#f8a83c")
+#     ax6.tick_params(axis='y', labelcolor="#f8a83c")
+
 #     ax5.xaxis.set_major_locator(mdates.DayLocator(interval=2))
 #     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
 #     plt.xticks(rotation=45)
-#     ax6 = ax5.twinx()
-#     ax6.plot(cpa_df["date"], cpa_df["cpc"], color="pink", marker="o", label="Link CPC")
-#     ax6.set_ylabel("Link CPC", color="pink")
-#     ax6.tick_params(axis='y', labelcolor="pink")
-#     ax6.set_ylim(0, cpa_df["cpc"].max() * 1.2)
-#     ax5.grid(True, axis='y', linestyle='--', alpha=0.3)
-#     plt.title("CPA vs Link CPC", fontsize=14)
+
+#     for spine in ax5.spines.values(): spine.set_visible(False)
+#     for spine in ax6.spines.values(): spine.set_visible(False)
+
+#     ax5.legend(loc='upper center')
+#     ax6.legend(loc='upper center')
+#     ax5.grid(True, linestyle='--', alpha=0.3)
+
+#     fig3.patch.set_facecolor('white')
+#     fig3.patch.set_alpha(1)
+#     fig3.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+#     fig3.patch.set_linewidth(0)
+#     fig3.patch.set_edgecolor('none')
 #     plt.tight_layout()
-#     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig3)))
-#     click_df = ad_insights_df.sort_values("date")[-30:]
-#     fig4, ax7 = plt.subplots(figsize=(13, 5))
-#     bar_width = 0.8
-#     ax7.bar(click_df["date"], click_df["click_to_conversion"], width=bar_width, color="pink", label="Click to Conversion")
-#     ax7.set_ylabel("Click to Conversion", color="pink")
-#     ax7.tick_params(axis='y', labelcolor="pink")
-#     ax7.set_ylim(0, click_df["click_to_conversion"].max() * 1.2)
-#     ax7.xaxis.set_major_locator(mdates.DayLocator(interval=2))
-#     ax7.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-#     plt.xticks(rotation=45)
-#     ax8 = ax7.twinx()
-#     ax8.plot(click_df["date"], click_df["ctr"], color="darkblue", marker="o", label="CTR")
-#     ax8.set_ylabel("CTR", color="darkblue")
-#     ax8.tick_params(axis='y', labelcolor="darkblue")
-#     ax8.set_ylim(0, click_df["ctr"].max() * 1.2)
-#     ax7.grid(True, axis='y', linestyle='--', alpha=0.3)
-#     plt.title("Click to Conversion vs CTR", fontsize=14)
-#     plt.tight_layout()
-#     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig4)))
+#     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig3)))
+
 #     table_html = ad_insights_df.to_html(index=False, border=0)
 #     content = f"""
 #     **Key Metrics**
@@ -290,6 +341,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 #         "content": content,
 #         "charts": chart_imgs
 #     }
+
 
 async def generate_ad_fatigue_summary(full_df: pd.DataFrame, currency_symbol: str) -> str:
     from services.deepseek_audit import generate_llm_content
