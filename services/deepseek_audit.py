@@ -56,7 +56,6 @@ def generate_chart_image(fig):
     return buf
 
 def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
-   
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
         return "No data available for Key Metrics.", []
@@ -84,6 +83,10 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
     chart_imgs = []
 
+    # Chart 0: Purchases vs Amount Spent
+    fig0 = generate_chart_1(ad_insights_df)
+    chart_imgs.append(("Purchases vs Amount Spent", generate_chart_image(fig0)))
+
     # Chart 1: Purchases vs ROAS
     purchases_df = ad_insights_df.sort_values("date")[-30:]
     fig1, ax1 = plt.subplots(figsize=(15, 6))
@@ -99,14 +102,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45)
 
-    fig1.patch.set_edgecolor('grey')
-    fig1.patch.set_linewidth(2)
-    for spine in ax1.spines.values(): spine.set_edgecolor('grey')
-    for spine in ax2.spines.values(): spine.set_edgecolor('grey')
+    for spine in ax1.spines.values(): spine.set_visible(False)
+    for spine in ax2.spines.values(): spine.set_visible(False)
 
     ax1.legend(loc='upper center')
     ax2.legend(loc='upper center')
     ax1.grid(True, linestyle='--', alpha=0.3)
+
+    fig1.patch.set_facecolor('white')
+    fig1.patch.set_alpha(1)
+    fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+    fig1.patch.set_linewidth(0)
+    fig1.patch.set_edgecolor('none')
     plt.tight_layout()
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
 
@@ -125,14 +132,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45)
 
-    fig2.patch.set_edgecolor('grey')
-    fig2.patch.set_linewidth(2)
-    for spine in ax3.spines.values(): spine.set_edgecolor('grey')
-    for spine in ax4.spines.values(): spine.set_edgecolor('grey')
+    for spine in ax3.spines.values(): spine.set_visible(False)
+    for spine in ax4.spines.values(): spine.set_visible(False)
 
     ax3.legend(loc='upper center')
     ax4.legend(loc='upper center')
     ax3.grid(True, linestyle='--', alpha=0.3)
+
+    fig2.patch.set_facecolor('white')
+    fig2.patch.set_alpha(1)
+    fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+    fig2.patch.set_linewidth(0)
+    fig2.patch.set_edgecolor('none')
     plt.tight_layout()
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig2)))
 
@@ -151,14 +162,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45)
 
-    fig3.patch.set_edgecolor('grey')
-    fig3.patch.set_linewidth(2)
-    for spine in ax5.spines.values(): spine.set_edgecolor('grey')
-    for spine in ax6.spines.values(): spine.set_edgecolor('grey')
+    for spine in ax5.spines.values(): spine.set_visible(False)
+    for spine in ax6.spines.values(): spine.set_visible(False)
 
     ax5.legend(loc='upper center')
     ax6.legend(loc='upper center')
     ax5.grid(True, linestyle='--', alpha=0.3)
+
+    fig3.patch.set_facecolor('white')
+    fig3.patch.set_alpha(1)
+    fig3.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)
+    fig3.patch.set_linewidth(0)
+    fig3.patch.set_edgecolor('none')
     plt.tight_layout()
     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig3)))
 
