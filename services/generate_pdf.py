@@ -387,7 +387,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         #chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                         chart_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
                         chart_height = 350
-                        chart_spacing = 120  # space between charts
+                        chart_spacing = 130  # space between charts
 
                         for idx, (title, chart_buf) in enumerate(charts[1:4]):
                             
@@ -1198,7 +1198,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # Prepare ROAS series for Ad Fatigue
                             ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1600
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 300
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 

@@ -38,13 +38,13 @@ def generate_chart_1(ad_insights_df):
         ad_insights_df["date"], ad_insights_df["spend"],
         color="magenta", marker="o", label="Amount Spent", linewidth=2.5, zorder=3
     )
-    ax1.set_ylabel("Purchases", color="#4CAF50", fontsize=12)
-    ax2.set_ylabel("Amount Spent", color="magenta", fontsize=12)
-    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=10)
+    ax1.set_ylabel("Purchases", color="#4CAF50", fontsize=16)
+    ax2.set_ylabel("Amount Spent", color="magenta", fontsize=16)
+    ax1.tick_params(axis='y', labelcolor="#4CAF50", labelsize=14)
     ax2.tick_params(axis='y', labelcolor="magenta", labelsize=10)
     ax1.set_xticks(ad_insights_df["date"])
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    ax1.tick_params(axis='x', rotation=45, labelsize=10)
+    ax1.tick_params(axis='x', rotation=45, labelsize=14)
     ax1.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
     return fig
 
