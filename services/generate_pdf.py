@@ -112,7 +112,7 @@ def adjust_page_height(c, section: dict):
     elif title == "CAMPAIGN PERFORMANCE SUMMARY":
         PAGE_HEIGHT = 2300
     elif title == "3 CHARTS SECTION":
-        PAGE_HEIGHT = 1400
+        PAGE_HEIGHT = 1800
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
@@ -385,7 +385,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             "Click to Conversion vs CTR"
                         ]
 
-                        chart_y = PAGE_HEIGHT - TOP_MARGIN - 60
+                        chart_y = PAGE_HEIGHT - TOP_MARGIN - 80
                         chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
                         chart_height = 300
                         chart_spacing = 70  # space between charts

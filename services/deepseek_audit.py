@@ -56,6 +56,7 @@ def generate_chart_image(fig):
     return buf
 
 def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
+   
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
         return "No data available for Key Metrics.", []
