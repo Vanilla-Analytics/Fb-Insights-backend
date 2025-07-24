@@ -116,9 +116,9 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 3850 
+        PAGE_HEIGHT = 3750 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4600 
+        PAGE_HEIGHT = 4200 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 2000   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -387,8 +387,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         chart_y = PAGE_HEIGHT - TOP_MARGIN - 80
                         chart_width = PAGE_WIDTH - 1.5 * LEFT_MARGIN
-                        chart_height = 300
-                        chart_spacing = 70  # space between charts
+                        chart_height = 330
+                        chart_spacing = 110  # space between charts
 
                         for idx, (title, chart_buf) in enumerate(charts[1:4]):
                             

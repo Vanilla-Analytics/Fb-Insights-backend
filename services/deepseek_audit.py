@@ -90,18 +90,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     # Chart 1: Purchases vs ROAS
     purchases_df = ad_insights_df.sort_values("date")[-30:]
-    fig1, ax1 = plt.subplots(figsize=(18, 7))
+    fig1, ax1 = plt.subplots(figsize=(18, 8))
     ax1.bar(purchases_df["date"], purchases_df["purchases"], width=0.9, color="#0d0c42", label="Purchases")
-    ax1.set_ylabel("Purchases", color="#0d0c42", fontsize=14)
-    ax1.tick_params(axis='y', labelcolor="#0d0c42", labelsize=12)
+    ax1.set_ylabel("Purchases", color="#0d0c42", fontsize=16)
+    ax1.tick_params(axis='y', labelcolor="#0d0c42", labelsize=14)
     ax2 = ax1.twinx()
     ax2.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
-    ax2.set_ylabel("ROAS", color="#ff00aa", fontsize=14)
-    ax2.tick_params(axis='y', labelcolor="#ff00aa", labelsize=12)
+    ax2.set_ylabel("ROAS", color="#ff00aa", fontsize=16)
+    ax2.tick_params(axis='y', labelcolor="#ff00aa", labelsize=14)
 
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    plt.xticks(rotation=45, fontsize=12)
+    plt.xticks(rotation=45, fontsize=14)
 
     for spine in ax1.spines.values(): spine.set_visible(False)
     for spine in ax2.spines.values(): spine.set_visible(False)
@@ -124,18 +124,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     # Chart 2: CPA vs Link CPC (Line Chart)
     cpa_df = ad_insights_df.sort_values("date")[-30:]
-    fig2, ax3 = plt.subplots(figsize=(18, 7))
+    fig2, ax3 = plt.subplots(figsize=(18, 8))
     ax3.plot(cpa_df["date"], cpa_df["cpa"], color="#2079b5", linewidth=2, marker='o', label="CPA")
-    ax3.set_ylabel("CPA", color="#2079b5", fontsize=14)
-    ax3.tick_params(axis='y', labelcolor="#2079b5", labelsize=12)
+    ax3.set_ylabel("CPA", color="#2079b5", fontsize=16)
+    ax3.tick_params(axis='y', labelcolor="#2079b5", labelsize=14)
     ax4 = ax3.twinx()
     ax4.plot(cpa_df["date"], cpa_df["cpc"], color="#b3e08b", linewidth=2, marker='o', label="Link CPC")
-    ax4.set_ylabel("Link CPC", color="#b3e08b", fontsize=14)
-    ax4.tick_params(axis='y', labelcolor="#b3e08b", labelsize=12)
+    ax4.set_ylabel("Link CPC", color="#b3e08b", fontsize=16)
+    ax4.tick_params(axis='y', labelcolor="#b3e08b", labelsize=14)
 
     ax3.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    plt.xticks(rotation=45, fontsize=12)
+    plt.xticks(rotation=45, fontsize=14)
 
     for spine in ax3.spines.values(): spine.set_visible(False)
     for spine in ax4.spines.values(): spine.set_visible(False)
@@ -154,18 +154,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     # Chart 3: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
-    fig3, ax5 = plt.subplots(figsize=(18, 7))
-    bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.4, color="#0000ff", label="Click to Conversion")
-    ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=14)
-    ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=12)
+    fig3, ax5 = plt.subplots(figsize=(18, 8))
+    bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.6, color="#0000ff", label="Click to Conversion")
+    ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=16)
+    ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=14)
     ax6 = ax5.twinx()
     ax6.plot(click_df["date"], click_df["ctr"], color="#f8a83c", marker="o", label="CTR")
-    ax6.set_ylabel("CTR", color="#f8a83c", fontsize=14)
-    ax6.tick_params(axis='y', labelcolor="#f8a83c", labelsize=12)
+    ax6.set_ylabel("CTR", color="#f8a83c", fontsize=16)
+    ax6.tick_params(axis='y', labelcolor="#f8a83c", labelsize=14)
 
     ax5.xaxis.set_major_locator(mdates.DayLocator(interval=2))
     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-    plt.xticks(rotation=45, fontsize=12)
+    plt.xticks(rotation=45, fontsize=14)
 
     for spine in ax5.spines.values(): spine.set_visible(False)
     for spine in ax6.spines.values(): spine.set_visible(False)
