@@ -118,7 +118,7 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 3750 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 5000 
+        PAGE_HEIGHT = 4200 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 1800   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -1035,7 +1035,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
-                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1400
+                            ad_table_y = PAGE_HEIGHT - TOP_MARGIN - 1250
                             ad_summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             ad_summary_table.drawOn(c, LEFT_MARGIN, ad_table_y)
 
@@ -1730,8 +1730,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                 #     c.setFillColor(colors.black)
                 #     c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT / 2, "⚠️ Demographic data not available for this account or contains no valid entries.")
                 #     draw_footer_cta(c) # Still draw footer 
-            elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
-                continue  # ✅ skip fallback layout; already handled
+            # elif section_title.strip().upper() == "DEMOGRAPHIC PERFORMANCE":
+            #     continue  
 
                    
             elif section_title.strip().upper() == "PLATFORM LEVEL PERFORMANCE":

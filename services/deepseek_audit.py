@@ -149,8 +149,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45, fontsize=14)
 
-    for spine in ax3.spines.values(): spine.set_visible(False)
-    for spine in ax4.spines.values(): spine.set_visible(False)
+    # for spine in ax3.spines.values(): spine.set_visible(False)
+    # for spine in ax4.spines.values(): spine.set_visible(False)
+    for spine in ax3.spines.values():
+        spine.set_visible(True)
+        spine.set_edgecolor("grey")
+        spine.set_linewidth(1)
+
+    for spine in ax4.spines.values():
+        spine.set_visible(True)
+        spine.set_edgecolor("grey")
+        spine.set_linewidth(1)
+
 
     ax3.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
     ax4.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
@@ -179,8 +189,18 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45, fontsize=14)
 
-    for spine in ax5.spines.values(): spine.set_visible(False)
-    for spine in ax6.spines.values(): spine.set_visible(False)
+    # for spine in ax5.spines.values(): spine.set_visible(False)
+    # for spine in ax6.spines.values(): spine.set_visible(False)
+    for spine in ax5.spines.values():
+        spine.set_visible(True)
+        spine.set_edgecolor("grey")
+        spine.set_linewidth(1)
+
+    for spine in ax6.spines.values():
+        spine.set_visible(True)
+        spine.set_edgecolor("grey")
+        spine.set_linewidth(1)
+
 
     ax5.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
     ax6.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
