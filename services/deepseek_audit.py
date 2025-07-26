@@ -90,7 +90,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     # Chart 1: Purchases vs ROAS
     purchases_df = ad_insights_df.sort_values("date")[-30:]
-    fig1, ax1 = plt.subplots(figsize=(18, 8))
+    fig1, ax1 = plt.subplots(figsize=(18, 10))
     ax1.bar(purchases_df["date"], purchases_df["purchases"], width=0.9, color="#0d0c42", label="Purchases")
     ax1.set_ylabel("Purchases", color="#0d0c42", fontsize=16)
     ax1.tick_params(axis='y', labelcolor="#0d0c42", labelsize=14)
@@ -110,17 +110,16 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
     plt.tight_layout(h_pad=3.0)
 
-    # ✅ Full inner black border
     for ax in [ax1, ax2]:
         rect = plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                             fill=False, color='black', linewidth=2, clip_on=False)
+                             fill=False, color='#444444', linewidth=1.0, clip_on=False)
         ax.add_patch(rect)
 
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
 
     # Chart 2: CPA vs Link CPC
     cpa_df = ad_insights_df.sort_values("date")[-30:]
-    fig2, ax3 = plt.subplots(figsize=(18, 8))
+    fig2, ax3 = plt.subplots(figsize=(18, 10))
     ax3.plot(cpa_df["date"], cpa_df["cpa"], color="#2079b5", linewidth=2, marker='o', label="CPA")
     ax3.set_ylabel("CPA", color="#2079b5", fontsize=16)
     ax3.tick_params(axis='y', labelcolor="#2079b5", labelsize=14)
@@ -140,17 +139,16 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
     plt.tight_layout(h_pad=3.0)
 
-    # ✅ Full inner black border
     for ax in [ax3, ax4]:
         rect = plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                             fill=False, color='black', linewidth=2, clip_on=False)
+                             fill=False, color='#444444', linewidth=1.0, clip_on=False)
         ax.add_patch(rect)
 
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig2)))
 
     # Chart 3: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
-    fig3, ax5 = plt.subplots(figsize=(18, 8))
+    fig3, ax5 = plt.subplots(figsize=(18, 10))
     bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.8, color="#0000ff", label="Click to Conversion")
     ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=16)
     ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=14)
@@ -177,10 +175,9 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     fig3.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.25)
     plt.tight_layout(h_pad=3.0)
 
-    # ✅ Full inner black border
     for ax in [ax5, ax6]:
         rect = plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                             fill=False, color='black', linewidth=2, clip_on=False)
+                             fill=False, color='#444444', linewidth=1.0, clip_on=False)
         ax.add_patch(rect)
 
     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig3)))

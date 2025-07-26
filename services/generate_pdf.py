@@ -1205,7 +1205,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # Prepare ROAS series for Ad Fatigue
                             ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 3500
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2200
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
