@@ -56,6 +56,8 @@ def generate_chart_image(fig):
     plt.close(fig)
     return buf
 
+
+
 def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     if ad_insights_df.empty or len(ad_insights_df) < 2:
         print("⚠️ Not enough data to generate charts.")
@@ -90,7 +92,7 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
 
     # Chart 1: Purchases vs ROAS
     purchases_df = ad_insights_df.sort_values("date")[-30:]
-    fig1, ax1 = plt.subplots(figsize=(18, 10))
+    fig1, ax1 = plt.subplots(figsize=(18, 8))
     ax1.bar(purchases_df["date"], purchases_df["purchases"], width=0.9, color="#0d0c42", label="Purchases")
     ax1.set_ylabel("Purchases", color="#0d0c42", fontsize=16)
     ax1.tick_params(axis='y', labelcolor="#0d0c42", labelsize=14)
@@ -103,23 +105,38 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45, fontsize=14)
 
-    ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False, fontsize=12)
-    ax2.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False, fontsize=12)
+    # for spine in ax1.spines.values(): spine.set_visible(False)
+    # for spine in ax2.spines.values(): spine.set_visible(False)
+    for spine in ax1.spines.values():
+        spine.set_visible(True)
+        spine.set_edgecolor("grey")
+        spine.set_linewidth(1)
+
+    for spine in ax2.spines.values():
+        spine.set_visible(True)
+        spine.set_edgecolor("grey")
+        spine.set_linewidth(1)
+
+
+    ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
+    ax2.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
     ax1.grid(True, linestyle='--', alpha=0.3)
 
+    fig1.patch.set_facecolor('white')
+    fig1.patch.set_alpha(1)
     fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
-    plt.tight_layout(h_pad=3.0)
+    fig1.patch.set_linewidth(0)
+    fig1.patch.set_edgecolor('none')
 
     for ax in [ax1, ax2]:
-        rect = plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                             fill=False, color='#444444', linewidth=1.0, clip_on=False)
-        ax.add_patch(rect)
-
+        for spine in ax.spines.values():
+            spine.set_linewidth(0.5)
+    plt.tight_layout(h_pad=3.0)
     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
 
-    # Chart 2: CPA vs Link CPC
+    # Chart 2: CPA vs Link CPC (Line Chart)
     cpa_df = ad_insights_df.sort_values("date")[-30:]
-    fig2, ax3 = plt.subplots(figsize=(18, 10))
+    fig2, ax3 = plt.subplots(figsize=(18, 8))
     ax3.plot(cpa_df["date"], cpa_df["cpa"], color="#2079b5", linewidth=2, marker='o', label="CPA")
     ax3.set_ylabel("CPA", color="#2079b5", fontsize=16)
     ax3.tick_params(axis='y', labelcolor="#2079b5", labelsize=14)
@@ -132,23 +149,24 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45, fontsize=14)
 
-    ax3.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False, fontsize=12)
-    ax4.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False, fontsize=12)
+    for spine in ax3.spines.values(): spine.set_visible(False)
+    for spine in ax4.spines.values(): spine.set_visible(False)
+
+    ax3.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
+    ax4.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
     ax3.grid(True, linestyle='--', alpha=0.3)
 
+    fig2.patch.set_facecolor('white')
+    fig2.patch.set_alpha(1)
     fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
+    fig2.patch.set_linewidth(0)
+    fig2.patch.set_edgecolor('none')
     plt.tight_layout(h_pad=3.0)
-
-    for ax in [ax3, ax4]:
-        rect = plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                             fill=False, color='#444444', linewidth=1.0, clip_on=False)
-        ax.add_patch(rect)
-
     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig2)))
 
     # Chart 3: Click to Conversion vs CTR
     click_df = ad_insights_df.sort_values("date")[-30:]
-    fig3, ax5 = plt.subplots(figsize=(18, 10))
+    fig3, ax5 = plt.subplots(figsize=(18, 8))
     bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.8, color="#0000ff", label="Click to Conversion")
     ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=16)
     ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=14)
@@ -161,8 +179,11 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     plt.xticks(rotation=45, fontsize=14)
 
-    ax5.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False, fontsize=12)
-    ax6.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False, fontsize=12)
+    for spine in ax5.spines.values(): spine.set_visible(False)
+    for spine in ax6.spines.values(): spine.set_visible(False)
+
+    ax5.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
+    ax6.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
     ax5.grid(True, linestyle='--', alpha=0.3)
 
     for bar in bars:
@@ -172,14 +193,12 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
             path_effects.Normal()
         ])
 
+    fig3.patch.set_facecolor('white')
+    fig3.patch.set_alpha(1)
     fig3.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.25)
+    fig3.patch.set_linewidth(0)
+    fig3.patch.set_edgecolor('none')
     plt.tight_layout(h_pad=3.0)
-
-    for ax in [ax5, ax6]:
-        rect = plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                             fill=False, color='#444444', linewidth=1.0, clip_on=False)
-        ax.add_patch(rect)
-
     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig3)))
 
     table_html = ad_insights_df.to_html(index=False, border=0)
@@ -195,154 +214,6 @@ def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
         "content": content,
         "charts": chart_imgs
     }
-
-
-# def generate_key_metrics_section(ad_insights_df, currency_symbol="₹"):
-#     if ad_insights_df.empty or len(ad_insights_df) < 2:
-#         print("⚠️ Not enough data to generate charts.")
-#         return "No data available for Key Metrics.", []
-
-#     total_spend = ad_insights_df['spend'].sum()
-#     total_purchases = ad_insights_df['purchases'].sum()
-#     total_purchase_value = ad_insights_df['purchase_value'].sum()
-#     total_impressions = ad_insights_df['impressions'].sum()
-#     total_clicks = ad_insights_df['clicks'].sum()
-
-#     metrics_summary = {
-#         "Amount Spent": f"{currency_symbol}{total_spend:,.2f}",
-#         "Purchases": int(total_purchases),
-#         "Purchase Value": f"{currency_symbol}{total_purchase_value:,.2f}",
-#         "ROAS": round(total_purchase_value / total_spend, 2) if total_spend > 0 else 0,
-#         "CPA": f"{currency_symbol}{round(total_spend / total_purchases, 2) if total_purchases > 0 else 0:.2f}",
-#         "Cost/Result": f"{currency_symbol}{round(total_spend / total_purchases, 2) if total_purchases > 0 else 0:.2f}",
-#         "Impressions": int(total_impressions),
-#         "CPM": f"{currency_symbol}{round((total_spend / total_impressions * 1000), 2) if total_impressions > 0 else 0:.2f}",
-#         "Link Clicks": int(total_clicks),
-#         "Link CPC": f"{currency_symbol}{round(total_spend / total_clicks, 2) if total_clicks > 0 else 0:.2f}",
-#         "CTR (link)": f"{round((total_clicks / total_impressions), 4) if total_impressions > 0 else 0:.2%}"
-#     }
-
-#     summary_text = "\n".join([f"{k}: {v}" for k, v in metrics_summary.items()])
-#     chart_imgs = []
-
-#     # Chart 0: Purchases vs Amount Spent
-#     fig0 = generate_chart_1(ad_insights_df)
-#     chart_imgs.append(("Purchases vs Amount Spent", generate_chart_image(fig0)))
-
-#     # Chart 1: Purchases vs ROAS
-#     purchases_df = ad_insights_df.sort_values("date")[-30:]
-#     fig1, ax1 = plt.subplots(figsize=(18, 8))
-#     ax1.bar(purchases_df["date"], purchases_df["purchases"], width=0.9, color="#0d0c42", label="Purchases")
-#     ax1.set_ylabel("Purchases", color="#0d0c42", fontsize=16)
-#     ax1.tick_params(axis='y', labelcolor="#0d0c42", labelsize=14)
-#     ax2 = ax1.twinx()
-#     ax2.plot(purchases_df["date"], purchases_df["roas"], color="#ff00aa", marker="o", label="ROAS")
-#     ax2.set_ylabel("ROAS", color="#ff00aa", fontsize=16)
-#     ax2.tick_params(axis='y', labelcolor="#ff00aa", labelsize=14)
-
-#     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))
-#     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-#     plt.xticks(rotation=45, fontsize=14)
-
-#     for spine in ax1.spines.values(): spine.set_visible(False)
-#     for spine in ax2.spines.values(): spine.set_visible(False)
-
-#     ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
-#     ax2.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
-#     ax1.grid(True, linestyle='--', alpha=0.3)
-
-#     fig1.patch.set_facecolor('white')
-#     fig1.patch.set_alpha(1)
-#     fig1.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
-#     fig1.patch.set_linewidth(0)
-#     fig1.patch.set_edgecolor('none')
-
-#     for ax in [ax1, ax2]:
-#         for spine in ax.spines.values():
-#             spine.set_linewidth(0.5)
-#     plt.tight_layout(h_pad=3.0)
-#     chart_imgs.append(("Purchases vs ROAS", generate_chart_image(fig1)))
-
-#     # Chart 2: CPA vs Link CPC (Line Chart)
-#     cpa_df = ad_insights_df.sort_values("date")[-30:]
-#     fig2, ax3 = plt.subplots(figsize=(18, 8))
-#     ax3.plot(cpa_df["date"], cpa_df["cpa"], color="#2079b5", linewidth=2, marker='o', label="CPA")
-#     ax3.set_ylabel("CPA", color="#2079b5", fontsize=16)
-#     ax3.tick_params(axis='y', labelcolor="#2079b5", labelsize=14)
-#     ax4 = ax3.twinx()
-#     ax4.plot(cpa_df["date"], cpa_df["cpc"], color="#b3e08b", linewidth=2, marker='o', label="Link CPC")
-#     ax4.set_ylabel("Link CPC", color="#b3e08b", fontsize=16)
-#     ax4.tick_params(axis='y', labelcolor="#b3e08b", labelsize=14)
-
-#     ax3.xaxis.set_major_locator(mdates.DayLocator(interval=2))
-#     ax3.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-#     plt.xticks(rotation=45, fontsize=14)
-
-#     for spine in ax3.spines.values(): spine.set_visible(False)
-#     for spine in ax4.spines.values(): spine.set_visible(False)
-
-#     ax3.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
-#     ax4.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
-#     ax3.grid(True, linestyle='--', alpha=0.3)
-
-#     fig2.patch.set_facecolor('white')
-#     fig2.patch.set_alpha(1)
-#     fig2.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
-#     fig2.patch.set_linewidth(0)
-#     fig2.patch.set_edgecolor('none')
-#     plt.tight_layout(h_pad=3.0)
-#     chart_imgs.append(("CPA vs Link CPC", generate_chart_image(fig2)))
-
-#     # Chart 3: Click to Conversion vs CTR
-#     click_df = ad_insights_df.sort_values("date")[-30:]
-#     fig3, ax5 = plt.subplots(figsize=(18, 8))
-#     bars = ax5.bar(click_df["date"], click_df["click_to_conversion"], width=0.8, color="#0000ff", label="Click to Conversion")
-#     ax5.set_ylabel("Click to Conversion", color="#0000ff", fontsize=16)
-#     ax5.tick_params(axis='y', labelcolor="#0000ff", labelsize=14)
-#     ax6 = ax5.twinx()
-#     ax6.plot(click_df["date"], click_df["ctr"], color="#f8a83c", marker="o", label="CTR")
-#     ax6.set_ylabel("CTR", color="#f8a83c", fontsize=16)
-#     ax6.tick_params(axis='y', labelcolor="#f8a83c", labelsize=14)
-
-#     ax5.xaxis.set_major_locator(mdates.DayLocator(interval=2))
-#     ax5.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
-#     plt.xticks(rotation=45, fontsize=14)
-
-#     for spine in ax5.spines.values(): spine.set_visible(False)
-#     for spine in ax6.spines.values(): spine.set_visible(False)
-
-#     ax5.legend(loc='upper left', bbox_to_anchor=(0.01, 1.15), frameon=False,fontsize=12)
-#     ax6.legend(loc='upper right', bbox_to_anchor=(0.99, 1.15), frameon=False,fontsize=12)
-#     ax5.grid(True, linestyle='--', alpha=0.3)
-
-#     for bar in bars:
-#         bar.set_linewidth(0)
-#         bar.set_path_effects([
-#             path_effects.SimplePatchShadow(offset=(2, -2), alpha=0.2),
-#             path_effects.Normal()
-#         ])
-
-#     fig3.patch.set_facecolor('white')
-#     fig3.patch.set_alpha(1)
-#     fig3.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.25)
-#     fig3.patch.set_linewidth(0)
-#     fig3.patch.set_edgecolor('none')
-#     plt.tight_layout(h_pad=3.0)
-#     chart_imgs.append(("Click to Conversion vs CTR", generate_chart_image(fig3)))
-
-#     table_html = ad_insights_df.to_html(index=False, border=0)
-#     content = f"""
-#     **Key Metrics**
-#     {summary_text}
-#     **Last 30 Days Trend Section**
-#     The following section presents daily trend of the Key Metrics Identified in the previous section. This helps the business analyse the daily variance in the business KPIs and also helps in correlating how one metric affects the others.
-#     {table_html}
-#     """
-#     return {
-#         "title": "KEY METRICS",
-#         "content": content,
-#         "charts": chart_imgs
-#     }
 
 
 

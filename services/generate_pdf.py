@@ -118,7 +118,7 @@ def adjust_page_height(c, section: dict):
     elif title == "AD LEVEL PERFORMANCE":
         PAGE_HEIGHT = 3750 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 6200 
+        PAGE_HEIGHT = 5000 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 1800   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -1205,7 +1205,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # Prepare ROAS series for Ad Fatigue
                             ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 2200
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 1900
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
