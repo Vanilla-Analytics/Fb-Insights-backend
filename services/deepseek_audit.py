@@ -1284,7 +1284,7 @@ async def fetch_ad_insights(user_token: str):
             
             # fetch_ad_insights should now only return insights_data, not demographic_df
             # demographic_df will be fetched separately in generate_audit
-            return insights_data
+            return insights_data, safe_since, safe_until
 
     except Exception as e:
         print(f"❌ Error in fetch_ad_insights: {str(e)}")
@@ -1354,7 +1354,7 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
         page_data = await fetch_facebook_insights(page_id, page_token)
         
         # fetch_ad_insights now only returns ad_data (list of dicts)
-        ad_data = await fetch_ad_insights(user_token) 
+        ad_data, date_since, date_until = await fetch_ad_insights(user_token) 
         
         print("🔍 ad_data structure after fetch_ad_insights:", type(ad_data))
         print("🔍 Raw ad data preview after fetch_ad_insights:", ad_data[:2])
@@ -1610,7 +1610,9 @@ async def generate_audit(page_id: str, user_token: str, page_token: str):
             currency_symbol=currency_symbol,
             split_charts=split_charts,
             demographic_df=demographic_df,
-            platform_df=platform_df_raw
+            platform_df=platform_df_raw,
+            date_since=date_since, 
+            date_until=date_until
         )
 
         print("✅ PDF generated successfully")
