@@ -112,7 +112,7 @@ def adjust_page_height(c, section: dict):
     elif title == "CAMPAIGN PERFORMANCE SUMMARY":
         PAGE_HEIGHT = 2300
     elif title == "3 CHARTS SECTION":
-        PAGE_HEIGHT = 1800
+        PAGE_HEIGHT = 1700
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
@@ -1205,7 +1205,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # Prepare ROAS series for Ad Fatigue
                             ad_fatigue_roas = df.groupby('ad_name')['roas'].mean().sort_values(ascending=False)
 
-                            table_y = PAGE_HEIGHT - TOP_MARGIN - 4500
+                            table_y = PAGE_HEIGHT - TOP_MARGIN - 3500
                             summary_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                             summary_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1279,11 +1279,11 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             # 📄 New Page - Demographic Performance
                             c.showPage()
                             adjust_page_height(c, {"title": "Demographic Performance", "contains_table": True})
-                            draw_header(c)
+                            #draw_header(c)
 
                             c.setFont("Helvetica-Bold", 16)
                             c.setFillColor(colors.black)
-                            #c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1364,7 +1364,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
-                                current_y_pos = table_y_start - table_height - 20 # Start charts 40 units below table
+                                current_y_pos = table_y_start - table_height - 10 # Start charts 40 units below table
 
                                 # --- Draw Demographic Charts ---
                                 # Use demographic_grouped for charts as it's already aggregated
