@@ -1394,7 +1394,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     'roas': 'ROAS',
                                     'cpa': 'CPA'
                                 }, inplace=True)
-                                print("✅ chart_df columns after renaming:", chart_df.columns.tolist())                                
+                                #print("✅ chart_df columns after renaming:", chart_df.columns.tolist())                                
                                 
                                 
                                 # ⚠️ Keep numeric for charts
@@ -1469,6 +1469,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 
                                 # ✅ Rename to expected lowercase for chart functions
                                 chart_df = demographic_grouped.rename(columns={"Age": "age", "Gender": "gender"})
+                                print("✅ chart_df columns after renaming:", chart_df.columns.tolist())
                                 # 🔍 Debug demographic data before chart generation
                                 print("🧪 DEMOGRAPHIC CHART DF COLUMNS:", chart_df.columns.tolist())
                                 print("🧪 DEMOGRAPHIC CHART DF HEAD:\n", chart_df.head(2))
