@@ -204,8 +204,10 @@ def draw_metrics_grid(c, metrics, start_y):
                 card_y = y - y_offset
 
                 # Draw card
+                c.setFillAlpha(0.3)  # Value between 0 (fully transparent) and 1 (fully opaque)
                 c.setFillColor(colors.HexColor("#e1fbd2"))  # soft green background
                 c.roundRect(x, card_y - card_height, card_width, card_height, 10, fill=1, stroke=0)
+                c.setFillAlpha(1)  # Reset for next elements
 
                 # Centered metric title and value
                 c.setFillColor(colors.HexColor("#222222"))
@@ -1356,7 +1358,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 10, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 40, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1436,7 +1438,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                                 # Adjust colWidths if needed based on content
-                                table_col_widths = [180, 180, 100, 100, 100, 100] # Example widths
+                                table_col_widths = [200, 200, 100, 110, 110, 110] # Example widths
                                 table = Table(table_data, colWidths=table_col_widths)
                                 table.setStyle(TableStyle([
                                     ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -1891,7 +1893,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                         ])
 
-                    performance_table = Table(table_data, repeatRows=1, colWidths=[200, 150, 140, 100, 100, 100])
+                    performance_table = Table(table_data, repeatRows=1, colWidths=[200, 150, 140, 120, 120, 110])
                     performance_table.setStyle(TableStyle([
                         ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                         ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1900,7 +1902,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                         ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                     ]))
-                    table_y = PAGE_HEIGHT - 300
+                    table_y = PAGE_HEIGHT - 250
                     performance_table.wrapOn(c, PAGE_WIDTH, PAGE_HEIGHT)
                     performance_table.drawOn(c, LEFT_MARGIN, table_y)
 
@@ -1954,6 +1956,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             text_y -= 14
                     except Exception as e:
                         print("⚠️ Failed to generate platform summary:", str(e))
+                        
+                    draw_footer_cta(c)
                 else:
                     c.setFont("Helvetica", 14)
                     c.setFillColor(colors.black)
