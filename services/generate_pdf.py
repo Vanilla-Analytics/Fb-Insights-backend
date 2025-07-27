@@ -206,7 +206,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
                 # Draw card
                 c.setFillAlpha(0.3)  # Value between 0 (fully transparent) and 1 (fully opaque)
-                c.setFillColor(colors.HexColor("#f0fdee"))  # soft green background
+                c.setFillColor(colors.HexColor("#e1fbd2"))  # soft green background
                 c.roundRect(x, card_y - card_height, card_width, card_height, 10, fill=1, stroke=0)
                 c.setFillAlpha(1)  # Reset for next elements
 
@@ -1359,7 +1359,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 70, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 100, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1393,7 +1393,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     'purchases': 'Purchases',
                                     'roas': 'ROAS',
                                     'cpa': 'CPA'
-                                }, inplace=True)                                
+                                }, inplace=True)
+                                print("✅ chart_df columns after renaming:", chart_df.columns.tolist())                                
                                 
                                 
                                 # ⚠️ Keep numeric for charts
@@ -1439,7 +1440,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                                 # Adjust colWidths if needed based on content
-                                table_col_widths = [200, 200, 100, 110, 110, 110] # Example widths
+                                table_col_widths = [200, 200, 110, 110, 110, 110] # Example widths
                                 table = Table(table_data, colWidths=table_col_widths)
                                 table.setStyle(TableStyle([
                                     ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -1458,7 +1459,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 20 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 10 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
                                 current_y_pos = table_y_start - table_height - 40 # Start charts 40 units below table
@@ -1491,7 +1492,17 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 })
 
                                 # Filter out invalid data
-                                chart_df = chart_df[(chart_df['amount_spent'] > 0) & (chart_df['purchases'] >= 0) &(chart_df['roas'] >= 0)]
+                                #chart_df = chart_df[(chart_df['amount_spent'] > 0) & (chart_df['purchases'] >= 0) &(chart_df['roas'] >= 0)]
+                                # Handle NaNs and inf values to avoid filtering all data out
+                                chart_df['roas'] = chart_df['roas'].replace([np.inf, -np.inf], 0).fillna(0)
+                                chart_df['cpa'] = chart_df['cpa'].replace([np.inf, -np.inf], 0).fillna(0)
+
+                                # Filter out rows with zero spend or negative purchases
+                                chart_df = chart_df[(chart_df['amount_spent'] > 0) & (chart_df['purchases'] >= 0)]
+
+                                print("✅ Chart DataFrame shape after filtering:", chart_df.shape)
+                                print("✅ Chart DataFrame columns:", chart_df.columns.tolist())
+
                                 
                                 # Calculate starting position with more space
                                 current_y_pos = table_y_start - table_height - 100  # Start charts 40 units below table
@@ -1501,10 +1512,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     y_pos = current_y_pos
                                     x_left = LEFT_MARGIN
                                     x_right = PAGE_WIDTH - RIGHT_MARGIN - chart_width
-
+                                    print("🎯 Generating Cost Split by Age Chart")
                                     buf = generate_cost_split_by_age_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_left, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
+                                    print("🎯 Generating Cost Split by Age Chart")
                                     buf = generate_revenue_split_by_age_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_right, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
@@ -1520,10 +1531,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     y_pos = current_y_pos
                                     x_left = LEFT_MARGIN
                                     x_right = PAGE_WIDTH - RIGHT_MARGIN - chart_width
-
+                                    print("🎯 Generating Cost Split by Age Chart")
                                     buf = generate_roas_split_by_age_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_left, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
+                                    print("🎯 Generating Cost Split by Age Chart")
                                     buf = generate_cost_split_by_gender_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_right, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
@@ -1539,10 +1550,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     y_pos = current_y_pos
                                     x_left = LEFT_MARGIN
                                     x_right = PAGE_WIDTH - RIGHT_MARGIN - chart_width
-
+                                    print("🎯 Generating Cost Split by Age Chart")
                                     buf = generate_revenue_split_by_gender_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_left, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
-
+                                    print("🎯 Generating Cost Split by Age Chart")
                                     buf = generate_roas_split_by_gender_chart(chart_df)
                                     c.drawImage(ImageReader(buf), x_right, y_pos, width=chart_width, height=chart_height, preserveAspectRatio=True)
 
@@ -1562,7 +1573,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # 📝 LLM Summary - Dynamic
                                 try:
                                     prompt = build_demographic_summary_prompt(demographic_grouped, currency_symbol)
-                                    summary_text = run_async_in_thread( generate_llm_content(prompt, demographic_grouped.to_dict()))
+                                    #summary_text = run_async_in_thread( generate_llm_content(prompt, demographic_grouped.to_dict()))
+                                    print("📝 Building LLM summary prompt...")
+                                    print("🔍 Prompt preview:", prompt[:300])
+                                    print("🔍 Data keys:", demographic_grouped.to_dict().keys())
+
+                                    summary_text = run_async_in_thread(generate_llm_content(prompt, demographic_grouped.to_dict()))
+
     
                                     logger.info("Demographic LLM Summary Generated.")
                                     clean_text = re.sub(r"[*#]", "", summary_text).strip()
