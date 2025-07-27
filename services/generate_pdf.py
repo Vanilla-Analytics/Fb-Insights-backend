@@ -1,5 +1,6 @@
 from reportlab.lib.pagesizes import landscape
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfdoc
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.lib.utils import simpleSplit
@@ -272,8 +273,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
     try:
         buffer = io.BytesIO()
-        c = canvas.Canvas(buffer)   
-        #c = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
+        # c = canvas.Canvas(buffer)   
+        c = canvas.Canvas(buffer, pdfVersion=pdfdoc.PDFVersion(1, 4))  # 👈 Enables transparency
 
         for i, section in enumerate(sections):  
             
@@ -1267,7 +1268,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{total_purchase_value:.2f}"
                             ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[140, 150, 170, 70, 50, 60, 60, 60, 40, 60])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[140, 150, 170, 70, 50, 60, 60, 60, 50, 60])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1358,7 +1359,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 40, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 70, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1457,10 +1458,10 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 60 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
-                                current_y_pos = table_y_start - table_height - 10 # Start charts 40 units below table
+                                current_y_pos = table_y_start - table_height - 40 # Start charts 40 units below table
 
                                 # --- Draw Demographic Charts ---
                                 # Use demographic_grouped for charts as it's already aggregated
