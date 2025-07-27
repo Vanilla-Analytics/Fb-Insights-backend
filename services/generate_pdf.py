@@ -206,7 +206,7 @@ def draw_metrics_grid(c, metrics, start_y):
 
                 # Draw card
                 c.setFillAlpha(0.3)  # Value between 0 (fully transparent) and 1 (fully opaque)
-                c.setFillColor(colors.HexColor("#e1fbd2"))  # soft green background
+                c.setFillColor(colors.HexColor("#f0fdee"))  # soft green background
                 c.roundRect(x, card_y - card_height, card_width, card_height, 10, fill=1, stroke=0)
                 c.setFillAlpha(1)  # Reset for next elements
 
@@ -1458,7 +1458,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 20 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
                                 current_y_pos = table_y_start - table_height - 40 # Start charts 40 units below table
