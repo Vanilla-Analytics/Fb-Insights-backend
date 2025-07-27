@@ -719,7 +719,7 @@ def generate_platform_split_charts(df):
 
     # Cost Split Donut
     if not cost.empty and cost.sum() > 0:
-        fig1, ax1 = plt.subplots(figsize=(6.5, 5), dpi=200)  # 🔧 widened for legend
+        fig1, ax1 = plt.subplots(figsize=(6, 5), dpi=200)  # 🔧 widened for legend
         wedges, _ = ax1.pie(
             cost,
             startangle=90,
@@ -737,8 +737,9 @@ def generate_platform_split_charts(df):
             title="Platform",
             loc="center left",
             bbox_to_anchor=(1.05, 0.5),
-            fontsize=8
+            fontsize=12
         )
+        fig1.subplots_adjust(left=0.05, right=0.6) 
 
         fig1.tight_layout(pad=3.0)  # 🔧 add padding to fit legend
         charts.append(("Cost Split", generate_chart_image(fig1)))
@@ -747,7 +748,7 @@ def generate_platform_split_charts(df):
 
     # Revenue Split Donut
     if not revenue.empty and revenue.sum() > 0:
-        fig2, ax2 = plt.subplots(figsize=(6.5, 5), dpi=200)
+        fig2, ax2 = plt.subplots(figsize=(6, 5), dpi=200)
         wedges, _ = ax2.pie(
             revenue,
             startangle=90,
@@ -764,8 +765,9 @@ def generate_platform_split_charts(df):
             title="Platform",
             loc="center left",
             bbox_to_anchor=(1.05, 0.5),
-            fontsize=8
+            fontsize=12
         )
+        fig2.subplots_adjust(left=0.05, right=0.6) 
 
         fig2.tight_layout(pad=3.0)
         charts.append(("Revenue Split", generate_chart_image(fig2)))

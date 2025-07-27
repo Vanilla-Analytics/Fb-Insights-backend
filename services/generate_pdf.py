@@ -1956,13 +1956,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                     # Cost Line Chart
                     #cost_line_chart_img_buf = generate_platform_cost_line_chart(platform_df) # Pass original platform_df
-                    cost_y = roas_y - 350
+                    cost_y = roas_y - 320
                     img4 = ImageReader(cost_line_chart_img_buf)
                     c.drawImage(img4, LEFT_MARGIN, cost_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=400)
 
                     # Revenue Line Chart
                     #revenue_line_chart_img_buf = generate_platform_revenue_line_chart(platform_df) # Pass original platform_df
-                    rev_y = cost_y - 350
+                    rev_y = cost_y - 380
                     img5 = ImageReader(revenue_line_chart_img_buf)
                     c.drawImage(img5, LEFT_MARGIN, rev_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=400)
 
