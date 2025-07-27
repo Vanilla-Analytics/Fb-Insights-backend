@@ -123,7 +123,7 @@ def adjust_page_height(c, section: dict):
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 1800   
     elif title == "PLATFORM LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 2000 
+        PAGE_HEIGHT = 2200 
     else:
         PAGE_HEIGHT = 600
 
@@ -1958,13 +1958,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     #cost_line_chart_img_buf = generate_platform_cost_line_chart(platform_df) # Pass original platform_df
                     cost_y = roas_y - 350
                     img4 = ImageReader(cost_line_chart_img_buf)
-                    c.drawImage(img4, LEFT_MARGIN, cost_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
+                    c.drawImage(img4, LEFT_MARGIN, cost_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=400)
 
                     # Revenue Line Chart
                     #revenue_line_chart_img_buf = generate_platform_revenue_line_chart(platform_df) # Pass original platform_df
                     rev_y = cost_y - 350
                     img5 = ImageReader(revenue_line_chart_img_buf)
-                    c.drawImage(img5, LEFT_MARGIN, rev_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=300)
+                    c.drawImage(img5, LEFT_MARGIN, rev_y, width=PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, height=400)
 
                     # Add LLM summary
                     try:

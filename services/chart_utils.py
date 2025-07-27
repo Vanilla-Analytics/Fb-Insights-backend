@@ -715,32 +715,39 @@ def generate_platform_split_charts(df):
     revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
 
     charts = []
-
     custom_colors = ['#ff69b4', '#800080', '#ffa500', '#ffff00', '#c71585']  # pink, purple, orange, yellow, magenta
 
     # Cost Split Donut
     if not cost.empty and cost.sum() > 0:
-        fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
+        fig1, ax1 = plt.subplots(figsize=(6.5, 5), dpi=200)  # 🔧 widened for legend
         wedges, _ = ax1.pie(
             cost,
             startangle=90,
             colors=custom_colors[:len(cost)],
             labels=None,
-            wedgeprops=dict(width=0.4)  # donut style
+            wedgeprops=dict(width=0.4)
         )
         ax1.axis('equal')
         ax1.set_title("Cost Split by Platform", fontsize=10)
 
-        # Add legend on right side
-        fig1.legend(wedges, cost.index, title="Platform", loc="center left", bbox_to_anchor=(1, 0.5), fontsize=8)
+        # 🔧 Add right-side legend with more space
+        fig1.legend(
+            wedges,
+            cost.index,
+            title="Platform",
+            loc="center left",
+            bbox_to_anchor=(1.05, 0.5),
+            fontsize=8
+        )
 
+        fig1.tight_layout(pad=3.0)  # 🔧 add padding to fit legend
         charts.append(("Cost Split", generate_chart_image(fig1)))
     else:
         charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
 
     # Revenue Split Donut
     if not revenue.empty and revenue.sum() > 0:
-        fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
+        fig2, ax2 = plt.subplots(figsize=(6.5, 5), dpi=200)
         wedges, _ = ax2.pie(
             revenue,
             startangle=90,
@@ -751,14 +758,22 @@ def generate_platform_split_charts(df):
         ax2.axis('equal')
         ax2.set_title("Revenue Split by Platform", fontsize=10)
 
-        # Add legend on right side
-        fig2.legend(wedges, revenue.index, title="Platform", loc="center left", bbox_to_anchor=(1, 0.5), fontsize=8)
+        fig2.legend(
+            wedges,
+            revenue.index,
+            title="Platform",
+            loc="center left",
+            bbox_to_anchor=(1.05, 0.5),
+            fontsize=8
+        )
 
+        fig2.tight_layout(pad=3.0)
         charts.append(("Revenue Split", generate_chart_image(fig2)))
     else:
         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
+
 
 
 
@@ -851,9 +866,9 @@ def generate_platform_cost_line_chart(df):
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
     ax.set_title("Cost by Platform Over Time", fontsize=16)  # ⬆️ Font size
-    ax.set_ylabel("Amount Spent", fontsize=14)
-    ax.set_xlabel("Date", fontsize=14)
-    ax.tick_params(axis='both', labelsize=12)
+    ax.set_ylabel("Amount Spent", fontsize=16)
+    ax.set_xlabel("Date", fontsize=16)
+    ax.tick_params(axis='both', labelsize=14)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
@@ -882,9 +897,9 @@ def generate_platform_revenue_line_chart(df):
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
     ax.set_title("Revenue by Platform Over Time", fontsize=16)  # ⬆️ Font size
-    ax.set_ylabel("Revenue", fontsize=14)
-    ax.set_xlabel("Date", fontsize=14)
-    ax.tick_params(axis='both', labelsize=12)
+    ax.set_ylabel("Revenue", fontsize=16)
+    ax.set_xlabel("Date", fontsize=16)
+    ax.tick_params(axis='both', labelsize=14)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
