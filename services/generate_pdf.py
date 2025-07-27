@@ -501,7 +501,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                         # Limit row count if needed (for fitting one page), or use page breaks
                         #summary_table = Table(table_data, repeatRows=1, colWidths=[90]*10)
-                        summary_table = Table(table_data, repeatRows=1, colWidths=[90, 90, 90, 130, 80, 80,80,80,80,80])
+                        summary_table = Table(table_data, repeatRows=1, colWidths=[80, 90, 80, 140, 80, 80,80,80,80,80])
                         summary_table.setStyle(TableStyle([
 
                             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
@@ -843,7 +843,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{total_cpa:.2f}" if total_cpa is not None else "N/A"
                             ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[270, 130, 130, 90, 90, 110])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[280, 130, 130, 100, 100, 120])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1069,7 +1069,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{total_cpa:.2f}" if total_cpa is not None else "N/A"
                             ])
 
-                            ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[250, 130, 130, 80, 90, 120])
+                            ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[260, 130, 140, 90, 90, 130])
                             ad_summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1221,7 +1221,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             logger.info(f"📊 Columns in DataFrame: {list(df.columns)}")
                             logger.info(f"📊 First 5 rows:\n{df.head(5).to_string()}")
                             df['frequency'] = df['impressions'] / df['reach'].replace(0, 1)
-                            table_data = [["Ad Name", "Campaign Name", "Adset Name", "Amount Spent", "Impressions", "Frequency", "ROAS", "CTR", "Purchases", "Purchase Conversion Value"]]
+                            #table_data = [["Ad Name", "Campaign Name", "Adset Name", "Amount Spent", "Impressions", "Frequency", "ROAS", "CTR", "Purchases", "Purchase Conversion Value"]]
+                            table_data = [["Ad Name", "Campaign Name", "Adset Name", "Amount Spent", "Impressions", "Frequency", "ROAS", "CTR", "Purchases", "PCV"]]
                             for _, row in df.iterrows():
                                 table_data.append([
                                     row['ad_name'],
@@ -1264,7 +1265,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{total_purchase_value:.2f}"
                             ])
 
-                            summary_table = Table(table_data, repeatRows=1, colWidths=[150, 150, 170, 70, 50, 60, 60, 60, 40, 60])
+                            summary_table = Table(table_data, repeatRows=1, colWidths=[140, 150, 170, 70, 50, 60, 60, 60, 40, 60])
                             summary_table.setStyle(TableStyle([
                                 ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -1355,7 +1356,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 20, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 10, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1435,7 +1436,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
 
                                 # Adjust colWidths if needed based on content
-                                table_col_widths = [100, 80, 100, 80, 80, 80] # Example widths
+                                table_col_widths = [180, 180, 100, 100, 100, 100] # Example widths
                                 table = Table(table_data, colWidths=table_col_widths)
                                 table.setStyle(TableStyle([
                                     ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -1454,7 +1455,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 60 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
                                 current_y_pos = table_y_start - table_height - 10 # Start charts 40 units below table
@@ -1890,7 +1891,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                         ])
 
-                    performance_table = Table(table_data, repeatRows=1, colWidths=[200, 120, 120, 100, 90, 90])
+                    performance_table = Table(table_data, repeatRows=1, colWidths=[200, 150, 140, 100, 100, 100])
                     performance_table.setStyle(TableStyle([
                         ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
                         ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
