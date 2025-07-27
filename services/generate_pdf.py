@@ -274,7 +274,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
     try:
         buffer = io.BytesIO()
         # c = canvas.Canvas(buffer)   
-        c = canvas.Canvas(buffer, pdfVersion=pdfdoc.PDFVersion(1, 4))  # 👈 Enables transparency
+        c = canvas.Canvas(buffer, pdfVersion=(1, 4))
 
         for i, section in enumerate(sections):  
             
