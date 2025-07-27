@@ -303,14 +303,14 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     # 👉 Add this block for the subheading (just below main heading)
                     if date_since and date_until:
                         subheading = f"Insights date-range {date_since} to {date_until}"
-                        c.setFont("Helvetica", 18)
+                        c.setFont("Helvetica", 16)
                         c.setFillColor(colors.HexColor("#3B3B3B"))  # Light grey
-                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 80, subheading)
+                        c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 100, subheading)
 
 
                     metric_lines = [line for line in content.split("\n") if ":" in line and "Last 30" not in line]
                     metrics = dict(line.split(":", 1) for line in metric_lines)
-                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 180) 
+                    draw_metrics_grid(c, metrics, PAGE_HEIGHT - 220) 
 
                     # Page 2: Trend Heading & Paragraph
                     c.showPage()
@@ -500,7 +500,8 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         ])
 
                         # Limit row count if needed (for fitting one page), or use page breaks
-                        summary_table = Table(table_data, repeatRows=1, colWidths=[90]*10)
+                        #summary_table = Table(table_data, repeatRows=1, colWidths=[90]*10)
+                        summary_table = Table(table_data, repeatRows=1, colWidths=[90, 90, 90, 130, 80, 80,80,80,80,80])
                         summary_table.setStyle(TableStyle([
 
                             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
@@ -816,10 +817,31 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     f"{currency_symbol}{row['spend']:.2f}",
                                     f"{currency_symbol}{row['purchase_value']:.2f}",
                                     int(row['purchases']),
-                                    f"{row['roas']:.2f}",
+                                    f"{row['roas']:.2f}" if pd.notna(row['roas']) else "N/A",
                                     #f"{currency_symbol}{row['cpa']:.2f}" NA
                                     f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
                                 ])
+                                
+                            # ➤ Grand Total Calculation
+                            total_spend = grouped['spend'].sum()
+                            total_revenue = grouped['purchase_value'].sum()
+                            total_purchases = grouped['purchases'].sum()
+
+                            valid_roas = grouped['roas'].dropna()
+                            valid_cpa = grouped['cpa'].dropna()
+
+                            total_roas = valid_roas.mean() if not valid_roas.empty else None
+                            total_cpa = valid_cpa.mean() if not valid_cpa.empty else None
+
+                            # ➤ Append Grand Total Row
+                            table_data.append([
+                                "Grand Total",
+                                f"{currency_symbol}{total_spend:.2f}",
+                                f"{currency_symbol}{total_revenue:.2f}",
+                                int(total_purchases),
+                                f"{total_roas:.2f}" if total_roas is not None else "N/A",
+                                f"{currency_symbol}{total_cpa:.2f}" if total_cpa is not None else "N/A"
+                            ])
 
                             summary_table = Table(table_data, repeatRows=1, colWidths=[270, 130, 130, 90, 90, 110])
                             summary_table.setStyle(TableStyle([
@@ -1249,6 +1271,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica-Bold"),
                                 ("FONTSIZE", (0, 0), (-1, -1), 8),
                                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                             ]))
                             
                             # Prepare ROAS series for Ad Fatigue
@@ -1332,7 +1355,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 20, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1389,6 +1412,26 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # 📋 Draw Table
                                 #table_data = [demographic_grouped.columns.tolist()] + demographic_grouped.values.tolist()
                                 table_data = [demographic_table.columns.tolist()] + demographic_table.values.tolist()
+                                
+                                # ➤ Grand Total Calculation
+                                total_spend = demographic_grouped["Amount Spent"].sum()
+                                total_purchases = demographic_grouped["Purchases"].sum()
+
+                                valid_roas = demographic_grouped["ROAS"].dropna()
+                                valid_cpa = demographic_grouped["CPA"].dropna()
+
+                                total_roas = valid_roas.mean() if not valid_roas.empty else None
+                                total_cpa = valid_cpa.mean() if not valid_cpa.empty else None
+
+                                # ➤ Append Grand Total Row
+                                table_data.append([
+                                    "Grand Total",                      # Age
+                                    "-",                                # Gender (not applicable)
+                                    f"{currency_symbol}{total_spend:,.2f}",
+                                    int(total_purchases),
+                                    f"{total_roas:.2f}" if total_roas is not None else "N/A",
+                                    f"{currency_symbol}{total_cpa:,.2f}" if total_cpa is not None else "N/A"
+                                ])
 
 
                                 # Adjust colWidths if needed based on content
@@ -1405,12 +1448,13 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                                     ('FONTNAME', (0, 1), (-1, -1), "DejaVuSans" if currency_symbol == "₹" else "Helvetica"), # Body font
                                     ('FONTSIZE', (0, 1), (-1, -1), 8), # Body font size
+                                    ("BACKGROUND", (0, -1), (-1, -1), colors.lightblue),
                                 ]))
 
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 40 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
                                 current_y_pos = table_y_start - table_height - 10 # Start charts 40 units below table
@@ -1808,15 +1852,29 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                     
                     
                     # Add Grand Total row for table
+                    # ➤ Grand Total Calculation (safe handling of NaNs)
+                    total_spend = platform_summary_df['spend'].sum()
+                    total_revenue = platform_summary_df['purchase_value'].sum()
+                    total_purchases = platform_summary_df['purchases'].sum()
+
+                    valid_roas = platform_summary_df['roas'].dropna()
+                    valid_cpa = platform_summary_df['cpa'].dropna()
+
+                    total_roas = valid_roas.mean() if not valid_roas.empty else None
+                    total_cpa = valid_cpa.mean() if not valid_cpa.empty else None
+
+                    # ➤ Append Grand Total as a dict row
                     total_row = {
                         'platform': 'Grand Total',
-                        'spend': platform_summary_df['spend'].sum(),
-                        'purchase_value': platform_summary_df['purchase_value'].sum(),
-                        'purchases': platform_summary_df['purchases'].sum(),
-                        'roas': platform_summary_df['purchase_value'].sum() / platform_summary_df['spend'].replace(0, 1).sum(),
-                        'cpa': platform_summary_df['spend'].sum() / platform_summary_df['purchases'].replace(0, 1).sum()
+                        'spend': total_spend,
+                        'purchase_value': total_revenue,
+                        'purchases': total_purchases,
+                        'roas': total_roas,
+                        'cpa': total_cpa
                     }
+
                     platform_table_data = pd.concat([platform_summary_df, pd.DataFrame([total_row])], ignore_index=True)
+
 
 
                     # Format table data
