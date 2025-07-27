@@ -782,7 +782,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             draw_header(c)
                             
                             # ✅ Add title
-                            c.setFont("Helvetica-Bold", 16)
+                            c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Adset Level Performance")
                             
@@ -1010,7 +1010,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             }).reset_index()
 
                             #   ➤ Table Title
-                            c.setFont("Helvetica-Bold", 16)
+                            c.setFont("Helvetica-Bold", 20)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 40, "Ad Level Performance")
 
                             # ➤ Table
@@ -1021,9 +1021,30 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 f"{currency_symbol}{row['spend']:.2f}",
                                 f"{currency_symbol}{row['purchase_value']:.2f}",
                                 int(row['purchases']),
-                                f"{row['roas']:.2f}",
+                                f"{row['roas']:.2f}"  if pd.notna(row['roas']) else "N/A",
                                 #f"{currency_symbol}{row['cpa']:.2f}" NA
                                 f"{currency_symbol}{row['cpa']:.2f}" if pd.notna(row['cpa']) else "N/A"
+                            ])
+                            # ➤ Compute Grand Totals
+                            total_spend = ad_grouped['spend'].sum()
+                            total_revenue = ad_grouped['purchase_value'].sum()
+                            total_purchases = ad_grouped['purchases'].sum()
+
+                            # Safe ROAS and CPA calculations
+                            valid_roas = ad_grouped['roas'].dropna()
+                            valid_cpa = ad_grouped['cpa'].dropna()
+
+                            total_roas = valid_roas.mean() if not valid_roas.empty else None
+                            total_cpa = valid_cpa.mean() if not valid_cpa.empty else None
+                            
+                            # ➤ Append Grand Total row
+                            ad_table_data.append([
+                                "Grand Total",
+                                f"{currency_symbol}{total_spend:.2f}",
+                                f"{currency_symbol}{total_revenue:.2f}",
+                                int(total_purchases),
+                                f"{total_roas:.2f}" if total_roas is not None else "N/A",
+                                f"{currency_symbol}{total_cpa:.2f}" if total_cpa is not None else "N/A"
                             ])
 
                             ad_summary_table = Table(ad_table_data, repeatRows=1, colWidths=[250, 130, 130, 80, 90, 120])
@@ -1160,7 +1181,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             MAX_FATIGUE_TABLE_ROWS = 100
 
                             # ✅ Add title
-                            c.setFont("Helvetica-Bold", 16)
+                            c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Ad Fatigue Analysis")
 
@@ -1192,6 +1213,34 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                     int(row['purchases']),
                                     f"{currency_symbol}{row['purchase_value']:.2f}"
                                 ])
+                                
+                            # ➤ Grand Total Calculations
+                            total_spend = df['spend'].sum()
+                            total_impressions = df['impressions'].sum()
+                            total_purchases = df['purchases'].sum()
+                            total_purchase_value = df['purchase_value'].sum()
+
+                            valid_frequencies = df['frequency'].dropna()
+                            valid_roas = df['roas'].dropna()
+                            valid_ctr = df['ctr'].dropna()
+
+                            total_frequency = valid_frequencies.mean() if not valid_frequencies.empty else None
+                            total_roas = valid_roas.mean() if not valid_roas.empty else None
+                            total_ctr = valid_ctr.mean() if not valid_ctr.empty else None
+
+                            # ➤ Append Grand Total row
+                            table_data.append([
+                                "Grand Total",
+                                "",  # campaign
+                                "",  # adset
+                                f"{currency_symbol}{total_spend:.2f}",
+                                int(total_impressions),
+                                f"{total_frequency:.2f}" if total_frequency is not None else "N/A",
+                                f"{total_roas:.2f}" if total_roas is not None else "N/A",
+                                f"{total_ctr:.2%}" if total_ctr is not None else "N/A",
+                                int(total_purchases),
+                                f"{currency_symbol}{total_purchase_value:.2f}"
+                            ])
 
                             summary_table = Table(table_data, repeatRows=1, colWidths=[150, 150, 170, 70, 50, 60, 60, 60, 40, 60])
                             summary_table.setStyle(TableStyle([
@@ -1281,7 +1330,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                             adjust_page_height(c, {"title": "Demographic Performance", "contains_table": True})
                             #draw_header(c)
 
-                            c.setFont("Helvetica-Bold", 16)
+                            c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
                             c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN - 30, "Demographic Performance")
 
@@ -1361,7 +1410,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 80 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN - 40 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
                                 current_y_pos = table_y_start - table_height - 10 # Start charts 40 units below table
