@@ -117,9 +117,9 @@ def adjust_page_height(c, section: dict):
     elif title == "ADSET LEVEL PERFORMANCE":
         PAGE_HEIGHT = 2500
     elif title == "AD LEVEL PERFORMANCE":
-        PAGE_HEIGHT = 3750 
+        PAGE_HEIGHT = 3700 
     elif title == "AD FATIGUE ANALYSIS":
-        PAGE_HEIGHT = 4000 
+        PAGE_HEIGHT = 3950 
     elif title == "DEMOGRAPHIC PERFORMANCE":
         PAGE_HEIGHT = 1800   
     elif title == "PLATFORM LEVEL PERFORMANCE":
@@ -1524,6 +1524,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 except Exception as e:
                                     logger.error(f"❌ Row 1 (Cost/Revenue by Age) failed: {e}")
                                     c.setFillColor(colors.red)
+                                    c.setFont("Helvetica", 10) 
                                     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render Cost/Revenue by Age charts")
                                     current_y_pos -= (chart_height + chart_padding_y)
 
@@ -1543,6 +1544,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 except Exception as e:
                                     logger.error(f"❌ Row 2 (ROAS by Age + Cost by Gender) failed: {e}")
                                     c.setFillColor(colors.red)
+                                    c.setFont("Helvetica", 10)
                                     c.drawString(LEFT_MARGIN, current_y_pos - 10, "⚠️ Failed to render ROAS by Age / Cost by Gender charts")
                                     current_y_pos -= (chart_height + chart_padding_y)
 

@@ -649,7 +649,7 @@ def generate_roas_split_by_age_chart(df):
     # Aggregate & sort → take top 7
     grouped = df.groupby('age')['roas'].mean().sort_values(ascending=False).head(7)
 
-    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+    fig, ax = plt.subplots(figsize=(15, 8), dpi=200)
     bars = ax.barh(grouped.index[::-1], grouped.values[::-1],
                    color="#448bd4", edgecolor="grey", height=0.5)
 
@@ -683,7 +683,7 @@ def generate_roas_split_by_gender_chart(df):
     # Aggregate & sort → take top 7
     grouped = df.groupby('gender')['roas'].mean().sort_values(ascending=False).head(7)
 
-    fig, ax = plt.subplots(figsize=(9, 5), dpi=200)
+    fig, ax = plt.subplots(figsize=(15, 8), dpi=200)
     bars = ax.barh(grouped.index[::-1], grouped.values[::-1],
                    color="#448bd4", edgecolor="grey", height=0.5)
 
@@ -713,33 +713,87 @@ def generate_platform_split_charts(df):
 
     cost = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5)
     revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
-    
+
     charts = []
 
-    # Cost Split Pie
-    # Add a check here for empty 'cost' series or all zeros
+    custom_colors = ['#ff69b4', '#800080', '#ffa500', '#ffff00', '#c71585']  # pink, purple, orange, yellow, magenta
+
+    # Cost Split Donut
     if not cost.empty and cost.sum() > 0:
         fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
-        ax1.pie(cost, labels=cost.index, autopct='%1.1f%%', startangle=90)
+        wedges, texts, autotexts = ax1.pie(
+            cost,
+            labels=cost.index,
+            autopct='%1.1f%%',
+            startangle=90,
+            colors=custom_colors[:len(cost)]
+        )
+        # Draw circle for donut
+        centre_circle = plt.Circle((0, 0), 0.60, fc='white')
+        fig1.gca().add_artist(centre_circle)
+        ax1.axis('equal')
         ax1.set_title("Cost Split by Platform")
         charts.append(("Cost Split", generate_chart_image(fig1)))
     else:
-        # If no valid data, append a placeholder/empty chart image
         charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
 
-
-    # Revenue Split Pie
-    # Add a check here for empty 'revenue' series or all zeros
+    # Revenue Split Donut
     if not revenue.empty and revenue.sum() > 0:
         fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
-        ax2.pie(revenue, labels=revenue.index, autopct='%1.1f%%', startangle=90)
+        wedges, texts, autotexts = ax2.pie(
+            revenue,
+            labels=revenue.index,
+            autopct='%1.1f%%',
+            startangle=90,
+            colors=custom_colors[:len(revenue)]
+        )
+        # Draw circle for donut
+        centre_circle = plt.Circle((0, 0), 0.60, fc='white')
+        fig2.gca().add_artist(centre_circle)
+        ax2.axis('equal')
         ax2.set_title("Revenue Split by Platform")
         charts.append(("Revenue Split", generate_chart_image(fig2)))
     else:
-        # If no valid data, append a placeholder/empty chart image
         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
+
+
+# def generate_platform_split_charts(df):
+#     df = df.copy()
+#     df['platform'] = df['platform'].fillna("Uncategorized")
+#     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
+#     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
+
+#     cost = df.groupby('platform')['spend'].sum().sort_values(ascending=False).head(5)
+#     revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
+    
+#     charts = []
+
+#     # Cost Split Pie
+#     # Add a check here for empty 'cost' series or all zeros
+#     if not cost.empty and cost.sum() > 0:
+#         fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
+#         ax1.pie(cost, labels=cost.index, autopct='%1.1f%%', startangle=90)
+#         ax1.set_title("Cost Split by Platform")
+#         charts.append(("Cost Split", generate_chart_image(fig1)))
+#     else:
+#         # If no valid data, append a placeholder/empty chart image
+#         charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
+
+
+#     # Revenue Split Pie
+#     # Add a check here for empty 'revenue' series or all zeros
+#     if not revenue.empty and revenue.sum() > 0:
+#         fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
+#         ax2.pie(revenue, labels=revenue.index, autopct='%1.1f%%', startangle=90)
+#         ax2.set_title("Revenue Split by Platform")
+#         charts.append(("Revenue Split", generate_chart_image(fig2)))
+#     else:
+#         # If no valid data, append a placeholder/empty chart image
+#         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
+
+#     return charts
 
 def generate_platform_roas_chart(df):
     df = df.copy()
