@@ -1975,6 +1975,9 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                         for line in lines:
                             c.drawString(LEFT_MARGIN, text_y, line)
                             text_y -= 14
+                        print("📝 Final Summary Text for PDF:", summary_text)
+                        summary_text = re.sub(r"[#*]", "", summary_text)
+
                     except Exception as e:
                         print("⚠️ Failed to generate platform summary:", str(e))
                         

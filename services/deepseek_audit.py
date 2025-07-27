@@ -1007,8 +1007,15 @@ async def generate_platform_summary(platform_df: pd.DataFrame, currency_symbol: 
 #     Conclude with 1 actionable recommendation.
 #     Use {currency_symbol} in monetary values.
 #     """
+    print("🔍 Prompt sent to LLM:\n", prompt)
+    print("🔍 Summary data sent to LLM:\n", summary_data)
 
-    return await generate_llm_content(prompt, summary_data)
+    llm_response = await generate_llm_content(prompt, summary_data)
+    print("📄 LLM Response:", llm_response)
+    return llm_response
+
+
+    #return await generate_llm_content(prompt, summary_data)
 
 
 async def fetch_facebook_insights(page_id: str, page_token: str):

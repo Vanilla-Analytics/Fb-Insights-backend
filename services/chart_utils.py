@@ -721,18 +721,19 @@ def generate_platform_split_charts(df):
     # Cost Split Donut
     if not cost.empty and cost.sum() > 0:
         fig1, ax1 = plt.subplots(figsize=(6, 6), dpi=200)
-        wedges, texts, autotexts = ax1.pie(
+        wedges, _ = ax1.pie(
             cost,
-            labels=cost.index,
-            autopct='%1.1f%%',
             startangle=90,
-            colors=custom_colors[:len(cost)]
+            colors=custom_colors[:len(cost)],
+            labels=None,
+            wedgeprops=dict(width=0.4)  # donut style
         )
-        # Draw circle for donut
-        centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-        fig1.gca().add_artist(centre_circle)
         ax1.axis('equal')
-        ax1.set_title("Cost Split by Platform")
+        ax1.set_title("Cost Split by Platform", fontsize=10)
+
+        # Add legend on right side
+        fig1.legend(wedges, cost.index, title="Platform", loc="center left", bbox_to_anchor=(1, 0.5), fontsize=8)
+
         charts.append(("Cost Split", generate_chart_image(fig1)))
     else:
         charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
@@ -740,23 +741,25 @@ def generate_platform_split_charts(df):
     # Revenue Split Donut
     if not revenue.empty and revenue.sum() > 0:
         fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)
-        wedges, texts, autotexts = ax2.pie(
+        wedges, _ = ax2.pie(
             revenue,
-            labels=revenue.index,
-            autopct='%1.1f%%',
             startangle=90,
-            colors=custom_colors[:len(revenue)]
+            colors=custom_colors[:len(revenue)],
+            labels=None,
+            wedgeprops=dict(width=0.4)
         )
-        # Draw circle for donut
-        centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-        fig2.gca().add_artist(centre_circle)
         ax2.axis('equal')
-        ax2.set_title("Revenue Split by Platform")
+        ax2.set_title("Revenue Split by Platform", fontsize=10)
+
+        # Add legend on right side
+        fig2.legend(wedges, revenue.index, title="Platform", loc="center left", bbox_to_anchor=(1, 0.5), fontsize=8)
+
         charts.append(("Revenue Split", generate_chart_image(fig2)))
     else:
         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
+
 
 
 # def generate_platform_split_charts(df):
@@ -831,65 +834,65 @@ def generate_platform_roas_chart(df):
     
 def generate_platform_cost_line_chart(df):
     df = df.copy()
-    df['date'] = pd.to_datetime(df['date_start']) # Corrected to use 'date_start'
+    df['date'] = pd.to_datetime(df['date_start'])
     df['platform'] = df['platform'].fillna("Uncategorized")
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
 
-    # Filter to top platforms by total spend
     top_platforms = df.groupby('platform')['spend'].sum().nlargest(5).index
     df_filtered = df[df['platform'].isin(top_platforms)]
 
-    # Pivot to get spend per platform per day
     pivot_df = df_filtered.pivot_table(index='date', columns='platform', values='spend', aggfunc='sum').fillna(0)
 
-    if pivot_df.empty or pivot_df.sum().sum() <= 0: # Check if pivot_df is empty or all zeros
+    if pivot_df.empty or pivot_df.sum().sum() <= 0:
         return create_empty_chart_image("No Cost Trend Data for Platforms")
 
-    fig, ax = plt.subplots(figsize=(17, 8), dpi=200)
+    fig, ax = plt.subplots(figsize=(17, 10), dpi=200)  # ⬆️ Increased height from 8 to 10
     for column in pivot_df.columns:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
-    ax.set_title("Cost by Platform Over Time", fontsize=14)
-    ax.set_ylabel("Amount Spent")
-    ax.set_xlabel("Date")
+    ax.set_title("Cost by Platform Over Time", fontsize=16)  # ⬆️ Font size
+    ax.set_ylabel("Amount Spent", fontsize=14)
+    ax.set_xlabel("Date", fontsize=14)
+    ax.tick_params(axis='both', labelsize=12)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=10)
 
     fig.tight_layout()
     return generate_chart_image(fig)
+
 
 def generate_platform_revenue_line_chart(df):
     df = df.copy()
-    df['date'] = pd.to_datetime(df['date_start']) # Corrected to use 'date_start'
+    df['date'] = pd.to_datetime(df['date_start'])
     df['platform'] = df['platform'].fillna("Uncategorized")
     df['purchase_value'] = pd.to_numeric(df['purchase_value'], errors='coerce').fillna(0)
 
-    # Filter to top platforms by total revenue
     top_platforms = df.groupby('platform')['purchase_value'].sum().nlargest(5).index
     df_filtered = df[df['platform'].isin(top_platforms)]
 
-    # Pivot to get revenue per platform per day
     pivot_df = df_filtered.pivot_table(index='date', columns='platform', values='purchase_value', aggfunc='sum').fillna(0)
 
-    if pivot_df.empty or pivot_df.sum().sum() <= 0: # Check if pivot_df is empty or all zeros
+    if pivot_df.empty or pivot_df.sum().sum() <= 0:
         return create_empty_chart_image("No Revenue Trend Data for Platforms")
 
-    fig, ax = plt.subplots(figsize=(18, 8), dpi=200)
+    fig, ax = plt.subplots(figsize=(18, 10), dpi=200)  # ⬆️ Increased height from 8 to 10
     for column in pivot_df.columns:
         ax.plot(pivot_df.index, pivot_df[column], label=column, linewidth=2)
 
-    ax.set_title("Revenue by Platform Over Time", fontsize=14)
-    ax.set_ylabel("Revenue")
-    ax.set_xlabel("Date")
+    ax.set_title("Revenue by Platform Over Time", fontsize=16)  # ⬆️ Font size
+    ax.set_ylabel("Revenue", fontsize=14)
+    ax.set_xlabel("Date", fontsize=14)
+    ax.tick_params(axis='both', labelsize=12)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     ax.tick_params(axis='x', rotation=45)
     ax.grid(True, linestyle='--', alpha=0.3)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=8)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3, fontsize=10)
 
     fig.tight_layout()
     return generate_chart_image(fig)
+
 
 import matplotlib.pyplot as plt
 from io import BytesIO
