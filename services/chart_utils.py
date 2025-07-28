@@ -706,6 +706,9 @@ def generate_roas_split_by_gender_chart(df):
 #---------------PLATFORM CHARTS----------------
 
 def generate_platform_split_charts(df):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
     df = df.copy()
     df['platform'] = df['platform'].fillna("Uncategorized")
     df['spend'] = pd.to_numeric(df['spend'], errors='coerce').fillna(0)
@@ -717,64 +720,46 @@ def generate_platform_split_charts(df):
     charts = []
     custom_colors = ['#ff69b4', '#800080', '#ffa500', '#ffff00', '#c71585']  # pink, purple, orange, yellow, magenta
 
-    # Cost Split Donut
-    if not cost.empty and cost.sum() > 0:
-        fig1, ax1 = plt.subplots(figsize=(6, 5), dpi=200)  # 🔧 widened for legend
-        wedges, _ = ax1.pie(
-            cost,
+    def create_donut_chart(values, labels, title):
+        fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+        wedges, _ = ax.pie(
+            values,
             startangle=90,
-            colors=custom_colors[:len(cost)],
-            labels=None,
+            colors=custom_colors[:len(labels)],
+            labels=None,  # No labels on the donut
             wedgeprops=dict(width=0.4)
         )
-        ax1.axis('equal')
-        ax1.set_title("Cost Split by Platform", fontsize=10)
+        ax.axis('equal')
+        ax.set_title(title, fontsize=12)
 
-        # 🔧 Add right-side legend with more space
-        fig1.legend(
+        # Add legend on right
+        fig.legend(
             wedges,
-            cost.index,
+            labels,
             title="Platform",
             loc="center left",
             bbox_to_anchor=(1.05, 0.5),
-            fontsize=12
+            fontsize=10,
+            title_fontsize=10
         )
-        fig1.subplots_adjust(left=0.05, right=0.6) 
 
-        fig1.tight_layout(pad=3.0)  # 🔧 add padding to fit legend
+        fig.tight_layout()
+        return fig
+
+    if not cost.empty and cost.sum() > 0:
+        fig1 = create_donut_chart(cost.values, cost.index.tolist(), "Cost Split by Platform")
         charts.append(("Cost Split", generate_chart_image(fig1)))
     else:
         charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
 
-    # Revenue Split Donut
     if not revenue.empty and revenue.sum() > 0:
-        fig2, ax2 = plt.subplots(figsize=(6, 5), dpi=200)
-        wedges, _ = ax2.pie(
-            revenue,
-            startangle=90,
-            colors=custom_colors[:len(revenue)],
-            labels=None,
-            wedgeprops=dict(width=0.4)
-        )
-        ax2.axis('equal')
-        ax2.set_title("Revenue Split by Platform", fontsize=10)
-
-        fig2.legend(
-            wedges,
-            revenue.index,
-            title="Platform",
-            loc="center left",
-            bbox_to_anchor=(1.05, 0.5),
-            fontsize=12
-        )
-        fig2.subplots_adjust(left=0.05, right=0.6) 
-
-        fig2.tight_layout(pad=3.0)
+        fig2 = create_donut_chart(revenue.values, revenue.index.tolist(), "Revenue Split by Platform")
         charts.append(("Revenue Split", generate_chart_image(fig2)))
     else:
         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
+
 
 
 
