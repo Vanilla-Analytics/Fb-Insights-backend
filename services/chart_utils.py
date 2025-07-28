@@ -704,10 +704,10 @@ def generate_roas_split_by_gender_chart(df):
     return generate_chart_image(fig)
 
 #---------------PLATFORM CHARTS----------------
-
 def generate_platform_split_charts(df):
     import matplotlib.pyplot as plt
     import numpy as np
+    import pandas as pd
 
     df = df.copy()
     df['platform'] = df['platform'].fillna("Uncategorized")
@@ -718,49 +718,57 @@ def generate_platform_split_charts(df):
     revenue = df.groupby('platform')['purchase_value'].sum().sort_values(ascending=False).head(5)
 
     charts = []
-    custom_colors = ['#ff69b4', '#800080', '#ffa500', '#ffff00', '#c71585']  # pink, purple, orange, yellow, magenta
 
-    def create_donut_chart(values, labels, title):
+    def truncate_label(label, max_words=4):
+        tokens = label.split()
+        return " ".join(tokens[:max_words]) + "..." if len(tokens) > max_words else label
+
+    def draw_donut(values, labels, title):
+        truncated_labels = [truncate_label(label) for label in labels]
+        percentages = 100 * values / values.sum()
+        color_map = plt.get_cmap('tab20c')
+        colors = color_map.colors[:len(truncated_labels)]
+
         fig, ax = plt.subplots(figsize=(5, 5), dpi=200)
+
         wedges, _ = ax.pie(
             values,
+            colors=colors,
             startangle=90,
-            colors=custom_colors[:len(labels)],
-            labels=None,  # No labels on the donut
             wedgeprops=dict(width=0.4)
         )
-        ax.axis('equal')
-        ax.set_title(title, fontsize=12)
 
-        # Add legend on right
-        fig.legend(
+        ax.text(0, 0, "100%", ha='center', va='center', fontsize=14, weight='bold')
+
+        ax.legend(
             wedges,
-            labels,
+            [f"{label} ({pct:.1f}%)" for label, pct in zip(truncated_labels, percentages)],
             title="Platform",
             loc="center left",
             bbox_to_anchor=(1.05, 0.5),
-            fontsize=10,
-            title_fontsize=10
+            fontsize=8,
+            title_fontsize=9
         )
 
-        fig.tight_layout()
+        ax.set_title(title, fontsize=14)
+        plt.tight_layout()
         return fig
 
+    # Cost Donut
     if not cost.empty and cost.sum() > 0:
-        fig1 = create_donut_chart(cost.values, cost.index.tolist(), "Cost Split by Platform")
+        fig1 = draw_donut(cost.values, cost.index.tolist(), "Cost Split by Platform")
         charts.append(("Cost Split", generate_chart_image(fig1)))
     else:
         charts.append(("Cost Split", create_empty_chart_image("No Cost Data for Platforms")))
 
+    # Revenue Donut
     if not revenue.empty and revenue.sum() > 0:
-        fig2 = create_donut_chart(revenue.values, revenue.index.tolist(), "Revenue Split by Platform")
+        fig2 = draw_donut(revenue.values, revenue.index.tolist(), "Revenue Split by Platform")
         charts.append(("Revenue Split", generate_chart_image(fig2)))
     else:
         charts.append(("Revenue Split", create_empty_chart_image("No Revenue Data for Platforms")))
 
     return charts
-
-
 
 
 
