@@ -1359,7 +1359,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
 
                             c.setFont("Helvetica-Bold", 20)
                             c.setFillColor(colors.black)
-                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 260, "Demographic Performance")
+                            c.drawCentredString(PAGE_WIDTH / 2, PAGE_HEIGHT - TOP_MARGIN + 320, "Demographic Performance")
 
                             # ✅ Check for valid demographic data *before* attempting to process it
                             if demographic_df is not None and not demographic_df.empty and \
@@ -1459,7 +1459,7 @@ def generate_pdf_report(sections: list, ad_insights_df=None,full_ad_insights_df=
                                 # Calculate table height to position charts below it
                                 table_width, table_height = table.wrapOn(c, PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, PAGE_HEIGHT)
                                 table_x = LEFT_MARGIN + (PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - table_width) / 2 # Center the table
-                                table_y_start = PAGE_HEIGHT - TOP_MARGIN + 90 # Position below title
+                                table_y_start = PAGE_HEIGHT - TOP_MARGIN + 180 # Position below title
                                 table.drawOn(c, table_x, table_y_start - table_height)
 
                                 current_y_pos = table_y_start - table_height - 40 # Start charts 40 units below table
